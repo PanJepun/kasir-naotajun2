@@ -13,6 +13,7 @@
     button:hover { background: #45a049; }
    .btn-hapus { background: #f44336; padding: 6px 10px; font-size: 14px; width: auto; }
    .btn-hapus:hover { background: #d32f2f; }
+   .btn-detail { background: none; border: none; color: #1976d2; cursor: pointer; text-align: left; padding: 0; font-size: 16px; text-decoration: underline; }
    .status { padding: 10px; margin-top: 10px; border-radius: 5px; text-align: center; }
    .success { background: #d4edda; color: #155724; }
    .error { background: #f8d7da; color: #721c24; }
@@ -20,6 +21,10 @@
     th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
     th { background: #f2f2f2; }
     tfoot td { font-weight: bold; background: #e8f5e9; font-size: 16px; }
+   .detail-row { background: #fafafa; }
+   .detail-row table { margin: 0; width: 100%; }
+   .detail-row td { border: none; padding: 8px 12px; }
+   .hidden { display: none; }
   </style>
 </head>
 <body>
@@ -40,7 +45,7 @@
         <tr>
           <th>No</th>
           <th>Nama Barang</th>
-          <th>Total Qty Terjual</th>
+          <th>Total Qty</th>
           <th>Total Penjualan</th>
           <th>Aksi</th>
         </tr>
@@ -71,12 +76,22 @@
     const db = getDatabase(app);
     const dbRef = ref(db, 'penjualan');
 
+    let allData = [];
+
     onValue(dbRef, (snapshot) => {
+      allData = [];
+      snapshot.forEach((childSnapshot) => {
+        allData.push({ key: childSnapshot.key,...childSnapshot.val() });
+      });
+      renderTabel();
+    });
+
+    function renderTabel() {
       const tbody = document.getElementById('tabelPenjualan');
       const tfoot = document.getElementById('totalPenjualan');
       tbody.innerHTML = '';
 
-      if (!snapshot.exists()) {
+      if (allData.length === 0) {
         tbody.innerHTML = '<tr><td colspan="5">Belum ada data</td></tr>';
         tfoot.innerHTML = '';
         return;
@@ -85,26 +100,25 @@
       let grouped = {};
       let grandTotal = 0;
 
-      snapshot.forEach((childSnapshot) => {
-        let data = childSnapshot.val();
+      allData.forEach((data) => {
         let nama = (data.namaBarang || data.nama || 'Tanpa Nama').trim();
+        let key = nama.toLowerCase();
         let qty = parseInt(data.jumlah) || 0;
         let harga = parseInt(data.harga) || 0;
         let total = harga * qty;
 
-        let key = nama.toLowerCase();
         if (!grouped[key]) {
           grouped[key] = {
             nama: nama,
             qty: 0,
             total: 0,
-            keys: []
+            details: []
           };
         }
 
         grouped[key].qty += qty;
         grouped[key].total += total;
-        grouped[key].keys.push(childSnapshot.key);
+        grouped[key].details.push(data);
         grandTotal += total;
       });
 
@@ -113,14 +127,40 @@
       );
 
       let no = 1;
-      sorted.forEach((item) => {
+      sorted.forEach((item, index) => {
+        let detailId = `detail-${index}`;
+
         tbody.innerHTML += `
           <tr>
             <td>${no++}</td>
-            <td>${item.nama}</td>
+            <td>
+              <button class="btn-detail" onclick="toggleDetail('${detailId}')">
+                ▶ ${item.nama}
+              </button>
+            </td>
             <td>${item.qty}</td>
             <td>Rp ${item.total.toLocaleString('id-ID')}</td>
-            <td><button class="btn-hapus" onclick="hapusGrup('${item.keys.join(',')}')">Hapus</button></td>
+            <td><button class="btn-hapus" onclick="hapusGrup('${item.details.map(d => d.key).join(',')}')">Hapus</button></td>
+          </tr>
+          <tr id="${detailId}" class="detail-row hidden">
+            <td colspan="5">
+              <table>
+                <tr style="background:#f5f5f5; font-weight:bold;">
+                  <td>Tanggal</td>
+                  <td>Harga</td>
+                  <td>Qty</td>
+                  <td>Subtotal</td>
+                </tr>
+                ${item.details.map(d => `
+                  <tr>
+                    <td>${new Date(d.waktu).toLocaleString('id-ID')}</td>
+                    <td>Rp ${d.harga.toLocaleString('id-ID')}</td>
+                    <td>${d.jumlah}</td>
+                    <td>Rp ${(d.harga * d.jumlah).toLocaleString('id-ID')}</td>
+                  </tr>
+                `).join('')}
+              </table>
+            </td>
           </tr>
         `;
       });
@@ -131,7 +171,16 @@
           <td colspan="2">Rp ${grandTotal.toLocaleString('id-ID')}</td>
         </tr>
       `;
-    });
+    }
+
+    window.toggleDetail = function(id) {
+      const row = document.getElementById(id);
+      const btn = row.previousElementSibling.querySelector('.btn-detail');
+      row.classList.toggle('hidden');
+      btn.textContent = row.classList.contains('hidden')
+       ? btn.textContent.replace('▼', '▶')
+        : btn.textContent.replace('▶', '▼');
+    }
 
     window.simpanPenjualan = function() {
       const nama = document.getElementById('namaBarang').value;
@@ -152,13 +201,13 @@
       };
 
       push(dbRef, dataPenjualan)
-       .then(() => {
+      .then(() => {
           statusDiv.innerHTML = '<div class="success">✅ Data tersimpan!</div>';
           document.getElementById('namaBarang').value = '';
           document.getElementById('harga').value = '';
           document.getElementById('jumlah').value = '';
         })
-       .catch((error) => {
+      .catch((error) => {
           statusDiv.innerHTML = '<div class="error">❌ Gagal simpan: ' + error.message + '</div>';
         });
     };
@@ -169,10 +218,10 @@
         let promises = keyArray.map(k => remove(ref(db, 'penjualan/' + k)));
 
         Promise.all(promises)
-         .then(() => {
+        .then(() => {
             document.getElementById('status').innerHTML = '<div class="success">✅ Data dihapus!</div>';
           })
-         .catch((error) => {
+        .catch((error) => {
             document.getElementById('status').innerHTML = '<div class="error">❌ Gagal hapus: ' + error.message + '</div>';
           });
       }
