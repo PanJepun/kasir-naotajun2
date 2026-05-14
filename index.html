@@ -67,17 +67,26 @@ onValue(dbRef, (snapshot) => {
   const tbody = document.getElementById('tabelPenjualan');
   tbody.innerHTML = '';
 
-  if (!snapshot.exists()) {
-    tbody.innerHTML = '<tr><td colspan="5">Belum ada data</td></tr>';
-    return;
-  }
+ if (!snapshot.exists()) {
+  tbody.innerHTML = '<tr><td colspan="5">Belum ada data</td></tr>';
+  return;
+}
 
-  let no = 1;
-  snapshot.forEach((childSnapshot) => {
-    const data = childSnapshot.val();
-    const total = data.harga * data.jumlah;
-    tbody.innerHTML += `
-      <tr>
+let no = 1;
+snapshot.forEach((childSnapshot) => {
+  const data = childSnapshot.val();
+  const total = data.harga * data.jumlah;
+  
+  tbody.innerHTML += `
+    <tr>
+      <td>${no++}</td>
+      <td>${data.namaBarang}</td>
+      <td>Rp ${data.harga.toLocaleString('id-ID')}</td>
+      <td>${data.jumlah}</td>
+      <td>Rp ${total.toLocaleString('id-ID')}</td>
+    </tr>
+  `; // <-- ini yang kurang: backtick + titik koma
+});
         <td>${no++}</td>
         <td>${data.namaBarang}</td>
         <td>Rp ${data.harga.toLocaleString('id-ID')}</td>
