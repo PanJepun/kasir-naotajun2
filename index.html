@@ -6,36 +6,57 @@
   <title>Kasir Naotajun2</title>
   <link rel="icon" href="data:,">
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
-  .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-    input, button { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
-    button { background: #4CAF50; color: white; border: none; cursor: pointer; font-size: 16px; }
+    body {
+      font-family: "Times New Roman", Times, serif;
+      font-size: 10px;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+ .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    input, button {
+      width: 100%;
+      padding: 8px;
+      margin: 6px 0;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      box-sizing: border-box;
+      font-family: "Times New Roman", Times, serif;
+      font-size: 10px;
+    }
+    button { background: #4CAF50; color: white; border: none; cursor: pointer; }
     button:hover { background: #45a049; }
-  .btn-hapus { background: #f44336; padding: 6px 10px; font-size: 14px; width: auto; }
-  .btn-hapus:hover { background: #d32f2f; }
-  .btn-detail { background: none; border: none; color: #1976d2; cursor: pointer; text-align: left; padding: 0; font-size: 16px; text-decoration: underline; }
-  .btn-print { background: #2196F3; width: auto; padding: 10px 20px; margin: 15px 0; }
-  .btn-print:hover { background: #1976D2; }
-  .status { padding: 10px; margin-top: 10px; border-radius: 5px; text-align: center; }
-  .success { background: #d4edda; color: #155724; }
-  .error { background: #f8d7da; color: #721c24; }
-    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-    th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
-    th { background: #f2f2f2; }
-    tfoot td { font-weight: bold; background: #e8f5e9; font-size: 16px; }
-  .detail-row { background: #fafafa; }
-  .detail-row table { margin: 0; width: 100%; }
-  .detail-row td { border: none; padding: 8px 12px; }
-  .hidden { display: none; }
+ .btn-hapus { background: #f44336; padding: 4px 8px; font-size: 10px; width: auto; }
+ .btn-hapus:hover { background: #d32f2f; }
+ .btn-detail { background: none; border: none; color: #1976d2; cursor: pointer; text-align: left; padding: 0; font-size: 10px; text-decoration: underline; font-family: "Times New Roman", Times, serif; }
+ .btn-print { background: #2196F3; width: auto; padding: 6px 15px; margin: 10px 0; font-size: 10px; }
+ .btn-print:hover { background: #1976D2; }
+ .status { padding: 8px; margin-top: 8px; border-radius: 5px; text-align: center; font-size: 10px; }
+ .success { background: #d4edda; color: #155724; }
+ .error { background: #f8d7da; color: #721c24; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border: 1px solid #ddd; padding: 6px 8px; text-align: left; font-size: 10px; }
+    th { background: #f2f2f2; font-weight: bold; }
+    tfoot td { font-weight: bold; background: #e8f5e9; font-size: 10px; }
+ .detail-row { background: #fafafa; }
+ .detail-row table { margin: 0; width: 100%; }
+ .detail-row td { border: none; padding: 4px 8px; }
+ .hidden { display: none; }
+  h2, h3 { font-size: 14px; margin: 10px 0; }
 
    @media print {
-     body { background: white; padding: 0; }
-   .container { box-shadow: none; padding: 0; max-width: 100%; }
-   .btn-print,.btn-hapus,.btn-detail, #namaBarang, #harga, #jumlah, button, h2, #status { display: none!important; }
-     h3 { margin-top: 0!important; }
+     body {
+       background: white;
+       padding: 0;
+       font-size: 10px;
+       font-family: "Times New Roman", Times, serif;
+     }
+  .container { box-shadow: none; padding: 0; max-width: 100%; }
+  .btn-print,.btn-hapus,.btn-detail, #namaBarang, #harga, #jumlah, button, h2, #status { display: none!important; }
+     h3 { margin-top: 0!important; font-size: 12px; }
      table { page-break-inside: auto; }
      tr { page-break-inside: avoid; page-break-after: auto; }
-   .detail-row { display: table-row!important; background: white; }
+  .detail-row { display: table-row!important; background: white; }
+     th, td { padding: 4px 6px; font-size: 10px; }
    }
   </style>
 </head>
@@ -51,9 +72,8 @@
 
     <div id="status"></div>
 
-    <h3 style="margin-top:30px;">Laporan Penjualan per Item</h3>
+    <h3>Laporan Penjualan per Item</h3>
 
-    <!-- Tombol Print -->
     <button class="btn-print" onclick="window.print()">🖨️ Print Laporan</button>
 
     <table>
@@ -194,7 +214,7 @@
       const btn = row.previousElementSibling.querySelector('.btn-detail');
       row.classList.toggle('hidden');
       btn.textContent = row.classList.contains('hidden')
-     ? btn.textContent.replace('▼', '▶')
+    ? btn.textContent.replace('▼', '▶')
         : btn.textContent.replace('▶', '▼');
     }
 
@@ -217,13 +237,13 @@
       };
 
       push(dbRef, dataPenjualan)
-    .then(() => {
+   .then(() => {
           statusDiv.innerHTML = '<div class="success">✅ Data tersimpan!</div>';
           document.getElementById('namaBarang').value = '';
           document.getElementById('harga').value = '';
           document.getElementById('jumlah').value = '';
         })
-    .catch((error) => {
+   .catch((error) => {
           statusDiv.innerHTML = '<div class="error">❌ Gagal simpan: ' + error.message + '</div>';
         });
     };
@@ -234,10 +254,10 @@
         let promises = keyArray.map(k => remove(ref(db, 'penjualan/' + k)));
 
         Promise.all(promises)
-      .then(() => {
+     .then(() => {
             document.getElementById('status').innerHTML = '<div class="success">✅ Data dihapus!</div>';
           })
-      .catch((error) => {
+     .catch((error) => {
             document.getElementById('status').innerHTML = '<div class="error">❌ Gagal hapus: ' + error.message + '</div>';
           });
       }
