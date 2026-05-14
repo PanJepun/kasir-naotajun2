@@ -129,8 +129,6 @@ onValue(dbRef, (snapshot) => {
     tbody.innerHTML = '<tr><td colspan="5">Belum ada data</td></tr>';
     return;
   }
-
-  snapshot.forEach((childSnapshot) => {
     const data = childSnapshot.val();
     tbody.innerHTML += `
       <tr>
