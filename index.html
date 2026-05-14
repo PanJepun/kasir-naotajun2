@@ -26,12 +26,28 @@
     <button onclick="simpanPenjualan()">Simpan Penjualan</button>
     
     <div id="status"></div>
+    <h3 style="margin-top:30px;">Data Penjualan</h3>
+<table border="1" style="width:100%; border-collapse:collapse; margin-top:10px;">
+  <thead>
+    <tr style="background:#f2f2f2;">
+      <th>No</th>
+      <th>Nama Barang</th>
+      <th>Harga</th>
+      <th>Jumlah</th>
+      <th>Total</th>
+    </tr>
+  </thead>
+  <tbody id="tabelPenjualan">
+    <tr><td colspan="5">Loading...</td></tr>
+  </tbody>
+</table>
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-
+    import { getDatabase, ref, push, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+    
+    
     // KONEKSI KE FIREBASE LU
     const firebaseConfig = {
       apiKey: "AIzaSyA94bWbZJA0peV6rDg-vaHac1Ghn9t2ZW4",
@@ -45,7 +61,33 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
+const dbRef = ref(db, 'penjualan');
 
+onValue(dbRef, (snapshot) => {
+  const tbody = document.getElementById('tabelPenjualan');
+  tbody.innerHTML = '';
+
+  if (!snapshot.exists()) {
+    tbody.innerHTML = '<tr><td colspan="5">Belum ada data</td></tr>';
+    return;
+  }
+
+  let no = 1;
+  snapshot.forEach((childSnapshot) => {
+    const data = childSnapshot.val();
+    const total = data.harga * data.jumlah;
+    tbody.innerHTML += `
+      <tr>
+        <td>${no++}</td>
+        <td>${data.namaBarang}</td>
+        <td>Rp ${data.harga.toLocaleString('id-ID')}</td>
+        <td>${data.jumlah}</td>
+        <td>Rp ${total.toLocaleString('id-ID')}</td>
+      </tr>
+    `;
+  });
+});
+    
     // FUNGSI SIMPAN KE FIREBASE
     window.simpanPenjualan = function() {
       const nama = document.getElementById('namaBarang').value;
@@ -74,7 +116,7 @@
           document.getElementById('jumlah').value = '';
         })
 
-        import { onValue, ref } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+        
 
 const dbRef = ref(db, 'penjualan');
 
