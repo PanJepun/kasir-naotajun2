@@ -14,7 +14,7 @@
       padding: 20px;
       background: #f5f5f5;
     }
-.container { max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+.container { max-width: 1000px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
     input, select, button {
       width: 100%;
       padding: 8px;
@@ -48,11 +48,15 @@
 .btn-group { margin: 10px 0; }
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 .section { background: #fafafa; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+.img-thumb { width: 40px; height: 40px; object-fit: cover; border-radius: 4px; }
+.img-preview { width: 80px; height: 80px; object-fit: cover; border-radius: 6px; margin-top: 5px; border: 1px solid #ddd; }
+.menu-option { display: flex; align-items: center; gap: 8px; }
+.menu-img-small { width: 24px; height: 24px; object-fit: cover; border-radius: 3px; }
 
    @media print {
      body { background: white; padding: 0; font-size: 10px; font-family: "Times New Roman", Times, serif; }
 .container { box-shadow: none; padding: 0; max-width: 100%; }
-.btn-print,.btn-pdf,.btn-email,.btn-hapus,.btn-edit,.btn-detail, #namaBarang, #harga, #jumlah, button, h2, #status,.section { display: none!important; }
+.btn-print,.btn-pdf,.btn-email,.btn-hapus,.btn-edit,.btn-detail, #namaBarang, #harga, #jumlah, #gambarMenu, button, h2, #status,.section { display: none!important; }
      h3 { margin-top: 0!important; font-size: 12px; }
      table { page-break-inside: auto; }
      tr { page-break-inside: avoid; page-break-after: auto; }
@@ -81,23 +85,32 @@
     <div class="section">
       <h3>Manajemen Menu</h3>
       <div class="grid-2">
-        <input type="text" id="namaMenu" placeholder="Nama Menu">
-        <input type="number" id="hargaMenu" placeholder="Harga Menu">
+        <div>
+          <input type="text" id="namaMenu" placeholder="Nama Menu">
+          <input type="number" id="hargaMenu" placeholder="Harga Menu">
+          <input type="file" id="gambarMenu" accept="image/*">
+          <img id="previewGambar" class="img-preview hidden">
+        </div>
+        <div>
+          <button onclick="simpanMenu()">Simpan Menu</button>
+          <button onclick="resetFormMenu()" style="background:#6c757d;">Reset</button>
+        </div>
       </div>
-      <button onclick="simpanMenu()">Simpan Menu</button>
       <input type="hidden" id="editKey">
+      <input type="hidden" id="editGambarUrl">
 
       <table>
         <thead>
           <tr>
             <th>No</th>
+            <th>Gambar</th>
             <th>Nama Menu</th>
             <th>Harga</th>
             <th>Aksi</th>
           </tr>
         </thead>
         <tbody id="tabelMenu">
-          <tr><td colspan="4">Loading...</td></tr>
+          <tr><td colspan="5">Loading...</td></tr>
         </tbody>
       </table>
     </div>
@@ -114,6 +127,7 @@
       <thead>
         <tr>
           <th>No</th>
+          <th>Gambar</th>
           <th>Nama Barang</th>
           <th>Total Qty</th>
           <th>Total Penjualan</th>
@@ -121,7 +135,7 @@
         </tr>
       </thead>
       <tbody id="tabelPenjualan">
-        <tr><td colspan="5">Loading...</td></tr>
+        <tr><td colspan="6">Loading...</td></tr>
       </tbody>
       <tfoot id="totalPenjualan">
       </tfoot>
@@ -131,25 +145,40 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getDatabase, ref, push, onValue, remove, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+    import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyA94bWbZJA0peV6rDg-vaHac1Ghn9t2ZW4",
       authDomain: "kasir-naotajun2.firebaseapp.com",
       databaseURL: "https://kasir-naotajun2-default-rtdb.asia-southeast1.firebasedatabase.app",
       projectId: "kasir-naotajun2",
-      storageBucket: "kasir-naotajun2.firebasestorage.app",
+      storageBucket: "kasir-naotajun2.appspot.com",
       messagingSenderId: "346309315110",
       appId: "1:346309315110:web:1bc443785229fa7a0b74e7"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
+    const storage = getStorage(app);
     const penjualanRef = ref(db, 'penjualan');
     const menuRef = ref(db, 'menu');
 
     let allData = [];
     let groupedData = [];
     let menuList = [];
+
+    // Preview gambar saat dipilih
+    document.getElementById('gambarMenu').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          document.getElementById('previewGambar').src = e.target.result;
+          document.getElementById('previewGambar').classList.remove('hidden');
+        }
+        reader.readAsDataURL(file);
+      }
+    });
 
     // Load Menu
     onValue(menuRef, (snapshot) => {
@@ -168,19 +197,24 @@
           tbody.innerHTML += `
             <tr>
               <td>${no++}</td>
+              <td>${data.gambar? `<img src="${data.gambar}" class="img-thumb">` : '-'}</td>
               <td>${data.nama}</td>
               <td>Rp ${data.harga.toLocaleString('id-ID')}</td>
               <td>
-                <button class="btn-edit" onclick="editMenu('${data.key}', '${data.nama}', ${data.harga})">Edit</button>
+                <button class="btn-edit" onclick="editMenu('${data.key}')">Edit</button>
                 <button class="btn-hapus" onclick="hapusMenu('${data.key}')">Hapus</button>
               </td>
             </tr>
           `;
 
-          select.innerHTML += `<option value="${data.key}" data-harga="${data.harga}">${data.nama}</option>`;
+          select.innerHTML += `
+            <option value="${data.key}" data-harga="${data.harga}" data-gambar="${data.gambar || ''}">
+              ${data.nama}
+            </option>
+          `;
         });
       } else {
-        tbody.innerHTML = '<tr><td colspan="4">Belum ada menu</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5">Belum ada menu</td></tr>';
       }
     });
 
@@ -195,8 +229,8 @@
 
     // Auto fill harga saat pilih menu
     document.getElementById('pilihMenu').addEventListener('change', function() {
-      const harga = this.options[this.selectedIndex].getAttribute('data-harga');
-      document.getElementById('harga').value = harga || '';
+      const selected = this.options[this.selectedIndex];
+      document.getElementById('harga').value = selected.getAttribute('data-harga') || '';
     });
 
     function renderTabel() {
@@ -205,7 +239,7 @@
       tbody.innerHTML = '';
 
       if (allData.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5">Belum ada data</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6">Belum ada data</td></tr>';
         tfoot.innerHTML = '';
         groupedData = [];
         return;
@@ -220,14 +254,16 @@
         let qty = parseInt(data.jumlah) || 0;
         let harga = parseInt(data.harga) || 0;
         let total = harga * qty;
+        let gambar = data.gambar || '';
 
         if (!grouped[key]) {
-          grouped[key] = { nama: nama, qty: 0, total: 0, details: [] };
+          grouped[key] = { nama: nama, qty: 0, total: 0, details: [], gambar: gambar };
         }
 
         grouped[key].qty += qty;
         grouped[key].total += total;
         grouped[key].details.push(data);
+        if (!grouped[key].gambar && gambar) grouped[key].gambar = gambar;
         grandTotal += total;
       });
 
@@ -241,6 +277,7 @@
         tbody.innerHTML += `
           <tr>
             <td>${no++}</td>
+            <td>${item.gambar? `<img src="${item.gambar}" class="img-thumb">` : '-'}</td>
             <td>
               <button class="btn-detail" onclick="toggleDetail('${detailId}')">
                 ▶ ${item.nama}
@@ -251,7 +288,7 @@
             <td><button class="btn-hapus" onclick="hapusGrup('${item.details.map(d => d.key).join(',')}')">Hapus</button></td>
           </tr>
           <tr id="${detailId}" class="detail-row hidden">
-            <td colspan="5">
+            <td colspan="6">
               <table>
                 <tr style="background:#f5f5f5; font-weight:bold;">
                   <td>Tanggal</td><td>Harga</td><td>Qty</td><td>Subtotal</td>
@@ -272,7 +309,7 @@
 
       tfoot.innerHTML = `
         <tr>
-          <td colspan="3">Total Semua Penjualan</td>
+          <td colspan="4">Total Semua Penjualan</td>
           <td colspan="2">Rp ${grandTotal.toLocaleString('id-ID')}</td>
         </tr>
       `;
@@ -283,38 +320,59 @@
       const btn = row.previousElementSibling.querySelector('.btn-detail');
       row.classList.toggle('hidden');
       btn.textContent = row.classList.contains('hidden')
-  ? btn.textContent.replace('▼', '▶')
+ ? btn.textContent.replace('▼', '▶')
         : btn.textContent.replace('▶', '▼');
     }
 
-    // CRUD Menu
-    window.simpanMenu = function() {
+    // CRUD Menu dengan Gambar
+    window.simpanMenu = async function() {
       const nama = document.getElementById('namaMenu').value;
       const harga = document.getElementById('hargaMenu').value;
+      const gambarFile = document.getElementById('gambarMenu').files[0];
       const editKey = document.getElementById('editKey').value;
+      const editGambarUrl = document.getElementById('editGambarUrl').value;
 
       if(!nama ||!harga) {
         alert('Isi nama dan harga menu!');
         return;
       }
 
-      const dataMenu = { nama: nama, harga: parseInt(harga) };
+      let gambarUrl = editGambarUrl;
+
+      // Upload gambar jika ada file baru
+      if (gambarFile) {
+        const storageRef = sRef(storage, 'menu/' + Date.now() + '_' + gambarFile.name);
+        const snapshot = await uploadBytes(storageRef, gambarFile);
+        gambarUrl = await getDownloadURL(snapshot.ref);
+      }
+
+      const dataMenu = {
+        nama: nama,
+        harga: parseInt(harga),
+        gambar: gambarUrl
+      };
 
       if(editKey) {
         set(ref(db, 'menu/' + editKey), dataMenu);
-        document.getElementById('editKey').value = '';
       } else {
         push(menuRef, dataMenu);
       }
 
-      document.getElementById('namaMenu').value = '';
-      document.getElementById('hargaMenu').value = '';
+      resetFormMenu();
     };
 
-    window.editMenu = function(key, nama, harga) {
-      document.getElementById('namaMenu').value = nama;
-      document.getElementById('hargaMenu').value = harga;
-      document.getElementById('editKey').value = key;
+    window.editMenu = function(key) {
+      const menu = menuList.find(m => m.key === key);
+      if (menu) {
+        document.getElementById('namaMenu').value = menu.nama;
+        document.getElementById('hargaMenu').value = menu.harga;
+        document.getElementById('editKey').value = key;
+        document.getElementById('editGambarUrl').value = menu.gambar || '';
+        if (menu.gambar) {
+          document.getElementById('previewGambar').src = menu.gambar;
+          document.getElementById('previewGambar').classList.remove('hidden');
+        }
+      }
     };
 
     window.hapusMenu = function(key) {
@@ -323,12 +381,23 @@
       }
     };
 
+    window.resetFormMenu = function() {
+      document.getElementById('namaMenu').value = '';
+      document.getElementById('hargaMenu').value = '';
+      document.getElementById('gambarMenu').value = '';
+      document.getElementById('editKey').value = '';
+      document.getElementById('editGambarUrl').value = '';
+      document.getElementById('previewGambar').classList.add('hidden');
+    };
+
     // Simpan Penjualan
     window.simpanPenjualan = function() {
       const select = document.getElementById('pilihMenu');
-      const nama = select.options[select.selectedIndex].text;
+      const selectedOption = select.options[select.selectedIndex];
+      const nama = selectedOption.text;
       const harga = document.getElementById('harga').value;
       const jumlah = document.getElementById('jumlah').value;
+      const gambar = selectedOption.getAttribute('data-gambar');
       const statusDiv = document.getElementById('status');
 
       if(!select.value ||!jumlah) {
@@ -340,17 +409,18 @@
         namaBarang: nama,
         harga: parseInt(harga),
         jumlah: parseInt(jumlah),
+        gambar: gambar,
         waktu: new Date().toISOString()
       };
 
       push(penjualanRef, dataPenjualan)
- .then(() => {
+.then(() => {
           statusDiv.innerHTML = '<div class="success">✅ Data tersimpan!</div>';
           document.getElementById('pilihMenu').value = '';
           document.getElementById('harga').value = '';
           document.getElementById('jumlah').value = '';
         })
- .catch((error) => {
+.catch((error) => {
           statusDiv.innerHTML = '<div class="error">❌ Gagal simpan: ' + error.message + '</div>';
         });
     };
@@ -360,10 +430,10 @@
         let keyArray = keys.split(',');
         let promises = keyArray.map(k => remove(ref(db, 'penjualan/' + k)));
         Promise.all(promises)
-   .then(() => {
+  .then(() => {
             document.getElementById('status').innerHTML = '<div class="success">✅ Data dihapus!</div>';
           })
-   .catch((error) => {
+  .catch((error) => {
             document.getElementById('status').innerHTML = '<div class="error">❌ Gagal hapus: ' + error.message + '</div>';
           });
       }
