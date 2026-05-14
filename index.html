@@ -7,7 +7,7 @@
   <link rel="icon" href="data:,">
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
-   .container { max-width: 700px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+   .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
     input, button { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
     button { background: #4CAF50; color: white; border: none; cursor: pointer; font-size: 16px; }
     button:hover { background: #45a049; }
@@ -16,10 +16,10 @@
    .status { padding: 10px; margin-top: 10px; border-radius: 5px; text-align: center; }
    .success { background: #d4edda; color: #155724; }
    .error { background: #f8d7da; color: #721c24; }
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
     th { background: #f2f2f2; }
-    tfoot td { font-weight: bold; background: #e8f5e9; }
+    tfoot td { font-weight: bold; background: #e8f5e9; font-size: 16px; }
   </style>
 </head>
 <body>
@@ -34,13 +34,13 @@
 
     <div id="status"></div>
 
-    <h3 style="margin-top:30px;">Rekap Penjualan per Item</h3>
+    <h3 style="margin-top:30px;">Laporan Penjualan per Item</h3>
     <table>
       <thead>
         <tr>
           <th>No</th>
           <th>Nama Barang</th>
-          <th>Total Qty</th>
+          <th>Total Qty Terjual</th>
           <th>Total Penjualan</th>
           <th>Aksi</th>
         </tr>
@@ -87,22 +87,24 @@
 
       snapshot.forEach((childSnapshot) => {
         let data = childSnapshot.val();
-        let nama = (data.namaBarang || data.nama || 'Tanpa Nama').toLowerCase();
+        let nama = (data.namaBarang || data.nama || 'Tanpa Nama').trim();
         let qty = parseInt(data.jumlah) || 0;
-        let total = parseInt(data.harga) * qty;
+        let harga = parseInt(data.harga) || 0;
+        let total = harga * qty;
 
-        if (!grouped[nama]) {
-          grouped[nama] = {
-            nama: data.namaBarang || data.nama || 'Tanpa Nama',
+        let key = nama.toLowerCase();
+        if (!grouped[key]) {
+          grouped[key] = {
+            nama: nama,
             qty: 0,
             total: 0,
             keys: []
           };
         }
 
-        grouped[nama].qty += qty;
-        grouped[nama].total += total;
-        grouped[nama].keys.push(childSnapshot.key);
+        grouped[key].qty += qty;
+        grouped[key].total += total;
+        grouped[key].keys.push(childSnapshot.key);
         grandTotal += total;
       });
 
