@@ -59,13 +59,13 @@
       }
 
       const dataPenjualan = {
-        nama: nama,
-        harga: parseInt(harga),
-        jumlah: parseInt(jumlah),
-        total: parseInt(harga) * parseInt(jumlah),
-        waktu: new Date().toISOString()
-      };
-
+  namaBarang: nama,           // <--- ubah dari 'nama' jadi 'namaBarang'
+  harga: parseInt(harga),
+  jumlah: parseInt(jumlah),
+  total: parseInt(harga) * parseInt(jumlah),
+  waktu: new Date().toISOString()
+};
+      
       push(ref(db, 'penjualan'), dataPenjualan)
         .then(() => {
           statusDiv.innerHTML = '<div class="success">✅ Data tersimpan! Aman di cloud</div>';
