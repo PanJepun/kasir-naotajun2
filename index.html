@@ -119,18 +119,6 @@ snapshot.forEach((childSnapshot) => {
         });  // tutup .then()
   };     // tutup window.simpanPenjualan
     
-const dbRef = ref(db, 'penjualan');
-
-// TAMPILKAN DATA
-onValue(dbRef, (snapshot) => {
-  const tbody = document.getElementById('tabelPenjualan');
-  tbody.innerHTML = '';
-
-  if (!snapshot.exists()) {
-    tbody.innerHTML = '<tr><td colspan="5">Belum ada data</td></tr>';
-    return;
-  }
-});
   
   let no = 1;
   snapshot.forEach((childSnapshot) => {
