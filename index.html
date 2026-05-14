@@ -117,10 +117,25 @@ snapshot.forEach((childSnapshot) => {
           document.getElementById('jumlah').value = '';
         })
 
-        
+  <script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, push, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
+const firebaseConfig = {
+  apiKey: "AIzaSyA94bWbZJA0peV6rDg-vaHac1Ghn9t2ZW4",
+  authDomain: "kasir-naotajun2.firebaseapp.com",
+  databaseURL: "https://kasir-naotajun2-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "kasir-naotajun2",
+  storageBucket: "kasir-naotajun2.firebasestorage.app",
+  messagingSenderId: "346309315110",
+  appId: "1:346309315110:web:1bc443785229fa7a0b74e7"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
 const dbRef = ref(db, 'penjualan');
 
+// TAMPILKAN DATA
 onValue(dbRef, (snapshot) => {
   const tbody = document.getElementById('tabelPenjualan');
   tbody.innerHTML = '';
@@ -129,39 +144,57 @@ onValue(dbRef, (snapshot) => {
     tbody.innerHTML = '<tr><td colspan="5">Belum ada data</td></tr>';
     return;
   }
+
+  let no = 1;
+  snapshot.forEach((childSnapshot) => {
     const data = childSnapshot.val();
+    const total = data.harga * data.jumlah;
+    
     tbody.innerHTML += `
       <tr>
+        <td>${no++}</td>
         <td>${data.namaBarang}</td>
         <td>Rp ${data.harga.toLocaleString('id-ID')}</td>
         <td>${data.jumlah}</td>
-        <td>Rp ${data.total.toLocaleString('id-ID')}</td>
-        <td>${new Date(data.waktu).toLocaleString('id-ID')}</td>
+        <td>Rp ${total.toLocaleString('id-ID')}</td>
       </tr>
     `;
   });
 });
+    
+// FUNGSI SIMPAN KE FIREBASE
+window.simpanPenjualan = function() {
+  const nama = document.getElementById('namaBarang').value;
+  const harga = document.getElementById('harga').value;
+  const jumlah = document.getElementById('jumlah').value;
+  const statusDiv = document.getElementById('status');
 
-// Lanjut ke fungsi simpan
-  window.simpanPenjualan = function() {
-    };
-  </script>
-  
-  <h3>Data Penjualan</h3>
- <table border="1" cellpadding="8" style="width:100%; border-collapse: collapse;">
-  <thead>
-    <tr>
-      <th>Nama Barang</th>
-      <th>Harga</th>
-      <th>Jumlah</th>
-      <th>Total</th>
-      <th>Waktu</th>
-    </tr>
-  </thead>
-  <tbody id="tabelPenjualan">
-    <tr><td colspan="5">Loading...</td></tr>
-  </tbody>
-</table>
+  if(!nama || !harga || !jumlah) {
+    statusDiv.innerHTML = '<div class="error">Isi semua data dulu bang!</div>';
+    return;
+  }
+
+  const dataPenjualan = {
+    namaBarang: nama,
+    harga: parseInt(harga),
+    jumlah: parseInt(jumlah),
+    total: parseInt(harga) * parseInt(jumlah),
+    waktu: new Date().toISOString()
+  };
+      
+  push(ref(db, 'penjualan'), dataPenjualan)
+    .then(() => {
+      statusDiv.innerHTML = '<div class="success">✅ Data tersimpan! Aman di cloud</div>';
+      document.getElementById('namaBarang').value = '';
+      document.getElementById('harga').value = '';
+      document.getElementById('jumlah').value = '';
+    })
+    .catch((error) => {
+      statusDiv.innerHTML = '<div class="error">❌ Gagal: ' + error.message + '</div>';
+    });
+};
+</script>      
+
 
 </body>
 </html>
