@@ -11,7 +11,7 @@
     input, button { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
     button { background: #4CAF50; color: white; border: none; cursor: pointer; font-size: 16px; }
     button:hover { background: #45a049; }
-    .btn-hapus { background: #f44336; padding: 6px 10px; font-size: 14px; }
+    .btn-hapus { background: #f44336; padding: 6px 10px; font-size: 14px; width: auto; }
     .btn-hapus:hover { background: #d32f2f; }
     .status { padding: 10px; margin-top: 10px; border-radius: 5px; text-align: center; }
     .success { background: #d4edda; color: #155724; }
@@ -69,7 +69,6 @@
     const db = getDatabase(app);
     const dbRef = ref(db, 'penjualan');
 
-    // Tampilkan data real-time, urut A-Z
     onValue(dbRef, (snapshot) => {
       const tbody = document.getElementById('tabelPenjualan');
       tbody.innerHTML = '';
@@ -111,7 +110,6 @@
       });
     });
     
-    // Simpan data ke Firebase
     window.simpanPenjualan = function() {
       const nama = document.getElementById('namaBarang').value;
       const harga = document.getElementById('harga').value;
@@ -143,7 +141,6 @@
         });
     };
 
-    // Hapus data dari Firebase
     window.hapusData = function(key) {
       if(confirm('Yakin mau hapus data ini?')) {
         remove(ref(db, 'penjualan/' + key))
