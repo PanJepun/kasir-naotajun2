@@ -86,17 +86,6 @@ snapshot.forEach((childSnapshot) => {
       <td>Rp ${total.toLocaleString('id-ID')}</td>
     </tr>
   `; // <-- ini yang kurang: backtick + titik koma
-});
-        <td>${no++}</td>
-        <td>${data.namaBarang}</td>
-        <td>Rp ${data.harga.toLocaleString('id-ID')}</td>
-        <td>${data.jumlah}</td>
-        <td>Rp ${total.toLocaleString('id-ID')}</td>
-      </tr>
-    `;
-  });
-});
-    
     // FUNGSI SIMPAN KE FIREBASE
     window.simpanPenjualan = function() {
       const nama = document.getElementById('namaBarang').value;
