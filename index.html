@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Kasir Naotajun2</title>
   <link rel="icon" href="data:,">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
   <style>
     body {
       font-family: "Times New Roman", Times, serif;
@@ -12,7 +14,7 @@
       padding: 20px;
       background: #f5f5f5;
     }
- .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+.container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
     input, button {
       width: 100%;
       padding: 8px;
@@ -25,37 +27,34 @@
     }
     button { background: #4CAF50; color: white; border: none; cursor: pointer; }
     button:hover { background: #45a049; }
- .btn-hapus { background: #f44336; padding: 4px 8px; font-size: 10px; width: auto; }
- .btn-hapus:hover { background: #d32f2f; }
- .btn-detail { background: none; border: none; color: #1976d2; cursor: pointer; text-align: left; padding: 0; font-size: 10px; text-decoration: underline; font-family: "Times New Roman", Times, serif; }
- .btn-print { background: #2196F3; width: auto; padding: 6px 15px; margin: 10px 0; font-size: 10px; }
- .btn-print:hover { background: #1976D2; }
- .status { padding: 8px; margin-top: 8px; border-radius: 5px; text-align: center; font-size: 10px; }
- .success { background: #d4edda; color: #155724; }
- .error { background: #f8d7da; color: #721c24; }
+.btn-hapus { background: #f44336; padding: 4px 8px; font-size: 10px; width: auto; }
+.btn-hapus:hover { background: #d32f2f; }
+.btn-detail { background: none; border: none; color: #1976d2; cursor: pointer; text-align: left; padding: 0; font-size: 10px; text-decoration: underline; font-family: "Times New Roman", Times, serif; }
+.btn-print { background: #2196F3; width: auto; padding: 6px 15px; margin: 10px 5px 10px 0; font-size: 10px; display: inline-block; }
+.btn-pdf { background: #FF5722; width: auto; padding: 6px 15px; margin: 10px 5px 10px 0; font-size: 10px; display: inline-block; }
+.btn-email { background: #9C27B0; width: auto; padding: 6px 15px; margin: 10px 0; font-size: 10px; display: inline-block; }
+.status { padding: 8px; margin-top: 8px; border-radius: 5px; text-align: center; font-size: 10px; }
+.success { background: #d4edda; color: #155724; }
+.error { background: #f8d7da; color: #721c24; }
     table { width: 100%; border-collapse: collapse; margin-top: 10px; }
     th, td { border: 1px solid #ddd; padding: 6px 8px; text-align: left; font-size: 10px; }
     th { background: #f2f2f2; font-weight: bold; }
     tfoot td { font-weight: bold; background: #e8f5e9; font-size: 10px; }
- .detail-row { background: #fafafa; }
- .detail-row table { margin: 0; width: 100%; }
- .detail-row td { border: none; padding: 4px 8px; }
- .hidden { display: none; }
+.detail-row { background: #fafafa; }
+.detail-row table { margin: 0; width: 100%; }
+.detail-row td { border: none; padding: 4px 8px; }
+.hidden { display: none; }
   h2, h3 { font-size: 14px; margin: 10px 0; }
+.btn-group { margin: 10px 0; }
 
    @media print {
-     body {
-       background: white;
-       padding: 0;
-       font-size: 10px;
-       font-family: "Times New Roman", Times, serif;
-     }
-  .container { box-shadow: none; padding: 0; max-width: 100%; }
-  .btn-print,.btn-hapus,.btn-detail, #namaBarang, #harga, #jumlah, button, h2, #status { display: none!important; }
+     body { background: white; padding: 0; font-size: 10px; font-family: "Times New Roman", Times, serif; }
+ .container { box-shadow: none; padding: 0; max-width: 100%; }
+ .btn-print,.btn-pdf,.btn-email,.btn-hapus,.btn-detail, #namaBarang, #harga, #jumlah, button, h2, #status { display: none!important; }
      h3 { margin-top: 0!important; font-size: 12px; }
      table { page-break-inside: auto; }
      tr { page-break-inside: avoid; page-break-after: auto; }
-  .detail-row { display: table-row!important; background: white; }
+ .detail-row { display: table-row!important; background: white; }
      th, td { padding: 4px 6px; font-size: 10px; }
    }
   </style>
@@ -74,7 +73,11 @@
 
     <h3>Laporan Penjualan per Item</h3>
 
-    <button class="btn-print" onclick="window.print()">🖨️ Print Laporan</button>
+    <div class="btn-group">
+      <button class="btn-print" onclick="window.print()">🖨️ Print</button>
+      <button class="btn-pdf" onclick="exportPDF()">📄 Export PDF</button>
+      <button class="btn-email" onclick="sendEmail()">✉️ Kirim Email</button>
+    </div>
 
     <table>
       <thead>
@@ -113,6 +116,7 @@
     const dbRef = ref(db, 'penjualan');
 
     let allData = [];
+    let groupedData = [];
 
     onValue(dbRef, (snapshot) => {
       allData = [];
@@ -130,6 +134,7 @@
       if (allData.length === 0) {
         tbody.innerHTML = '<tr><td colspan="5">Belum ada data</td></tr>';
         tfoot.innerHTML = '';
+        groupedData = [];
         return;
       }
 
@@ -144,12 +149,7 @@
         let total = harga * qty;
 
         if (!grouped[key]) {
-          grouped[key] = {
-            nama: nama,
-            qty: 0,
-            total: 0,
-            details: []
-          };
+          grouped[key] = { nama: nama, qty: 0, total: 0, details: [] };
         }
 
         grouped[key].qty += qty;
@@ -158,14 +158,13 @@
         grandTotal += total;
       });
 
-      let sorted = Object.values(grouped).sort((a, b) =>
+      groupedData = Object.values(grouped).sort((a, b) =>
         a.nama.toLowerCase().localeCompare(b.nama.toLowerCase(), 'id')
       );
 
       let no = 1;
-      sorted.forEach((item, index) => {
+      groupedData.forEach((item, index) => {
         let detailId = `detail-${index}`;
-
         tbody.innerHTML += `
           <tr>
             <td>${no++}</td>
@@ -182,10 +181,7 @@
             <td colspan="5">
               <table>
                 <tr style="background:#f5f5f5; font-weight:bold;">
-                  <td>Tanggal</td>
-                  <td>Harga</td>
-                  <td>Qty</td>
-                  <td>Subtotal</td>
+                  <td>Tanggal</td><td>Harga</td><td>Qty</td><td>Subtotal</td>
                 </tr>
                 ${item.details.map(d => `
                   <tr>
@@ -214,7 +210,7 @@
       const btn = row.previousElementSibling.querySelector('.btn-detail');
       row.classList.toggle('hidden');
       btn.textContent = row.classList.contains('hidden')
-    ? btn.textContent.replace('▼', '▶')
+   ? btn.textContent.replace('▼', '▶')
         : btn.textContent.replace('▶', '▼');
     }
 
@@ -237,13 +233,13 @@
       };
 
       push(dbRef, dataPenjualan)
-   .then(() => {
+  .then(() => {
           statusDiv.innerHTML = '<div class="success">✅ Data tersimpan!</div>';
           document.getElementById('namaBarang').value = '';
           document.getElementById('harga').value = '';
           document.getElementById('jumlah').value = '';
         })
-   .catch((error) => {
+  .catch((error) => {
           statusDiv.innerHTML = '<div class="error">❌ Gagal simpan: ' + error.message + '</div>';
         });
     };
@@ -252,15 +248,72 @@
       if(confirm('Yakin mau hapus semua data item ini?')) {
         let keyArray = keys.split(',');
         let promises = keyArray.map(k => remove(ref(db, 'penjualan/' + k)));
-
         Promise.all(promises)
-     .then(() => {
+    .then(() => {
             document.getElementById('status').innerHTML = '<div class="success">✅ Data dihapus!</div>';
           })
-     .catch((error) => {
+    .catch((error) => {
             document.getElementById('status').innerHTML = '<div class="error">❌ Gagal hapus: ' + error.message + '</div>';
           });
       }
+    };
+
+    window.exportPDF = function() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      doc.setFont("times");
+      doc.setFontSize(14);
+      doc.text("Laporan Penjualan per Item", 14, 15);
+      doc.setFontSize(10);
+      doc.text(`Tanggal Cetak: ${new Date().toLocaleString('id-ID')}`, 14, 22);
+
+      const tableData = groupedData.map((item, i) => [
+        i + 1,
+        item.nama,
+        item.qty,
+        `Rp ${item.total.toLocaleString('id-ID')}`
+      ]);
+
+      doc.autoTable({
+        head: [['No', 'Nama Barang', 'Total Qty', 'Total Penjualan']],
+        body: tableData,
+        startY: 28,
+        styles: { font: 'times', fontSize: 9 },
+        headStyles: { fillColor: [76, 175, 80] }
+      });
+
+      const finalY = doc.lastAutoTable.finalY + 10;
+      let grandTotal = groupedData.reduce((sum, item) => sum + item.total, 0);
+      doc.text(`Total Semua Penjualan: Rp ${grandTotal.toLocaleString('id-ID')}`, 14, finalY);
+
+      doc.save(`Laporan_Penjualan_${new Date().toISOString().split('T')[0]}.pdf`);
+    };
+
+    window.sendEmail = function() {
+      if (groupedData.length === 0) {
+        alert('Belum ada data untuk dikirim!');
+        return;
+      }
+
+      let emailBody = "Laporan Penjualan per Item%0D%0A";
+      emailBody += `Tanggal: ${new Date().toLocaleString('id-ID')}%0D%0A%0D%0A`;
+      emailBody += "No | Nama Barang | Total Qty | Total Penjualan%0D%0A";
+      emailBody += "--------------------------------------------%0D%0A";
+
+      let grandTotal = 0;
+      groupedData.forEach((item, i) => {
+        emailBody += `${i+1} | ${item.nama} | ${item.qty} | Rp ${item.total.toLocaleString('id-ID')}%0D%0A`;
+        grandTotal += item.total;
+      });
+
+      emailBody += "--------------------------------------------%0D%0A";
+      emailBody += `Total Semua Penjualan: Rp ${grandTotal.toLocaleString('id-ID')}`;
+
+      const subject = `Laporan Penjualan ${new Date().toLocaleDateString('id-ID')}`;
+      const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${emailBody}`;
+
+      window.location.href = mailtoLink;
     };
   </script>
 </body>
