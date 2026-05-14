@@ -73,16 +73,41 @@
           document.getElementById('harga').value = '';
           document.getElementById('jumlah').value = '';
         })
+
+        import { onValue, ref } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const dbRef = ref(db, 'penjualan');
+
+onValue(dbRef, (snapshot) => {
+  const tbody = document.getElementById('tabelPenjualan');
+  tbody.innerHTML = '';
+
+  if (!snapshot.exists()) {
+    tbody.innerHTML = '<tr><td colspan="5">Belum ada data</td></tr>';
+    return;
+  }
+
+  snapshot.forEach((childSnapshot) => {
+    const data = childSnapshot.val();
+    tbody.innerHTML += `
+      <tr>
+        <td>${data.namaBarang}</td>
+        <td>Rp ${data.harga.toLocaleString('id-ID')}</td>
+        <td>${data.jumlah}</td>
+        <td>Rp ${data.total.toLocaleString('id-ID')}</td>
+        <td>${new Date(data.waktu).toLocaleString('id-ID')}</td>
+      </tr>
+    `;
+  });
+});
         .catch((error) => {
           statusDiv.innerHTML = '<div class="error">❌ Gagal simpan: ' + error.message + '</div>';
         });
     }
   </script>
-</body>
-</html>
-
-<h3>Data Penjualan</h3>
-<table border="1" cellpadding="8" style="width:100%; border-collapse: collapse;">
+  
+  <h3>Data Penjualan</h3>
+ <table border="1" cellpadding="8" style="width:100%; border-collapse: collapse;">
   <thead>
     <tr>
       <th>Nama Barang</th>
@@ -96,3 +121,7 @@
     <tr><td colspan="5">Loading...</td></tr>
   </tbody>
 </table>
+
+</body>
+</html>
+
