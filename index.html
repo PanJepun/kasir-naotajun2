@@ -14,8 +14,8 @@
       padding: 20px;
       background: #f5f5f5;
     }
-.container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-    input, button {
+.container { max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    input, select, button {
       width: 100%;
       padding: 8px;
       margin: 6px 0;
@@ -28,7 +28,7 @@
     button { background: #4CAF50; color: white; border: none; cursor: pointer; }
     button:hover { background: #45a049; }
 .btn-hapus { background: #f44336; padding: 4px 8px; font-size: 10px; width: auto; }
-.btn-hapus:hover { background: #d32f2f; }
+.btn-edit { background: #FF9800; padding: 4px 8px; font-size: 10px; width: auto; margin-right: 5px; }
 .btn-detail { background: none; border: none; color: #1976d2; cursor: pointer; text-align: left; padding: 0; font-size: 10px; text-decoration: underline; font-family: "Times New Roman", Times, serif; }
 .btn-print { background: #2196F3; width: auto; padding: 6px 15px; margin: 10px 5px 10px 0; font-size: 10px; display: inline-block; }
 .btn-pdf { background: #FF5722; width: auto; padding: 6px 15px; margin: 10px 5px 10px 0; font-size: 10px; display: inline-block; }
@@ -46,15 +46,17 @@
 .hidden { display: none; }
   h2, h3 { font-size: 14px; margin: 10px 0; }
 .btn-group { margin: 10px 0; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.section { background: #fafafa; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
 
    @media print {
      body { background: white; padding: 0; font-size: 10px; font-family: "Times New Roman", Times, serif; }
- .container { box-shadow: none; padding: 0; max-width: 100%; }
- .btn-print,.btn-pdf,.btn-email,.btn-hapus,.btn-detail, #namaBarang, #harga, #jumlah, button, h2, #status { display: none!important; }
+.container { box-shadow: none; padding: 0; max-width: 100%; }
+.btn-print,.btn-pdf,.btn-email,.btn-hapus,.btn-edit,.btn-detail, #namaBarang, #harga, #jumlah, button, h2, #status,.section { display: none!important; }
      h3 { margin-top: 0!important; font-size: 12px; }
      table { page-break-inside: auto; }
      tr { page-break-inside: avoid; page-break-after: auto; }
- .detail-row { display: table-row!important; background: white; }
+.detail-row { display: table-row!important; background: white; }
      th, td { padding: 4px 6px; font-size: 10px; }
    }
   </style>
@@ -63,16 +65,45 @@
   <div class="container">
     <h2>📊 Kasir Online Naotajun2</h2>
 
-    <input type="text" id="namaBarang" placeholder="Nama Barang">
-    <input type="number" id="harga" placeholder="Harga">
-    <input type="number" id="jumlah" placeholder="Jumlah">
+    <!-- Form Input Penjualan -->
+    <div class="section">
+      <h3>Input Penjualan</h3>
+      <select id="pilihMenu">
+        <option value="">-- Pilih Menu --</option>
+      </select>
+      <input type="number" id="harga" placeholder="Harga" readonly>
+      <input type="number" id="jumlah" placeholder="Jumlah">
+      <button onclick="simpanPenjualan()">Simpan Penjualan</button>
+      <div id="status"></div>
+    </div>
 
-    <button onclick="simpanPenjualan()">Simpan Penjualan</button>
+    <!-- Manajemen Menu -->
+    <div class="section">
+      <h3>Manajemen Menu</h3>
+      <div class="grid-2">
+        <input type="text" id="namaMenu" placeholder="Nama Menu">
+        <input type="number" id="hargaMenu" placeholder="Harga Menu">
+      </div>
+      <button onclick="simpanMenu()">Simpan Menu</button>
+      <input type="hidden" id="editKey">
 
-    <div id="status"></div>
+      <table>
+        <thead>
+          <tr>
+            <th>No</th>
+            <th>Nama Menu</th>
+            <th>Harga</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="tabelMenu">
+          <tr><td colspan="4">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
 
+    <!-- Laporan -->
     <h3>Laporan Penjualan per Item</h3>
-
     <div class="btn-group">
       <button class="btn-print" onclick="window.print()">🖨️ Print</button>
       <button class="btn-pdf" onclick="exportPDF()">📄 Export PDF</button>
@@ -99,7 +130,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+    import { getDatabase, ref, push, onValue, remove, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyA94bWbZJA0peV6rDg-vaHac1Ghn9t2ZW4",
@@ -113,17 +144,59 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    const dbRef = ref(db, 'penjualan');
+    const penjualanRef = ref(db, 'penjualan');
+    const menuRef = ref(db, 'menu');
 
     let allData = [];
     let groupedData = [];
+    let menuList = [];
 
-    onValue(dbRef, (snapshot) => {
+    // Load Menu
+    onValue(menuRef, (snapshot) => {
+      menuList = [];
+      const tbody = document.getElementById('tabelMenu');
+      const select = document.getElementById('pilihMenu');
+      tbody.innerHTML = '';
+      select.innerHTML = '<option value="">-- Pilih Menu --</option>';
+
+      if (snapshot.exists()) {
+        let no = 1;
+        snapshot.forEach((childSnapshot) => {
+          let data = { key: childSnapshot.key,...childSnapshot.val() };
+          menuList.push(data);
+
+          tbody.innerHTML += `
+            <tr>
+              <td>${no++}</td>
+              <td>${data.nama}</td>
+              <td>Rp ${data.harga.toLocaleString('id-ID')}</td>
+              <td>
+                <button class="btn-edit" onclick="editMenu('${data.key}', '${data.nama}', ${data.harga})">Edit</button>
+                <button class="btn-hapus" onclick="hapusMenu('${data.key}')">Hapus</button>
+              </td>
+            </tr>
+          `;
+
+          select.innerHTML += `<option value="${data.key}" data-harga="${data.harga}">${data.nama}</option>`;
+        });
+      } else {
+        tbody.innerHTML = '<tr><td colspan="4">Belum ada menu</td></tr>';
+      }
+    });
+
+    // Load Penjualan
+    onValue(penjualanRef, (snapshot) => {
       allData = [];
       snapshot.forEach((childSnapshot) => {
         allData.push({ key: childSnapshot.key,...childSnapshot.val() });
       });
       renderTabel();
+    });
+
+    // Auto fill harga saat pilih menu
+    document.getElementById('pilihMenu').addEventListener('change', function() {
+      const harga = this.options[this.selectedIndex].getAttribute('data-harga');
+      document.getElementById('harga').value = harga || '';
     });
 
     function renderTabel() {
@@ -210,18 +283,56 @@
       const btn = row.previousElementSibling.querySelector('.btn-detail');
       row.classList.toggle('hidden');
       btn.textContent = row.classList.contains('hidden')
-   ? btn.textContent.replace('▼', '▶')
+  ? btn.textContent.replace('▼', '▶')
         : btn.textContent.replace('▶', '▼');
     }
 
+    // CRUD Menu
+    window.simpanMenu = function() {
+      const nama = document.getElementById('namaMenu').value;
+      const harga = document.getElementById('hargaMenu').value;
+      const editKey = document.getElementById('editKey').value;
+
+      if(!nama ||!harga) {
+        alert('Isi nama dan harga menu!');
+        return;
+      }
+
+      const dataMenu = { nama: nama, harga: parseInt(harga) };
+
+      if(editKey) {
+        set(ref(db, 'menu/' + editKey), dataMenu);
+        document.getElementById('editKey').value = '';
+      } else {
+        push(menuRef, dataMenu);
+      }
+
+      document.getElementById('namaMenu').value = '';
+      document.getElementById('hargaMenu').value = '';
+    };
+
+    window.editMenu = function(key, nama, harga) {
+      document.getElementById('namaMenu').value = nama;
+      document.getElementById('hargaMenu').value = harga;
+      document.getElementById('editKey').value = key;
+    };
+
+    window.hapusMenu = function(key) {
+      if(confirm('Yakin hapus menu ini?')) {
+        remove(ref(db, 'menu/' + key));
+      }
+    };
+
+    // Simpan Penjualan
     window.simpanPenjualan = function() {
-      const nama = document.getElementById('namaBarang').value;
+      const select = document.getElementById('pilihMenu');
+      const nama = select.options[select.selectedIndex].text;
       const harga = document.getElementById('harga').value;
       const jumlah = document.getElementById('jumlah').value;
       const statusDiv = document.getElementById('status');
 
-      if(!nama ||!harga ||!jumlah) {
-        statusDiv.innerHTML = '<div class="error">Isi semua data dulu bang!</div>';
+      if(!select.value ||!jumlah) {
+        statusDiv.innerHTML = '<div class="error">Pilih menu dan isi jumlah!</div>';
         return;
       }
 
@@ -232,14 +343,14 @@
         waktu: new Date().toISOString()
       };
 
-      push(dbRef, dataPenjualan)
-  .then(() => {
+      push(penjualanRef, dataPenjualan)
+ .then(() => {
           statusDiv.innerHTML = '<div class="success">✅ Data tersimpan!</div>';
-          document.getElementById('namaBarang').value = '';
+          document.getElementById('pilihMenu').value = '';
           document.getElementById('harga').value = '';
           document.getElementById('jumlah').value = '';
         })
-  .catch((error) => {
+ .catch((error) => {
           statusDiv.innerHTML = '<div class="error">❌ Gagal simpan: ' + error.message + '</div>';
         });
     };
@@ -249,10 +360,10 @@
         let keyArray = keys.split(',');
         let promises = keyArray.map(k => remove(ref(db, 'penjualan/' + k)));
         Promise.all(promises)
-    .then(() => {
+   .then(() => {
             document.getElementById('status').innerHTML = '<div class="success">✅ Data dihapus!</div>';
           })
-    .catch((error) => {
+   .catch((error) => {
             document.getElementById('status').innerHTML = '<div class="error">❌ Gagal hapus: ' + error.message + '</div>';
           });
       }
