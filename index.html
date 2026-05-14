@@ -19,6 +19,7 @@
     table { width: 100%; border-collapse: collapse; margin-top: 10px; }
     th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
     th { background: #f2f2f2; }
+    tfoot td { font-weight: bold; background: #e8f5e9; }
   </style>
 </head>
 <body>
@@ -48,6 +49,8 @@
       <tbody id="tabelPenjualan">
         <tr><td colspan="6">Loading...</td></tr>
       </tbody>
+      <tfoot id="totalPenjualan">
+      </tfoot>
     </table>
   </div>
 
@@ -71,19 +74,23 @@
 
     onValue(dbRef, (snapshot) => {
       const tbody = document.getElementById('tabelPenjualan');
+      const tfoot = document.getElementById('totalPenjualan');
       tbody.innerHTML = '';
 
       if (!snapshot.exists()) {
         tbody.innerHTML = '<tr><td colspan="6">Belum ada data</td></tr>';
+        tfoot.innerHTML = '';
         return;
       }
 
       let dataArray = [];
+      let grandTotal = 0;
+      
       snapshot.forEach((childSnapshot) => {
-        dataArray.push({
-          key: childSnapshot.key,
-          ...childSnapshot.val()
-        });
+        let data = childSnapshot.val();
+        data.key = childSnapshot.key;
+        dataArray.push(data);
+        grandTotal += data.harga * data.jumlah;
       });
 
       dataArray.sort((a, b) => {
@@ -108,6 +115,13 @@
           </tr>
         `;
       });
+
+      tfoot.innerHTML = `
+        <tr>
+          <td colspan="4">Total Semua Penjualan</td>
+          <td colspan="2">Rp ${grandTotal.toLocaleString('id-ID')}</td>
+        </tr>
+      `;
     });
     
     window.simpanPenjualan = function() {
