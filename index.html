@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Kasir Naotajun2</title>
+  <link rel="icon" href="data:,">
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
     .container { max-width: 700px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
@@ -68,7 +69,7 @@
     const db = getDatabase(app);
     const dbRef = ref(db, 'penjualan');
 
-    // Tampilkan data real-time
+    // Tampilkan data real-time, urut A-Z
     onValue(dbRef, (snapshot) => {
       const tbody = document.getElementById('tabelPenjualan');
       tbody.innerHTML = '';
@@ -78,10 +79,22 @@
         return;
       }
 
-      let no = 1;
+      let dataArray = [];
       snapshot.forEach((childSnapshot) => {
-        const data = childSnapshot.val();
-        const key = childSnapshot.key;
+        dataArray.push({
+          key: childSnapshot.key,
+          ...childSnapshot.val()
+        });
+      });
+
+      dataArray.sort((a, b) => {
+        let namaA = (a.namaBarang || a.nama || '').toLowerCase();
+        let namaB = (b.namaBarang || b.nama || '').toLowerCase();
+        return namaA.localeCompare(namaB, 'id');
+      });
+
+      let no = 1;
+      dataArray.forEach((data) => {
         const nama = data.namaBarang || data.nama || '-';
         const total = data.harga * data.jumlah;
         
@@ -92,7 +105,7 @@
             <td>Rp ${data.harga.toLocaleString('id-ID')}</td>
             <td>${data.jumlah}</td>
             <td>Rp ${total.toLocaleString('id-ID')}</td>
-            <td><button class="btn-hapus" onclick="hapusData('${key}')">Hapus</button></td>
+            <td><button class="btn-hapus" onclick="hapusData('${data.key}')">Hapus</button></td>
           </tr>
         `;
       });
