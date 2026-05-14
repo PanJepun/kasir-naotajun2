@@ -130,57 +130,23 @@ onValue(dbRef, (snapshot) => {
     tbody.innerHTML = '<tr><td colspan="5">Belum ada data</td></tr>';
     return;
   }
-
+});
+  
   let no = 1;
   snapshot.forEach((childSnapshot) => {
     const data = childSnapshot.val();
     const total = data.harga * data.jumlah;
-    
-    tbody.innerHTML += `
-      <tr>
-        <td>${no++}</td>
-        <td>${data.namaBarang}</td>
-        <td>Rp ${data.harga.toLocaleString('id-ID')}</td>
-        <td>${data.jumlah}</td>
-        <td>Rp ${total.toLocaleString('id-ID')}</td>
-      </tr>
-    `;
+ tbody.innerHTML += `
+   <tr>
+      <td>${no++}</td>
+     <td>${data.namaBarang}</td>
+      <td>Rp ${data.harga.toLocaleString('id-ID')}</td>
+      <td>${data.jumlah}</td>
+      <td>Rp ${total.toLocaleString('id-ID')}</td>
+    </tr>
+  `;
   });
-});
-    
-// FUNGSI SIMPAN KE FIREBASE
-window.simpanPenjualan = function() {
-  const nama = document.getElementById('namaBarang').value;
-  const harga = document.getElementById('harga').value;
-  const jumlah = document.getElementById('jumlah').value;
-  const statusDiv = document.getElementById('status');
-
-  if(!nama || !harga || !jumlah) {
-    statusDiv.innerHTML = '<div class="error">Isi semua data dulu bang!</div>';
-    return;
-  }
-
-  const dataPenjualan = {
-    namaBarang: nama,
-    harga: parseInt(harga),
-    jumlah: parseInt(jumlah),
-    total: parseInt(harga) * parseInt(jumlah),
-    waktu: new Date().toISOString()
-  };
-      
-  push(ref(db, 'penjualan'), dataPenjualan)
-    .then(() => {
-      statusDiv.innerHTML = '<div class="success">✅ Data tersimpan! Aman di cloud</div>';
-      document.getElementById('namaBarang').value = '';
-      document.getElementById('harga').value = '';
-      document.getElementById('jumlah').value = '';
-    })
-    .catch((error) => {
-      statusDiv.innerHTML = '<div class="error">❌ Gagal: ' + error.message + '</div>';
-    });
-</script>      
-
-
-</body>
-</html>
-
+  });
+  });
+  </script>
+   
