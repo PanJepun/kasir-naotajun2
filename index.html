@@ -296,7 +296,8 @@
           const pesanan = pesananAktif[id];
 
           let aksiBtn = `<button class="btn-edit" onclick="editMeja('${id}')">Edit</button>
-                         <button class="btn-del" onclick="hapusMeja('${id}')">Hapus</button>`;
+               <button class="btn-del" onclick="hapusMeja('${id}')">Hapus</button>
+               <button class="btn-del" style="background:#8b0000;" onclick="forceHapusMeja('${data.nama}')">Force</button>`;
 
           let pesananHTML = "-";
           if (data.status === "checked-in" && pesanan && pesanan.items && pesanan.items.length > 0) {
