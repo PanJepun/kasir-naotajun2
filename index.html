@@ -200,7 +200,7 @@
             </td>
             ';
         } else {
-          tr.innerHTML = 
+          tr.innerHTML = `
             <td><b>${data.nama || data.id}</b> <button class="btn-edit" style="padding:2px 6px;font-size:12px;" onclick="editMeja('${data.id}')">Edit</button></td>
             <td>
               ${data.status === "checked-in" ? "✓ Sudah Check-in" : "✗ Belum Check-in"}
