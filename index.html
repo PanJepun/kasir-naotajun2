@@ -35,17 +35,21 @@
     h2, h3 { color: #d63384; }
   .order-list { font-size: 13px; background: #fff0f5; padding: 8px; border-radius: 6px; margin-top: 5px; }
   .order-list li { margin: 3px 0; }
+
+   /* CSS untuk bill/struk */
   .bill {
-      width: 300px; margin: 20px auto; padding: 20px; background: white;
-      border: 2px solid #ff69b4; font-family: monospace; font-size: 14px;
-      border-radius: 8px;
+      width: 280px; margin: 20px auto; padding: 10px; background: white;
+      border: 1px solid #000; font-family: 'Courier New', monospace; font-size: 12px;
     }
-  .bill h3 { color: #d63384; }
-  .bill p { text-align: center; margin: 5px 0; }
+  .bill h3,.bill p { text-align: center; margin: 4px 0; }
+  .bill table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .bill th,.bill td { border: none; padding: 3px 2px; }
+  .bill.line { border-top: 1px dashed #000; margin: 6px 0; }
+
     @media print {
       body * { visibility: hidden; }
-   .bill,.bill * { visibility: visible; }
-   .bill { position: absolute; left: 0; top: 0; width: 100%; border: none; }
+    .bill,.bill * { visibility: visible; }
+    .bill { position: absolute; left: 0; top: 0; width: 100%; border: none; margin: 0; padding: 0; }
     }
   </style>
 </head>
@@ -93,7 +97,7 @@
     <h3>Riwayat Pesanan</h3>
     <button class="btn-edit" onclick="loadPesanan()">Refresh Pesanan</button>
     <table id="tabelPesanan">
-      <thead><tr><th>Waktu</th><th>Meja</th><th>Pemesan</th><th>Waitress</th><th>Total</th><th>Aksi</th></tr></thead>
+      <thead><tr><th>Waktu</th><th>Meja</th><th>Pemesan</th><th>Waitress</th><th>Grand Total</th><th>Aksi</th></tr></thead>
       <tbody></tbody>
     </table>
   </div>
@@ -117,17 +121,19 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
+    // Setting PPN & Tax - ubah di sini
+    const PPN_RATE = 0.11; // 11%
+    const TAX_RATE = 0.10; // 10%
+
     let menuList = {};
     let pesananSement = {};
     let pesananAktif = {};
 
-    // Load Pesanan Aktif dulu
     onValue(ref(db, "pesanan_aktif"), (snapshot) => {
       pesananAktif = snapshot.val() || {};
       loadMeja();
     });
 
-    // Load Meja
     function loadMeja() {
       onValue(ref(db, "meja"), (snapshot) => {
         const tbody = document.querySelector("#tabelMeja tbody");
@@ -153,7 +159,7 @@
                 <ul style="margin:5px 0; padding-left:18px;">
                   ${pesanan.items.map(i => `<li>${i.nama} x${i.qty} = Rp ${i.subtotal.toLocaleString()}</li>`).join("")}
                 </ul>
-                <b>Total: Rp ${pesanan.total.toLocaleString()}</b>
+                <b>Grand Total: Rp ${pesanan.grandTotal.toLocaleString()}</b>
               </div>
             `;
           } else {
@@ -174,7 +180,6 @@
       });
     }
 
-    // Load Menu
     onValue(ref(db, "menu"), (snapshot) => {
       const tbody = document.querySelector("#tabelMenu tbody");
       const selectMenu = document.querySelector("#selectMenu");
@@ -195,7 +200,6 @@
       });
     });
 
-    // Load Riwayat Pesanan
     window.loadPesanan = () => {
       onValue(ref(db, "pesanan"), (snapshot) => {
         const tbody = document.querySelector("#tabelPesanan tbody");
@@ -213,7 +217,7 @@
               <td>${data.mejaId}</td>
               <td>${data.pemesan}</td>
               <td>${data.waitress || '-'}</td>
-              <td>Rp ${data.total.toLocaleString()}</td>
+              <td>Rp ${data.grandTotal.toLocaleString()}</td>
               <td><button class="btn-del" onclick="hapusPesanan('${key}')">Hapus</button></td>
             </tr>`;
         });
@@ -314,7 +318,12 @@
 
       const { mejaId, pemesan, waitress, items } = window.pesananAktifSement;
       const meja = document.querySelector(`#selectMeja option[value="${mejaId}"]`).text;
-      const total = items.reduce((a, b) => a + b.subtotal, 0);
+      const subtotal = items.reduce((a, b) => a + b.subtotal, 0);
+
+      const ppn = Math.round(subtotal * PPN_RATE);
+      const tax = Math.round(subtotal * TAX_RATE);
+      const grandTotal = subtotal + ppn + tax;
+
       const waktu = new Date().toLocaleString("id-ID", {
         day: "2-digit", month: "2-digit", year: "numeric",
         hour: "2-digit", minute: "2-digit"
@@ -337,32 +346,48 @@
         <div class="bill">
           <h3>KASIR NAOTAJUN</h3>
           <p>${waktu}</p>
-          <hr>
-          <p><b>Meja:</b> ${meja}</p>
-          <p><b>Pemesan:</b> ${pemesan}</p>
-          <p><b>Waitress:</b> ${waitress}</p>
-          <hr>
-          <table style="width:100%; font-size:13px; border-collapse:collapse;">
+          <div class="line"></div>
+          <p style="text-align:left;"><b>Meja:</b> ${meja}</p>
+          <p style="text-align:left;"><b>Pemesan:</b> ${pemesan}</p>
+          <p style="text-align:left;"><b>Waitress:</b> ${waitress}</p>
+          <div class="line"></div>
+
+          <table>
             <thead>
-              <tr style="border-bottom:1px dashed #ff69b4;">
+              <tr>
                 <th style="text-align:left;">No</th>
                 <th style="text-align:left;">Menu</th>
                 <th style="text-align:center;">Qty</th>
                 <th style="text-align:right;">Harga</th>
-                <th style="text-align:right;">Subtotal</th>
+                <th style="text-align:right;">Sub</th>
               </tr>
             </thead>
             <tbody>
               ${rows}
             </tbody>
-            <tfoot>
-              <tr style="border-top:1px dashed #ff69b4;">
-                <td colspan="4" style="text-align:right;"><b>TOTAL</b></td>
-                <td style="text-align:right;"><b>Rp ${total.toLocaleString()}</b></td>
-              </tr>
-            </tfoot>
           </table>
-          <hr>
+
+          <div class="line"></div>
+          <table>
+            <tr>
+              <td style="text-align:right;">Subtotal</td>
+              <td style="text-align:right; width:80px;">Rp ${subtotal.toLocaleString()}</td>
+            </tr>
+            <tr>
+              <td style="text-align:right;">PPN 11%</td>
+              <td style="text-align:right;">Rp ${ppn.toLocaleString()}</td>
+            </tr>
+            <tr>
+              <td style="text-align:right;">Service 10%</td>
+              <td style="text-align:right;">Rp ${tax.toLocaleString()}</td>
+            </tr>
+            <tr>
+              <td style="text-align:right;"><b>GRAND TOTAL</b></td>
+              <td style="text-align:right;"><b>Rp ${grandTotal.toLocaleString()}</b></td>
+            </tr>
+          </table>
+
+          <div class="line"></div>
           <p>Waitress: ${waitress}</p>
           <p>Terima Kasih! 💖</p>
         </div>
@@ -371,10 +396,8 @@
       document.getElementById("billArea").innerHTML = billHTML;
       window.print();
 
-      // Simpan ke riwayat
-      push(ref(db, "pesanan"), { mejaId, pemesan, waitress, items, total, waktu });
-      // Simpan ke pesanan aktif biar kelihatan di meja
-      set(ref(db, "pesanan_aktif/" + mejaId), { pemesan, waitress, items, total });
+      push(ref(db, "pesanan"), { mejaId, pemesan, waitress, items, subtotal, ppn, tax, grandTotal, waktu });
+      set(ref(db, "pesanan_aktif/" + mejaId), { pemesan, waitress, items, subtotal, ppn, tax, grandTotal });
 
       pesananSement[mejaId] = [];
       document.getElementById("listPesanan").innerHTML = "";
