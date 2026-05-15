@@ -17,6 +17,7 @@
     .btn-edit { background: #2196F3; color: white; }
     .btn-save { background: #4CAF50; color: white; }
     .btn-del-sm { background: #f44336; color: white; padding: 2px 6px; font-size: 11px; }
+    .btn-clear { background: #9C27B0; color: white; }
     select, input { padding: 6px; margin: 2px; border: 1px solid #ccc; border-radius: 4px; }
     .pesanan { font-size: 12px; text-align: left; }
     input[type="text"], input[type="number"] { width: 150px; }
@@ -189,7 +190,7 @@
         if (editingTableId === data.id) {
           tr.innerHTML = `
             <td><input type="text" id="editNamaMeja" value="${data.nama}" style="width:120px;"></td>
-            <td>${data.status === "checked-in" ? "✓ Sudah Check-in" : "✗ Belum Check-in"}${data.namaPemesan ? `<br><small><b>Pemesan:</b> ${data.namaPemesan}</small>` : ""}</td>
+            <td>${data.status === "checked-in" ? "✓ Sudah Check-in" : "✗ Belum Check-in"}${data.namaPemesan ? `<br><small><b>Pemesan:</b> ${data.namaPemesan}</small></td>
             <td>${data.waktuCheckin || "-"}</td>
             <td>-</td>
             <td class="pesanan">${pesananHTML || "-"}</td>
@@ -229,7 +230,10 @@
             <td>
               ${data.status !== "checked-in" 
                 ? `<button class="btn-in" onclick="checkIn('${data.id}')">Check-in</button>` 
-                : `<button class="btn-out" onclick="checkOut('${data.id}')">Check-out</button>`
+                : `
+                  <button class="btn-out" onclick="checkOut('${data.id}')">Check-out</button>
+                  <button class="btn-clear" onclick="hapusSemuaPesanan('${data.id}')">Hapus Semua</button>
+                `
               }
             </td>
           `;
@@ -285,14 +289,27 @@
     };
 
     window.checkOut = async (id) => {
-      if (confirm("Check-out meja ini?")) {
-        await updateDoc(doc(db, "tables", id), {
-          status: "checked-out",
-          kunci: "",
-          namaPemesan: "",
-          waktuCheckin: ""
-        });
-      }
+      if (!confirm("Check-out meja ini? Semua pesanan akan dihapus.")) return;
+
+      const pesananMeja = pesananCache[id] || [];
+      const deletePromises = pesananMeja.map(p => deleteDoc(doc(db, "pesanan", p.id)));
+      await Promise.all(deletePromises);
+
+      await updateDoc(doc(db, "tables", id), {
+        status: "checked-out",
+        kunci: "",
+        namaPemesan: "",
+        waktuCheckin: ""
+      });
+    };
+
+    window.hapusSemuaPesanan = async (mejaId) => {
+      const pesananMeja = pesananCache[mejaId] || [];
+      if (pesananMeja.length === 0) return alert("Tidak ada pesanan.");
+      if (!confirm(`Hapus semua ${pesananMeja.length} item pesanan?`)) return;
+
+      const deletePromises = pesananMeja.map(p => deleteDoc(doc(db, "pesanan", p.id)));
+      await Promise.all(deletePromises);
     };
 
     window.tambahPesanan = async (mejaId) => {
