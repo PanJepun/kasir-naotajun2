@@ -59,27 +59,27 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getFirestore, collection, doc, updateDoc, addDoc, deleteDoc, onSnapshot, query, where, setDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-    // GANTI DENGAN CONFIG FIREBASE KAMU
     const firebaseConfig = {
-      apiKey: "AIzaSy...",
+      apiKey: "PASTE_API_KEY_KAMU",
       authDomain: "kasir-naotajun2.firebaseapp.com",
       projectId: "kasir-naotajun2",
       storageBucket: "kasir-naotajun2.appspot.com",
-      messagingSenderId: "123456",
-      appId: "1:123456:web:abc"
+      messagingSenderId: "PASTE_SENDER_ID",
+      appId: "PASTE_APP_ID"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
     let menuList = [];
-    let editingId = null;
+    let editingMenuId = null;
+    let editingTableId = null;
 
-    // Auto buat 5 meja kalau belum ada
+    // Auto buat 3 meja kalau belum ada
     async function initTables() {
       const tablesSnap = await getDocs(collection(db, "tables"));
       if (tablesSnap.empty) {
-        for (let i = 1; i <= 5; i++) {
+        for (let i = 1; i <= 3; i++) {
           await setDoc(doc(db, "tables", `meja${i}`), {
             nama: `Meja ${i}`,
             status: "checked-out",
@@ -106,14 +106,14 @@
         const data = docSnap.data();
         menuList.push({id: docSnap.id, ...data});
         
-        if (editingId === docSnap.id) {
+        if (editingMenuId === docSnap.id) {
           tbody.innerHTML += `
             <tr class="edit-row">
-              <td><input type="text" id="editNama" value="${data.nama}"></td>
-              <td><input type="number" id="editHarga" value="${data.harga}"></td>
+              <td><input type="text" id="editNamaMenu" value="${data.nama}"></td>
+              <td><input type="number" id="editHargaMenu" value="${data.harga}"></td>
               <td>
-                <button class="btn-save" onclick="simpanEdit('${docSnap.id}')">Simpan</button>
-                <button class="btn-del" onclick="batalEdit()">Batal</button>
+                <button class="btn-save" onclick="simpanEditMenu('${docSnap.id}')">Simpan</button>
+                <button class="btn-del" onclick="batalEditMenu()">Batal</button>
               </td>
             </tr>
           `;
@@ -137,11 +137,6 @@
       const tbody = document.querySelector("#tabelMeja tbody");
       tbody.innerHTML = "";
 
-      if (snapshot.empty) {
-        tbody.innerHTML = "<tr><td colspan='7'>Belum ada data meja</td></tr>";
-        return;
-      }
-
       for (const docSnap of snapshot.docs) {
         const data = docSnap.data();
         const tr = document.createElement("tr");
@@ -159,31 +154,46 @@
           }
         });
 
-        tr.innerHTML = `
-          <td><b>${data.nama || docSnap.id}</b></td>
-          <td>${data.status === "checked-in" ? "✓ Sudah Check-in" : "✗ Belum Check-in"}</td>
-          <td>${data.waktuCheckin || "-"}</td>
-          <td><input type="text" id="kunci-${docSnap.id}" placeholder="Masukkan kunci"></td>
-          <td>
-            ${data.status === "checked-in" ? `
-              <select id="menu-${docSnap.id}">
-                <option value="">Pilih Menu</option>
-                ${menuList.map(m => `<option value="${m.id}">${m.nama} - Rp${menu.harga}</option>`).join("")}
-              </select>
-              <button onclick="tambahPesanan('${docSnap.id}')">Tambah</button>
-            ` : "-"}
-          </td>
-          <td class="pesanan">
-            ${pesananHTML || "-"}
-            ${total > 0 ? `<br><b>Total: Rp${total.toLocaleString("id-ID")}</b>` : ""}
-          </td>
-          <td>
-            ${data.status !== "checked-in" 
-              ? `<button class="btn-in" onclick="checkIn('${docSnap.id}')">Check-in</button>` 
-              : `<button class="btn-out" onclick="checkOut('${docSnap.id}')">Check-out</button>`
-            }
-          </td>
-        `;
+        if (editingTableId === docSnap.id) {
+          tr.innerHTML = `
+            <td><input type="text" id="editNamaMeja" value="${data.nama}" style="width:120px;"></td>
+            <td>${data.status === "checked-in" ? "✓ Sudah Check-in" : "✗ Belum Check-in"}</td>
+            <td>${data.waktuCheckin || "-"}</td>
+            <td><input type="text" id="kunci-${docSnap.id}" placeholder="Masukkan kunci"></td>
+            <td>-</td>
+            <td class="pesanan">${pesananHTML || "-"}</td>
+            <td>
+              <button class="btn-save" onclick="simpanEditMeja('${docSnap.id}')">Simpan</button>
+              <button class="btn-del" onclick="batalEditMeja()">Batal</button>
+            </td>
+          `;
+        } else {
+          tr.innerHTML = `
+            <td><b>${data.nama || docSnap.id}</b> <button class="btn-edit" style="padding:2px 6px;font-size:12px;" onclick="editMeja('${docSnap.id}')">Edit</button></td>
+            <td>${data.status === "checked-in" ? "✓ Sudah Check-in" : "✗ Belum Check-in"}</td>
+            <td>${data.waktuCheckin || "-"}</td>
+            <td><input type="text" id="kunci-${docSnap.id}" placeholder="Masukkan kunci"></td>
+            <td>
+              ${data.status === "checked-in" ? `
+                <select id="menu-${docSnap.id}">
+                  <option value="">Pilih Menu</option>
+                  ${menuList.map(m => `<option value="${m.id}">${m.nama} - Rp${m.harga}</option>`).join("")}
+                </select>
+                <button onclick="tambahPesanan('${docSnap.id}')">Tambah</button>
+              ` : "-"}
+            </td>
+            <td class="pesanan">
+              ${pesananHTML || "-"}
+              ${total > 0 ? `<br><b>Total: Rp${total.toLocaleString("id-ID")}</b>` : ""}
+            </td>
+            <td>
+              ${data.status !== "checked-in" 
+                ? `<button class="btn-in" onclick="checkIn('${docSnap.id}')">Check-in</button>` 
+                : `<button class="btn-out" onclick="checkOut('${docSnap.id}')">Check-out</button>`
+              }
+            </td>
+          `;
+        }
         tbody.appendChild(tr);
       }
     });
@@ -192,21 +202,19 @@
       const nama = document.getElementById("namaMenu").value.trim();
       const harga = parseInt(document.getElementById("hargaMenu").value);
       if (!nama || !harga) return alert("Isi nama dan harga menu!");
-      
       await addDoc(collection(db, "menu"), { nama, harga });
       document.getElementById("namaMenu").value = "";
       document.getElementById("hargaMenu").value = "";
     };
 
-    window.editMenu = (id) => { editingId = id; };
-    window.batalEdit = () => { editingId = null; };
-
-    window.simpanEdit = async (id) => {
-      const nama = document.getElementById("editNama").value.trim();
-      const harga = parseInt(document.getElementById("editHarga").value);
+    window.editMenu = (id) => { editingMenuId = id; };
+    window.batalEditMenu = () => { editingMenuId = null; };
+    window.simpanEditMenu = async (id) => {
+      const nama = document.getElementById("editNamaMenu").value.trim();
+      const harga = parseInt(document.getElementById("editHargaMenu").value);
       if (!nama || !harga) return alert("Isi nama dan harga!");
       await updateDoc(doc(db, "menu", id), { nama, harga });
-      editingId = null;
+      editingMenuId = null;
     };
 
     window.hapusMenu = async (id) => {
@@ -215,10 +223,18 @@
       }
     };
 
+    window.editMeja = (id) => { editingTableId = id; };
+    window.batalEditMeja = () => { editingTableId = null; };
+    window.simpanEditMeja = async (id) => {
+      const nama = document.getElementById("editNamaMeja").value.trim();
+      if (!nama) return alert("Nama meja nggak boleh kosong!");
+      await updateDoc(doc(db, "tables", id), { nama });
+      editingTableId = null;
+    };
+
     window.checkIn = async (id) => {
       const kunci = document.getElementById(`kunci-${id}`).value.trim();
       if (!kunci) return alert("Masukkan kunci dulu!");
-      
       await updateDoc(doc(db, "tables", id), {
         status: "checked-in",
         kunci: kunci,
@@ -239,13 +255,11 @@
     window.tambahPesanan = async (mejaId) => {
       const menuId = document.getElementById(`menu-${mejaId}`).value;
       if (!menuId) return alert("Pilih menu dulu!");
-      
       await addDoc(collection(db, "pesanan"), {
         mejaId: mejaId,
         menuId: menuId,
         waktu: new Date().toLocaleString("id-ID")
       });
-      
       document.getElementById(`menu-${mejaId}`).value = "";
     };
   </script>
