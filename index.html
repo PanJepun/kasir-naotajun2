@@ -8,7 +8,7 @@
     body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
     .section {
       background: white; padding: 15px; margin-bottom: 20px; border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1); overflow-x: auto;
     }
     input, select {
       padding: 8px; margin: 5px; border: 1px solid #ddd; border-radius: 4px;
@@ -20,8 +20,8 @@
     .btn-edit { background: #2196F3; color: white; }
     .btn-del { background: #f44336; color: white; }
     .btn-print { background: #FF9800; color: white; }
-    table { width: 100%; border-collapse: collapse; }
-    th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+    table { width: 100%; border-collapse: collapse; table-layout: auto; }
+    th, td { border: 1px solid #ddd; padding: 10px; text-align: left; white-space: nowrap; }
     th { background: #4CAF50; color: white; }
     .bill {
       width: 300px; margin: 20px auto; padding: 20px; background: white;
@@ -114,13 +114,26 @@
 
       snapshot.forEach((child) => {
         const data = child.val();
+        
+        let aksiBtn = "";
+        if (data.status === "checked-in") {
+          aksiBtn = `<button class="btn-edit" onclick="checkOutMeja('${data.id}')">Check-out</button>
+                     <button class="btn-del" onclick="hapusMeja('${data.id}')">Hapus</button>`;
+        } else {
+          aksiBtn = `<button class="btn-tambah" onclick="checkInMeja('${data.id}')">Check-in</button>
+                     <button class="btn-del" onclick="hapusMeja('${data.id}')">Hapus</button>`;
+        }
+
         tbody.innerHTML += `
           <tr>
             <td><b>${data.nama}</b></td>
-            <td>${data.status === "checked-in"? "✓ Check-in" : "✗ Kosong"}</td>
-            <td>${data.waktuCheckin || "-"}</td>
-            <td><button class="btn-del" onclick="hapusMeja('${data.id}')">Hapus</button></td>
+            <td>${data.status === "checked-in"? "✓ Check-in" : "✗ Kosong"}
+                ${data.namaPemesan ? `<br><small>${data.namaPemesan}</small>` : ""}
+            </td>
+            <td>${data.waktuCheckin ? new Date(data.waktuCheckin).toLocaleString("id-ID") : "-"}</td>
+            <td>${aksiBtn}</td>
           </tr>`;
+        
         selectMeja.innerHTML += `<option value="${data.id}">${data.nama}</option>`;
       });
     });
@@ -197,6 +210,27 @@
       if (confirm("Hapus pesanan ini?")) remove(ref(db, "pesanan/" + key));
     };
 
+    window.checkInMeja = (id) => {
+      const namaPemesan = prompt("Masukkan nama pemesan:");
+      if (!namaPemesan) return;
+      const waktu = new Date().toISOString();
+      update(ref(db, "meja/" + id), { 
+        status: "checked-in", 
+        namaPemesan: namaPemesan,
+        waktuCheckin: waktu 
+      });
+    };
+
+    window.checkOutMeja = (id) => {
+      if (confirm("Yakin mau check-out meja ini?")) {
+        update(ref(db, "meja/" + id), { 
+          status: "available", 
+          namaPemesan: null,
+          waktuCheckin: null 
+        });
+      }
+    };
+
     window.tambahPesanan = () => {
       const mejaId = document.getElementById("selectMeja").value;
       const menuId = document.getElementById("selectMenu").value;
@@ -231,7 +265,10 @@
       const { mejaId, pemesan, items } = window.pesananAktif;
       const meja = document.querySelector(`#selectMeja option[value="${mejaId}"]`).text;
       const total = items.reduce((a, b) => a + b.subtotal, 0);
-      const waktu = new Date().toLocaleString("id-ID");
+      const waktu = new Date().toLocaleString("id-ID", {
+        day: "2-digit", month: "2-digit", year: "numeric",
+        hour: "2-digit", minute: "2-digit"
+      });
 
       const billHTML = `
         <div class="bill">
@@ -252,7 +289,7 @@
       window.print();
 
       push(ref(db, "pesanan"), { mejaId, pemesan, items, total, waktu });
-      update(ref(db, "meja/" + mejaId), { status: "checked-in", namaPemesan: pemesan, waktuCheckin: waktu });
+      update(ref(db, "meja/" + mejaId), { status: "checked-in", namaPemesan: pemesan, waktuCheckin: new Date().toISOString() });
       pesananSement = [];
       document.getElementById("listPesanan").innerHTML = "";
       window.pesananAktif = null;
