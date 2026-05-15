@@ -6,7 +6,7 @@
   <title>Kasir Naotajun</title>
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
-    .section {
+   .section {
       background: white; padding: 15px; margin-bottom: 20px; border-radius: 8px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1); overflow-x: auto;
     }
@@ -16,22 +16,22 @@
     button {
       padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; margin: 2px;
     }
-    .btn-tambah { background: #4CAF50; color: white; }
-    .btn-edit { background: #2196F3; color: white; }
-    .btn-del { background: #f44336; color: white; }
-    .btn-print { background: #FF9800; color: white; }
+   .btn-tambah { background: #4CAF50; color: white; }
+   .btn-edit { background: #2196F3; color: white; }
+   .btn-del { background: #f44336; color: white; }
+   .btn-print { background: #FF9800; color: white; }
     table { width: 100%; border-collapse: collapse; table-layout: auto; }
     th, td { border: 1px solid #ddd; padding: 10px; text-align: left; white-space: nowrap; }
     th { background: #4CAF50; color: white; }
-    .bill {
+   .bill {
       width: 300px; margin: 20px auto; padding: 20px; background: white;
       border: 1px solid #000; font-family: monospace; font-size: 14px;
     }
-    .bill h3,.bill p { text-align: center; margin: 5px 0; }
+   .bill h3,.bill p { text-align: center; margin: 5px 0; }
     @media print {
       body * { visibility: hidden; }
-      .bill,.bill * { visibility: visible; }
-      .bill { position: absolute; left: 0; top: 0; width: 100%; border: none; }
+     .bill,.bill * { visibility: visible; }
+     .bill { position: absolute; left: 0; top: 0; width: 100%; border: none; }
     }
   </style>
 </head>
@@ -61,6 +61,7 @@
     <select id="selectMenu"></select>
     <input type="number" id="inputQty" value="1" min="1" style="width:60px;">
     <input type="text" id="inputPemesan" placeholder="Nama pemesan">
+    <input type="text" id="inputWaitress" placeholder="Nama waitress">
     <button class="btn-tambah" onclick="tambahPesanan()">Tambah ke Pesanan</button>
     <div id="listPesanan"></div>
     <button class="btn-print" onclick="printBill()">Print Bill</button>
@@ -78,7 +79,7 @@
     <h3>Riwayat Pesanan</h3>
     <button class="btn-edit" onclick="loadPesanan()">Refresh Pesanan</button>
     <table id="tabelPesanan">
-      <thead><tr><th>Waktu</th><th>Meja</th><th>Pemesan</th><th>Total</th><th>Aksi</th></tr></thead>
+      <thead><tr><th>Waktu</th><th>Meja</th><th>Pemesan</th><th>Waitress</th><th>Total</th><th>Aksi</th></tr></thead>
       <tbody></tbody>
     </table>
   </div>
@@ -114,7 +115,7 @@
 
       snapshot.forEach((child) => {
         const data = child.val();
-        
+
         let aksiBtn = "";
         if (data.status === "checked-in") {
           aksiBtn = `<button class="btn-edit" onclick="checkOutMeja('${data.id}')">Check-out</button>
@@ -128,12 +129,13 @@
           <tr>
             <td><b>${data.nama}</b></td>
             <td>${data.status === "checked-in"? "✓ Check-in" : "✗ Kosong"}
-                ${data.namaPemesan ? `<br><small>${data.namaPemesan}</small>` : ""}
+                ${data.namaPemesan? `<br><small>Pesanan: ${data.namaPemesan}</small>` : ""}
+                ${data.namaWaitress? `<br><small>Waitress: ${data.namaWaitress}</small>` : ""}
             </td>
-            <td>${data.waktuCheckin ? new Date(data.waktuCheckin).toLocaleString("id-ID") : "-"}</td>
+            <td>${data.waktuCheckin? new Date(data.waktuCheckin).toLocaleString("id-ID") : "-"}</td>
             <td>${aksiBtn}</td>
           </tr>`;
-        
+
         selectMeja.innerHTML += `<option value="${data.id}">${data.nama}</option>`;
       });
     });
@@ -172,6 +174,7 @@
               <td>${data.waktu}</td>
               <td>${data.mejaId}</td>
               <td>${data.pemesan}</td>
+              <td>${data.waitress || '-'}</td>
               <td>Rp ${data.total.toLocaleString()}</td>
               <td><button class="btn-del" onclick="hapusPesanan('${key}')">Hapus</button></td>
             </tr>`;
@@ -184,7 +187,7 @@
       const nama = document.getElementById("inputNamaMeja").value.trim();
       if (!nama) return alert("Isi nama meja!");
       const id = nama.toLowerCase().replace(/\s+/g, '');
-      set(ref(db, "meja/" + id), { id, nama, status: "available", waktuCheckin: null, namaPemesan: null });
+      set(ref(db, "meja/" + id), { id, nama, status: "available", waktuCheckin: null, namaPemesan: null, namaWaitress: null });
       document.getElementById("inputNamaMeja").value = "";
     };
 
@@ -213,20 +216,24 @@
     window.checkInMeja = (id) => {
       const namaPemesan = prompt("Masukkan nama pemesan:");
       if (!namaPemesan) return;
+      const namaWaitress = prompt("Masukkan nama waitress:");
+      if (!namaWaitress) return;
       const waktu = new Date().toISOString();
-      update(ref(db, "meja/" + id), { 
-        status: "checked-in", 
+      update(ref(db, "meja/" + id), {
+        status: "checked-in",
         namaPemesan: namaPemesan,
-        waktuCheckin: waktu 
+        namaWaitress: namaWaitress,
+        waktuCheckin: waktu
       });
     };
 
     window.checkOutMeja = (id) => {
       if (confirm("Yakin mau check-out meja ini?")) {
-        update(ref(db, "meja/" + id), { 
-          status: "available", 
+        update(ref(db, "meja/" + id), {
+          status: "available",
           namaPemesan: null,
-          waktuCheckin: null 
+          namaWaitress: null,
+          waktuCheckin: null
         });
       }
     };
@@ -236,25 +243,26 @@
       const menuId = document.getElementById("selectMenu").value;
       const qty = parseInt(document.getElementById("inputQty").value);
       const pemesan = document.getElementById("inputPemesan").value.trim();
+      const waitress = document.getElementById("inputWaitress").value.trim();
 
-      if (mejaId === "Pilih Meja" || menuId === "Pilih Menu" ||!pemesan)
+      if (mejaId === "Pilih Meja" || menuId === "Pilih Menu" ||!pemesan ||!waitress)
         return alert("Lengkapi semua field!");
 
       const menu = menuList[menuId];
       pesananSement.push({ menuId, nama: menu.nama, harga: menu.harga, qty, subtotal: menu.harga * qty });
 
       document.getElementById("listPesanan").innerHTML = pesananSement.map((p,i) =>
-        `<p>${p.nama} x${p.qty} = Rp ${p.subtotal.toLocaleString()} 
+        `<p>${p.nama} x${p.qty} = Rp ${p.subtotal.toLocaleString()}
          <button class="btn-del" style="padding:2px 6px;" onclick="hapusItemPesanan(${i})">x</button></p>`
       ).join("");
 
-      window.pesananAktif = { mejaId, pemesan, items: pesananSement };
+      window.pesananAktif = { mejaId, pemesan, waitress, items: pesananSement };
     };
 
     window.hapusItemPesanan = (index) => {
       pesananSement.splice(index, 1);
       document.getElementById("listPesanan").innerHTML = pesananSement.map((p,i) =>
-        `<p>${p.nama} x${p.qty} = Rp ${p.subtotal.toLocaleString()} 
+        `<p>${p.nama} x${p.qty} = Rp ${p.subtotal.toLocaleString()}
          <button class="btn-del" style="padding:2px 6px;" onclick="hapusItemPesanan(${i})">x</button></p>`
       ).join("");
     };
@@ -262,12 +270,25 @@
     window.printBill = () => {
       if (!window.pesananAktif) return alert("Buat pesanan dulu!");
 
-      const { mejaId, pemesan, items } = window.pesananAktif;
+      const { mejaId, pemesan, waitress, items } = window.pesananAktif;
       const meja = document.querySelector(`#selectMeja option[value="${mejaId}"]`).text;
       const total = items.reduce((a, b) => a + b.subtotal, 0);
       const waktu = new Date().toLocaleString("id-ID", {
         day: "2-digit", month: "2-digit", year: "numeric",
         hour: "2-digit", minute: "2-digit"
+      });
+
+      let rows = "";
+      items.forEach((i, idx) => {
+        rows += `
+          <tr>
+            <td>${idx + 1}</td>
+            <td>${i.nama}</td>
+            <td style="text-align:center;">${i.qty}</td>
+            <td style="text-align:right;">${i.harga.toLocaleString()}</td>
+            <td style="text-align:right;">${i.subtotal.toLocaleString()}</td>
+          </tr>
+        `;
       });
 
       const billHTML = `
@@ -277,10 +298,30 @@
           <hr>
           <p><b>Meja:</b> ${meja}</p>
           <p><b>Pemesan:</b> ${pemesan}</p>
+          <p><b>Waitress:</b> ${waitress}</p>
           <hr>
-          ${items.map(i => `<p>${i.nama} x${i.qty}<br>Rp ${i.subtotal.toLocaleString()}</p>`).join("")}
+          <table style="width:100%; font-size:13px; border-collapse:collapse;">
+            <thead>
+              <tr style="border-bottom:1px dashed #000;">
+                <th style="text-align:left;">No</th>
+                <th style="text-align:left;">Menu</th>
+                <th style="text-align:center;">Qty</th>
+                <th style="text-align:right;">Harga</th>
+                <th style="text-align:right;">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows}
+            </tbody>
+            <tfoot>
+              <tr style="border-top:1px dashed #000;">
+                <td colspan="4" style="text-align:right;"><b>TOTAL</b></td>
+                <td style="text-align:right;"><b>Rp ${total.toLocaleString()}</b></td>
+              </tr>
+            </tfoot>
+          </table>
           <hr>
-          <p><b>TOTAL: Rp ${total.toLocaleString()}</b></p>
+          <p>Waitress: ${waitress}</p>
           <p>Terima Kasih!</p>
         </div>
       `;
@@ -288,8 +329,13 @@
       document.getElementById("billArea").innerHTML = billHTML;
       window.print();
 
-      push(ref(db, "pesanan"), { mejaId, pemesan, items, total, waktu });
-      update(ref(db, "meja/" + mejaId), { status: "checked-in", namaPemesan: pemesan, waktuCheckin: new Date().toISOString() });
+      push(ref(db, "pesanan"), { mejaId, pemesan, waitress, items, total, waktu });
+      update(ref(db, "meja/" + mejaId), {
+        status: "checked-in",
+        namaPemesan: pemesan,
+        namaWaitress: waitress,
+        waktuCheckin: new Date().toISOString()
+      });
       pesananSement = [];
       document.getElementById("listPesanan").innerHTML = "";
       window.pesananAktif = null;
