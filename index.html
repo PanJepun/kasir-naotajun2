@@ -3,237 +3,127 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kasir Meja</title>
+  <title>Check-in Meja</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      max-width: 600px;
-      margin: 30px auto;
+      max-width: 500px;
+      margin: 50px auto;
       padding: 20px;
       background: #f5f5f5;
     }
-    .box {
+    .card {
       background: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      margin-bottom: 20px;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
-    input, select, button {
+    h2 {
+      margin-top: 0;
+      color: #333;
+    }
+    select, input, button {
       width: 100%;
       padding: 12px;
-      margin: 8px 0;
+      margin: 10px 0;
       border: 1px solid #ddd;
-      border-radius: 5px;
-      box-sizing: border-box;
+      border-radius: 8px;
       font-size: 16px;
+      box-sizing: border-box;
     }
     button {
-      background: #28a745;
+      background: #4CAF50;
       color: white;
       border: none;
       cursor: pointer;
       font-weight: bold;
     }
     button:hover {
-      background: #218838;
-    }
-    button:disabled {
-      background: #ccc;
-      cursor: not-allowed;
-    }
-    .hidden {
-      display: none;
-    }
-    h2, h3 {
-      margin-top: 0;
-    }
-    #status {
-      padding: 10px;
-      border-radius: 5px;
-      margin-top: 10px;
-      text-align: center;
-    }
-    .success {
-      background: #d4edda;
-      color: #155724;
-    }
-    .error {
-      background: #f8d7da;
-      color: #721c24;
+      background: #45a049;
     }
   </style>
 </head>
 <body>
-
-  <!-- LOGIN -->
-  <div id="loginBox" class="box">
-    <h2>Login Kasir</h2>
-    <input type="email" id="email" placeholder="Email" value="waitress@kasir.com">
-    <input type="password" id="password" placeholder="Password">
-    <button onclick="login()">Login</button>
-    <div id="loginStatus"></div>
-  </div>
-
-  <!-- KASIR -->
-  <div id="kasirBox" class="box hidden">
+  <div class="card">
     <h2>Check-in Meja</h2>
     
-    <label>Pilih Meja:</label>
-    <select id="pilihMeja">
-      <option value="">-- Loading meja... --</option>
+    <label>Pilih Meja</label>
+    <select id="mejaSelect">
+      <option value="">-- Pilih Meja --</option>
+      <option value="meja1">Meja 1</option>
+      <option value="meja2">Meja 2</option>
+      <option value="meja3">Meja 3</option>
     </select>
-    
-    <label>Masukkan Kunci Reservasi:</label>
-    <input type="password" id="kunciInput" placeholder="Contoh: admin123">
-    
-    <button id="checkinBtn" onclick="checkinMeja()">Check-in Meja</button>
-    <div id="status"></div>
-    
-    <button onclick="logout()" style="background:#dc3545; margin-top:15px;">Logout</button>
+
+    <label>Kunci Reservasi</label>
+    <input type="text" id="reservationKey" placeholder="Masukkan kunci reservasi">
+
+    <button onclick="checkIn()">Check-in Meja</button>
   </div>
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-  <script>
-    // GANTI DENGAN CONFIG FIREBASE KAMU
-  
-      const firebaseConfig = {
-  apiKey: "AIzaSyA94bWbZJA0peV6rDg-vaHac1Ghn9t2ZW4",
-  authDomain: "kasir-naotajun2.firebaseapp.com",
-  databaseURL: "https://kasir-naotajun2-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "kasir-naotajun2",
-  storageBucket: "kasir-naotajun2.firebasestorage.app",
-  messagingSenderId: "346309315110",
-  appId: "1:346309315110:web:1bc443785229fa7a0b74e7"
-};
+    // GANTI INI DENGAN CONFIG FIREBASE KAMU
+    const firebaseConfig = {
+      apiKey: "MASUKKAN_API_KEY",
+      authDomain: "MASUKKAN_AUTH_DOMAIN",
+      projectId: "MASUKKAN_PROJECT_ID",
+      storageBucket: "MASUKKAN_STORAGE_BUCKET",
+      messagingSenderId: "MASUKKAN_SENDER_ID",
+      appId: "MASUKKAN_APP_ID"
+    };
 
-    // Init Firebase
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.database();
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-    let currentUser = null;
+    window.checkIn = async function() {
+      const meja = document.getElementById("mejaSelect").value;
+      const key = document.getElementById("reservationKey").value;
 
-    // Cek kalau udah login
-    auth.onAuthStateChanged(user => {
-      if (user) {
-        currentUser = user;
-        document.getElementById('loginBox').classList.add('hidden');
-        document.getElementById('kasirBox').classList.remove('hidden');
-        loadMeja();
-      } else {
-        document.getElementById('loginBox').classList.remove('hidden');
-        document.getElementById('kasirBox').classList.add('hidden');
-      }
-    });
-
-    // LOGIN
-    function login() {
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      const statusDiv = document.getElementById('loginStatus');
-      
-      auth.signInWithEmailAndPassword(email, password)
-        .then(() => {
-          statusDiv.innerHTML = '';
-        })
-        .catch(error => {
-          statusDiv.innerHTML = `<div class="error">${error.message}</div>`;
-        });
-    }
-
-    // LOGOUT
-    function logout() {
-      auth.signOut();
-    }
-
-    // LOAD MEJA KE DROPDOWN
-    function loadMeja() {
-      const selectMeja = document.getElementById('pilihMeja');
-      
-      db.ref('/').on('value', (snapshot) => {
-        selectMeja.innerHTML = '<option value="">-- Pilih Meja --</option>';
-        
-        snapshot.forEach((childSnapshot) => {
-          const mejaData = childSnapshot.val();
-          const mejaId = childSnapshot.key;
-          
-          // Hanya tampilkan yang punya field nama dan status kosong
-          if (mejaData && mejaData.nama && mejaData.status === 'kosong') {
-            const option = document.createElement('option');
-            option.value = mejaId;
-            option.textContent = mejaData.nama;
-            selectMeja.appendChild(option);
-          }
-        });
-      });
-    }
-
-    // CHECK-IN MEJA
-    function checkinMeja() {
-      const mejaId = document.getElementById('pilihMeja').value;
-      const kunciInput = document.getElementById('kunciInput').value;
-      const statusDiv = document.getElementById('status');
-      const btn = document.getElementById('checkinBtn');
-
-      if (!mejaId) {
-        showStatus('Pilih meja dulu!', 'error');
-        return;
-      }
-      if (!kunciInput) {
-        showStatus('Masukkan kunci reservasi!', 'error');
+      if (!meja) {
+        alert("Pilih meja dulu!");
         return;
       }
 
-      btn.disabled = true;
-      showStatus('Memproses...', '');
+      if (!key) {
+        alert("Masukkan kunci reservasi!");
+        return;
+      }
 
-      db.ref('/' + mejaId).once('value').then(snapshot => {
-        const mejaData = snapshot.val();
-        
-        if (!mejaData) {
-          showStatus('Meja tidak ditemukan!', 'error');
-          btn.disabled = false;
-          return;
-        }
-        
-        if (mejaData.kunciReservasi !== kunciInput) {
-          showStatus('Kunci reservasi salah!', 'error');
-          btn.disabled = false;
-          return;
-        }
-        
-        if (mejaData.status !== 'kosong') {
-          showStatus('Meja sudah terpakai!', 'error');
-          btn.disabled = false;
-          return;
-        }
-        
-        // Update status jadi aktif
-        return db.ref('/' + mejaId).update({
-          status: 'aktif',
-          waktuCheckin: Date.now(),
-          kasir: currentUser.email
-        });
-        
-      }).then(() => {
-        showStatus('Check-in berhasil! Meja ' + document.getElementById('pilihMeja').options[document.getElementById('pilihMeja').selectedIndex].text, 'success');
-        document.getElementById('kunciInput').value = '';
-        btn.disabled = false;
-      }).catch(error => {
-        showStatus('Error: ' + error.message, 'error');
-        btn.disabled = false;
-      });
-    }
+      try {
+        const mejaRef = doc(db, "tables", meja);
+        const mejaSnap = await getDoc(mejaRef);
 
-    function showStatus(msg, type) {
-      const statusDiv = document.getElementById('status');
-      statusDiv.textContent = msg;
-      statusDiv.className = type;
+        if (!mejaSnap.exists()) {
+          alert("Meja tidak ditemukan di database!");
+          return;
+        }
+
+        const data = mejaSnap.data();
+
+        if (data.reservationKey !== key) {
+          alert("Kunci reservasi salah!");
+          return;
+        }
+
+        if (data.checked_in === true) {
+          alert("Meja ini sudah check-in!");
+          return;
+        }
+
+        await updateDoc(mejaRef, { checked_in: true });
+        alert("Check-in berhasil!");
+        
+        // Reset form
+        document.getElementById("mejaSelect").value = "";
+        document.getElementById("reservationKey").value = "";
+
+      } catch (error) {
+        console.error("Error check-in:", error);
+        alert("Gagal check-in: " + error.message);
+      }
     }
   </script>
 </body>
