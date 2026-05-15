@@ -37,16 +37,14 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getDatabase, ref, onValue, set, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-   const firebaseConfig = {
-  apiKey: "AIzaSyA94bWbZJA0peV6rDg-vaHac1Ghn9t2ZW4",
-  authDomain: "kasir-naotajun2.firebaseapp.com",
-  databaseURL: "https://kasir-naotajun2-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "kasir-naotajun2",
-  storageBucket: "kasir-naotajun2.firebasestorage.app",
-  messagingSenderId: "346309315110",
-  appId: "1:346309315110:web:1bc443785229fa7a0b74e7"
-};
-    
+    const firebaseConfig = {
+      apiKey: "AIzaSyA94bWbZJA0PeV6rDg-vaHac1Ghn9t2ZW4",
+      authDomain: "kasir-naotajun2.firebaseapp.com",
+      databaseURL: "https://kasir-naotajun2-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "kasir-naotajun2",
+      storageBucket: "kasir-naotajun2.firebasestorage.app",
+      messagingSenderId: "346309315110",
+      appId: "1:346309315110:web:1bc443785229fa7a0b74e7"
     };
 
     const app = initializeApp(firebaseConfig);
@@ -55,59 +53,62 @@
     const tbody = document.querySelector("#tabelMeja tbody");
 
     onValue(ref(db, "meja"), (snapshot) => {
-     tbody.innerHTML = "";
-  snapshot.forEach((child) => {
-    const data = child.val();
-    const tr = document.createElement("tr");
-    tr.id = "meja-" + data.id;
+      tbody.innerHTML = "";
+      snapshot.forEach((child) => {
+        const data = child.val();
+        const tr = document.createElement("tr");
+        tr.id = "meja-" + data.id;
 
-    if (data.editMode) {
-      tr.innerHTML = `
-        <td><input type="text" id="edit-nama-${data.id}" value="${data.nama || ''}"></td>
-        <td>
-          <button class="btn-save" onclick="simpanEditMeja('${data.id}')">Simpan</button>
-          <button class="btn-del" onclick="batalEditMeja()">Batal</button>
-        </td>
-      `;
-    } else {
-      tr.innerHTML = `
-        <td><b>${data.nama || data.id}</b> 
-          <button class="btn-edit" style="padding:2px 6px;font-size:12px;" onclick="editMeja('${data.id}')">Edit</button>
-        </td>
-        <td>
-          ${data.status === "checked-in" ? "✓ Sudah Check-in" : "✗ Belum Check-in"}
-          ${data.namaPemesan ? `<br><small><b>Pemesan:</b> ${data.namaPemesan}</small>` : ""}
-        </td>
-        <td>${data.waktuCheckin || "-"}</td>
-        <td>
-          <button class="btn-del" onclick="hapusMeja('${data.id}')">Hapus</button>
-        </td>
-      `;
-    }
+        if (data.editMode) {
+          tr.innerHTML = `
+            <td><input type="text" id="edit-nama-${data.id}" value="${data.nama || ''}"></td>
+            <td>
+              <button class="btn-save" onclick="simpanEditMeja('${data.id}')">Simpan</button>
+              <button class="btn-del" onclick="batalEditMeja()">Batal</button>
+            </td>
+          `;
+        } else {
+          tr.innerHTML = `
+            <td><b>${data.nama || data.id}</b> 
+              <button class="btn-edit" style="padding:2px 6px;font-size:12px;" onclick="editMeja('${data.id}')">Edit</button>
+            </td>
+            <td>
+              ${data.status === "checked-in" ? "✓ Sudah Check-in" : "✗ Belum Check-in"}
+              ${data.namaPemesan ? `<br><small><b>Pemesan:</b> ${data.namaPemesan}</small>` : ""}
+            </td>
+            <td>${data.waktuCheckin || "-"}</td>
+            <td>
+              <button class="btn-del" onclick="hapusMeja('${data.id}')">Hapus</button>
+            </td>
+          `;
+        }
 
-    tbody.appendChild(tr);
-  });
-});
-
-window.editMeja = (id) => {
-  update(ref(db, "meja/" + id), { editMode: true });
-};
-
-window.batalEditMeja = () => {
-  onValue(ref(db, "meja"), (snapshot) => {
-    snapshot.forEach((child) => {
-      update(ref(db, "meja/" + child.key), { editMode: false });
+        tbody.appendChild(tr);
+      });
     });
-  });
-};
 
-window.simpanEditMeja = (id) => {
-  const namaBaru = document.getElementById("edit-nama-" + id).value;
-  update(ref(db, "meja/" + id), { nama: namaBaru, editMode: false });
-};
+    window.editMeja = (id) => {
+      update(ref(db, "meja/" + id), { editMode: true });
+    };
 
-window.hapusMeja = (id) => {
-  if (confirm("Yakin hapus meja ini?")) {
-    set(ref(db, "meja/" + id), null);
-  }
-};
+    window.batalEditMeja = () => {
+      onValue(ref(db, "meja"), (snapshot) => {
+        snapshot.forEach((child) => {
+          update(ref(db, "meja/" + child.key), { editMode: false });
+        });
+      });
+    };
+
+    window.simpanEditMeja = (id) => {
+      const namaBaru = document.getElementById("edit-nama-" + id).value;
+      update(ref(db, "meja/" + id), { nama: namaBaru, editMode: false });
+    };
+
+    window.hapusMeja = (id) => {
+      if (confirm("Yakin hapus meja ini?")) {
+        set(ref(db, "meja/" + id), null);
+      }
+    };
+  </script>
+</body>
+</html>
