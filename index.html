@@ -5,8 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Kasir Naotajun</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; background: #fff0f5; }
-  .section {
+    body { font-family: Arial, sans-serif; padding: 0; margin: 0; background: #fff0f5; }
+
+   .navbar {
+      background: #ff69b4; padding: 10px; display: flex; gap: 10px;
+      overflow-x: auto; box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+   .nav-btn {
+      padding: 10px 20px; border: none; background: #ff9ebc; color: white;
+      border-radius: 6px; cursor: pointer; font-weight: bold; white-space: nowrap;
+    }
+   .nav-btn.active { background: white; color: #ff69b4; }
+   .nav-btn:hover { background: #ff85c1; }
+
+   .tab-content { display: none; padding: 20px; }
+   .tab-content.active { display: block; }
+
+   .section {
       background: white; padding: 15px; margin-bottom: 20px; border-radius: 8px;
       box-shadow: 0 2px 6px rgba(255,105,180,0.2); overflow-x: auto;
       border: 1px solid #ffb6c1;
@@ -44,7 +59,7 @@
       display: flex; align-items: center; gap: 8px; margin: 10px 0;
       font-size: 14px; color: #d63384;
     }
-   .toggle-wrap input[type="checkbox"] {
+  .toggle-wrap input[type="checkbox"] {
       width: 18px; height: 18px; cursor: pointer;
     }
 
@@ -65,62 +80,104 @@
   </style>
 </head>
 <body>
-  <h2>💖 Kasir Naotajun 💖</h2>
-
-  <div class="section">
-    <h3>Tambah Meja</h3>
-    <input type="text" id="inputNamaMeja" placeholder="meja 13">
-    <button class="btn-tambah" onclick="tambahMeja()">Tambah</button>
+  <div class="navbar">
+    <button class="nav-btn active" onclick="openTab('meja')">🍽️ Menu Meja</button>
+    <button class="nav-btn" onclick="openTab('menu')">🍜 Menu Makanan</button>
+    <button class="nav-btn" onclick="openTab('kasir')">💳 Menu Kasir</button>
+    <button class="nav-btn" onclick="openTab('laporan')">📊 Laporan</button>
   </div>
 
-  <div class="section">
-    <h3>Daftar Menu</h3>
-    <input type="text" id="inputNamaMenu" placeholder="Nama menu">
-    <input type="number" id="inputHargaMenu" placeholder="Harga">
-    <button class="btn-tambah" onclick="tambahMenu()">Tambah Menu</button>
-    <table id="tabelMenu">
-      <thead><tr><th>Menu</th><th>Harga</th><th>Aksi</th></tr></thead>
-      <tbody></tbody>
-    </table>
-  </div>
-
-  <div class="section">
-    <h3>Buat Pesanan</h3>
-    <select id="selectMeja" onchange="updateFormStatus()"></select>
-    <select id="selectMenu" disabled></select>
-    <input type="number" id="inputQty" value="1" min="1" style="width:60px;" disabled>
-    <input type="text" id="inputPemesan" placeholder="Nama pemesan" disabled>
-    <input type="text" id="inputWaitress" placeholder="Nama waitress" disabled>
-
-    <div class="toggle-wrap">
-      <input type="checkbox" id="toggleCheckout">
-      <label for="toggleCheckout">Auto Checkout saat Print Bill</label>
+  <!-- TAB 1: MENU MEJA -->
+  <div id="meja" class="tab-content active">
+    <h2>🍽️ Kelola Meja</h2>
+    <div class="section">
+      <h3>Tambah Meja</h3>
+      <input type="text" id="inputNamaMeja" placeholder="meja 13">
+      <button class="btn-tambah" onclick="tambahMeja()">Tambah</button>
     </div>
 
-    <button class="btn-tambah" id="btnTambahPesanan" onclick="tambahPesanan()" disabled>Tambah ke Pesanan</button>
-    <div id="listPesanan"></div>
-    <button class="btn-print" id="btnPrintBill" onclick="printBill()" disabled>Print Bill</button>
-    <p class="info-text" id="infoText">Pilih meja yang sudah Check-in dulu</p>
+    <div class="section">
+      <h3>Daftar Meja</h3>
+      <table id="tabelMeja">
+        <thead><tr><th>Meja</th><th>Status</th><th>Pesanan Aktif</th><th>Aksi</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
   </div>
 
-  <div class="section">
-    <h3>Daftar Meja</h3>
-    <table id="tabelMeja">
-      <thead><tr><th>Meja</th><th>Status</th><th>Pesanan Aktif</th><th>Aksi</th></tr></thead>
-      <tbody></tbody>
-    </table>
+  <!-- TAB 2: MENU MAKAN -->
+  <div id="menu" class="tab-content">
+    <h2>🍜 Kelola Menu Makanan & Minuman</h2>
+    <div class="section">
+      <h3>Tambah Menu</h3>
+      <input type="text" id="inputNamaMenu" placeholder="Nama menu">
+      <input type="number" id="inputHargaMenu" placeholder="Harga">
+      <button class="btn-tambah" onclick="tambahMenu()">Tambah Menu</button>
+    </div>
+
+    <div class="section">
+      <h3>Daftar Menu</h3>
+      <table id="tabelMenu">
+        <thead><tr><th>Menu</th><th>Harga</th><th>Aksi</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
   </div>
 
-  <div class="section">
-    <h3>Riwayat Pesanan</h3>
-    <button class="btn-edit" onclick="loadPesanan()">Refresh Pesanan</button>
-    <table id="tabelPesanan">
-      <thead><tr><th>Waktu</th><th>Meja</th><th>Pemesan</th><th>Waitress</th><th>Grand Total</th><th>Aksi</th></tr></thead>
-      <tbody></tbody>
-    </table>
+  <!-- TAB 3: MENU KASIR -->
+  <div id="kasir" class="tab-content">
+    <h2>💳 Kasir</h2>
+    <div class="section">
+      <h3>Buat Pesanan</h3>
+      <select id="selectMeja" onchange="updateFormStatus()"></select>
+      <select id="selectMenu" disabled></select>
+      <input type="number" id="inputQty" value="1" min="1" style="width:60px;" disabled>
+      <input type="text" id="inputPemesan" placeholder="Nama pemesan" disabled>
+      <input type="text" id="inputWaitress" placeholder="Nama waitress" disabled>
+
+      <div class="toggle-wrap">
+        <input type="checkbox" id="toggleCheckout">
+        <label for="toggleCheckout">Auto Checkout saat Print Bill</label>
+      </div>
+
+      <button class="btn-tambah" id="btnTambahPesanan" onclick="tambahPesanan()" disabled>Tambah ke Pesanan</button>
+      <div id="listPesanan"></div>
+      <button class="btn-print" id="btnPrintBill" onclick="printBill()" disabled>Print Bill</button>
+      <p class="info-text" id="infoText">Pilih meja yang sudah Check-in dulu</p>
+    </div>
+
+    <div id="billArea"></div>
   </div>
 
-  <div id="billArea"></div>
+  <!-- TAB 4: LAPORAN -->
+  <div id="laporan" class="tab-content">
+    <h2>📊 Laporan Penjualan</h2>
+    <div class="section">
+      <h3>Filter Laporan</h3>
+      <input type="date" id="filterTanggal">
+      <select id="filterBulan">
+        <option value="">Pilih Bulan</option>
+        <option value="01">Januari</option><option value="02">Februari</option>
+        <option value="03">Maret</option><option value="04">April</option>
+        <option value="05">Mei</option><option value="06">Juni</option>
+        <option value="07">Juli</option><option value="08">Agustus</option>
+        <option value="09">September</option><option value="10">Oktober</option>
+        <option value="11">November</option><option value="12">Desember</option>
+      </select>
+      <input type="number" id="filterTahun" placeholder="2025">
+      <button class="btn-edit" onclick="loadLaporan()">Tampilkan Laporan</button>
+      <button class="btn-print" onclick="window.print()">Print Laporan</button>
+    </div>
+
+    <div class="section">
+      <h3 id="judulLaporan">Riwayat Pesanan</h3>
+      <table id="tabelLaporan">
+        <thead><tr><th>Waktu</th><th>Meja</th><th>Pemesan</th><th>Waitress</th><th>Grand Total</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <h3 id="totalLaporan" style="text-align:right;">Total: Rp 0</h3>
+    </div>
+  </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -145,6 +202,14 @@
     let menuList = {};
     let pesananSement = {};
     let pesananAktif = {};
+
+    // TAB SWITCHER
+    window.openTab = (tabName) => {
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+      document.getElementById(tabName).classList.add('active');
+      event.target.classList.add('active');
+    }
 
     onValue(ref(db, "pesanan_aktif"), (snapshot) => {
       pesananAktif = snapshot.val() || {};
@@ -243,30 +308,56 @@
       });
     });
 
-    window.loadPesanan = () => {
+    window.loadLaporan = () => {
+      const tanggal = document.getElementById("filterTanggal").value;
+      const bulan = document.getElementById("filterBulan").value;
+      const tahun = document.getElementById("filterTahun").value;
+
       onValue(ref(db, "pesanan"), (snapshot) => {
-        const tbody = document.querySelector("#tabelPesanan tbody");
+        const tbody = document.querySelector("#tabelLaporan tbody");
         tbody.innerHTML = "";
+        let total = 0;
+        let count = 0;
+
         if (!snapshot.exists()) {
-          tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Belum ada pesanan</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">Belum ada pesanan</td></tr>`;
+          document.getElementById("totalLaporan").textContent = "Total: Rp 0";
           return;
         }
+
         snapshot.forEach((child) => {
           const data = child.val();
-          const key = child.key;
-          tbody.innerHTML += `
-            <tr>
-              <td>${data.waktu}</td>
-              <td>${data.mejaId}</td>
-              <td>${data.pemesan}</td>
-              <td>${data.waitress || '-'}</td>
-              <td>Rp ${(data.grandTotal || 0).toLocaleString()}</td>
-              <td><button class="btn-del" onclick="hapusPesanan('${key}')">Hapus</button></td>
-            </tr>`;
+          let show = true;
+
+          if (tanggal &&!data.waktu.includes(tanggal.split('-').reverse().join('/'))) show = false;
+          if (bulan && tahun &&!data.waktu.includes(`${bulan}/${tahun}`)) show = false;
+          if (bulan &&!tahun &&!data.waktu.includes(`/${bulan}/`)) show = false;
+          if (tahun &&!bulan &&!data.waktu.includes(`/${tahun}`)) show = false;
+
+          if (show) {
+            tbody.innerHTML += `
+              <tr>
+                <td>${data.waktu}</td>
+                <td>${data.mejaId}</td>
+                <td>${data.pemesan}</td>
+                <td>${data.waitress || '-'}</td>
+                <td>Rp ${(data.grandTotal || 0).toLocaleString()}</td>
+              </tr>`;
+            total += data.grandTotal || 0;
+            count++;
+          }
         });
+
+        document.getElementById("totalLaporan").textContent = `Total: Rp ${total.toLocaleString()} dari ${count} transaksi`;
+
+        let judul = "Riwayat Pesanan";
+        if (tanggal) judul = `Laporan Tanggal ${tanggal}`;
+        else if (bulan && tahun) judul = `Laporan Bulan ${bulan}/${tahun}`;
+        else if (bulan) judul = `Laporan Bulan ${bulan}`;
+        else if (tahun) judul = `Laporan Tahun ${tahun}`;
+        document.getElementById("judulLaporan").textContent = judul;
       });
     };
-    loadPesanan();
 
     window.tambahMeja = () => {
       const nama = document.getElementById("inputNamaMeja").value.trim();
@@ -297,15 +388,6 @@
       }
     };
 
-    window.hapusPesanan = (key) => {
-      if (confirm("Hapus pesanan ini?")) {
-        remove(ref(db, "pesanan/" + key)).then(() => {
-          alert("Pesanan dihapus");
-          document.getElementById("billArea").innerHTML = "";
-        });
-      }
-    };
-
     window.checkInMeja = (id) => {
       const namaPemesan = prompt("Masukkan nama pemesan:");
       if (!namaPemesan) return;
@@ -331,6 +413,10 @@
       const pesanan = pesananAktif[id];
       if (!pesanan) return alert("Pesanan tidak ditemukan");
 
+      openTab('kasir');
+      document.querySelector('.nav-btn:nth-child(3)').classList.add('active');
+      document.querySelector('.nav-btn:nth-child(1)').classList.remove('active');
+
       document.getElementById("selectMeja").value = id;
       document.getElementById("inputPemesan").value = pesanan.pemesan || "";
       document.getElementById("inputWaitress").value = pesanan.waitress || "";
@@ -344,7 +430,6 @@
 
       window.pesananAktifSement = { mejaId: id, pemesan: pesanan.pemesan, waitress: pesanan.waitress, items: pesananSement[id] };
       updateFormStatus();
-      window.scrollTo({ top: 400, behavior: 'smooth' });
     };
 
     window.checkOutMeja = (id) => {
@@ -390,7 +475,6 @@
       ).join("");
 
       window.pesananAktifSement = { mejaId, pemesan, waitress, items: pesananSement[mejaId] };
-
       saveToFirebase(mejaId);
     };
 
