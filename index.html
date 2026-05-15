@@ -6,7 +6,7 @@
   <title>Kasir Naotajun</title>
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; background: #fff0f5; }
-.section {
+   .section {
       background: white; padding: 15px; margin-bottom: 20px; border-radius: 8px;
       box-shadow: 0 2px 6px rgba(255,105,180,0.2); overflow-x: auto;
       border: 1px solid #ffb6c1;
@@ -24,35 +24,35 @@
       padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; margin: 2px;
       font-weight: bold;
     }
-.btn-tambah { background: #ff69b4; color: white; }
-.btn-tambah:hover:not(:disabled) { background: #ff1493; }
-.btn-edit { background: #ff85c1; color: white; }
-.btn-edit:hover:not(:disabled) { background: #ff69b4; }
-.btn-del { background: #ff4d6d; color: white; }
-.btn-del:hover:not(:disabled) { background: #e63946; }
-.btn-print { background: #ff9ebc; color: white; }
-.btn-print:hover:not(:disabled) { background: #ff69b4; }
+   .btn-tambah { background: #ff69b4; color: white; }
+   .btn-tambah:hover:not(:disabled) { background: #ff1493; }
+   .btn-edit { background: #ff85c1; color: white; }
+   .btn-edit:hover:not(:disabled) { background: #ff69b4; }
+   .btn-del { background: #ff4d6d; color: white; }
+   .btn-del:hover:not(:disabled) { background: #e63946; }
+   .btn-print { background: #ff9ebc; color: white; }
+   .btn-print:hover:not(:disabled) { background: #ff69b4; }
     table { width: 100%; border-collapse: collapse; table-layout: auto; }
     th, td { border: 1px solid #ffb6c1; padding: 10px; text-align: left; white-space: nowrap; }
     th { background: #ff69b4; color: white; }
     h2, h3 { color: #d63384; }
-.order-list { font-size: 13px; background: #fff0f5; padding: 8px; border-radius: 6px; margin-top: 5px; }
-.order-list li { margin: 3px 0; }
-.info-text { color: #d63384; font-size: 13px; margin-top: 8px; }
+   .order-list { font-size: 13px; background: #fff0f5; padding: 8px; border-radius: 6px; margin-top: 5px; }
+   .order-list li { margin: 3px 0; }
+   .info-text { color: #d63384; font-size: 13px; margin-top: 8px; }
 
-.bill {
+   .bill {
       width: 280px; margin: 20px auto; padding: 10px; background: white;
       border: 1px solid #000; font-family: 'Courier New', monospace; font-size: 12px;
     }
-.bill h3,.bill p { text-align: center; margin: 4px 0; }
-.bill table { width: 100%; border-collapse: collapse; font-size: 12px; }
-.bill th,.bill td { border: none; padding: 3px 2px; }
-.bill.line { border-top: 1px dashed #000; margin: 6px 0; }
+   .bill h3,.bill p { text-align: center; margin: 4px 0; }
+   .bill table { width: 100%; border-collapse: collapse; font-size: 12px; }
+   .bill th,.bill td { border: none; padding: 3px 2px; }
+   .bill.line { border-top: 1px dashed #000; margin: 6px 0; }
 
     @media print {
       body * { visibility: hidden; }
-.bill,.bill * { visibility: visible; }
-.bill { position: absolute; left: 0; top: 0; width: 100%; border: none; margin: 0; padding: 0; }
+     .bill,.bill * { visibility: visible; }
+     .bill { position: absolute; left: 0; top: 0; width: 100%; border: none; margin: 0; padding: 0; }
     }
   </style>
 </head>
@@ -153,7 +153,8 @@
           let pesananHTML = "-";
 
           if (data.status === "checked-in" && pesanan && pesanan.items && pesanan.items.length > 0) {
-            aksiBtn = `<button class="btn-edit" onclick="checkOutMeja('${id}')">Check-out</button>
+            aksiBtn = `<button class="btn-edit" onclick="editPesanan('${id}')">Edit</button>
+                       <button class="btn-edit" onclick="checkOutMeja('${id}')">Check-out</button>
                        <button class="btn-del" onclick="hapusMeja('${id}')">Hapus</button>`;
 
             const total = pesanan.grandTotal || 0;
@@ -203,13 +204,8 @@
       document.getElementById("btnPrintBill").disabled =!isCheckedIn;
 
       document.getElementById("infoText").textContent = isCheckedIn
-     ? "Meja sudah Check-in. Silakan isi pesanan."
+       ? "Meja sudah Check-in. Silakan isi pesanan."
         : "Pilih meja yang sudah Check-in dulu";
-
-      if (isCheckedIn && pesananAktif[mejaId]) {
-        document.getElementById("inputPemesan").value = pesananAktif[mejaId].pemesan || "";
-        document.getElementById("inputWaitress").value = pesananAktif[mejaId].waitress || "";
-      }
     }
 
     onValue(ref(db, "menu"), (snapshot) => {
@@ -314,6 +310,26 @@
 
       document.getElementById("selectMeja").value = id;
       updateFormStatus();
+    };
+
+    window.editPesanan = (id) => {
+      const pesanan = pesananAktif[id];
+      if (!pesanan) return alert("Pesanan tidak ditemukan");
+
+      document.getElementById("selectMeja").value = id;
+      document.getElementById("inputPemesan").value = pesanan.pemesan || "";
+      document.getElementById("inputWaitress").value = pesanan.waitress || "";
+
+      pesananSement[id] = pesanan.items || [];
+
+      document.getElementById("listPesanan").innerHTML = pesananSement[id].map((p,i) =>
+        `<p>${p.nama} x${p.qty} = Rp ${p.subtotal.toLocaleString()}
+         <button class="btn-del" style="padding:2px 6px;" onclick="hapusItemPesanan(${i})">x</button></p>`
+      ).join("");
+
+      window.pesananAktifSement = { mejaId: id, pemesan: pesanan.pemesan, waitress: pesanan.waitress, items: pesananSement[id] };
+      updateFormStatus();
+      window.scrollTo({ top: 400, behavior: 'smooth' });
     };
 
     window.checkOutMeja = (id) => {
