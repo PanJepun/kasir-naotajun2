@@ -50,7 +50,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getFirestore, collection, getDocs, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-    // GANTI INI DENGAN CONFIG FIREBASE KAMU
+    // GANTI DENGAN CONFIG FIREBASE KAMU
     const firebaseConfig = {
       apiKey: "MASUKKAN_API_KEY",
       authDomain: "MASUKKAN_AUTH_DOMAIN",
@@ -63,17 +63,30 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // Load daftar meja ke dropdown pas halaman dibuka
+    // Load daftar meja ke dropdown
     async function loadMeja() {
-      const querySnapshot = await getDocs(collection(db, "tables"));
-      const select = document.getElementById("mejaSelect");
-      
-      querySnapshot.forEach((doc) => {
-        const option = document.createElement("option");
-        option.value = doc.id;
-        option.textContent = doc.data().name || doc.id;
-        select.appendChild(option);
-      });
+      try {
+        console.log("Mulai ambil data meja...");
+        const querySnapshot = await getDocs(collection(db, "tables"));
+        console.log("Jumlah dokumen ditemukan:", querySnapshot.size);
+        
+        const select = document.getElementById("mejaSelect");
+        
+        querySnapshot.forEach((doc) => {
+          console.log("Ketemu meja:", doc.id, doc.data());
+          const option = document.createElement("option");
+          option.value = doc.id;
+          option.textContent = doc.data().name || doc.id;
+          select.appendChild(option);
+        });
+
+        if (querySnapshot.size === 0) {
+          console.log("Collection 'tables' kosong");
+        }
+      } catch (error) {
+        console.error("Gagal load meja:", error);
+        alert("Gagal load data meja: " + error.message);
+      }
     }
     loadMeja();
 
@@ -112,12 +125,12 @@
         alert("Check-in berhasil!");
 
       } catch (error) {
-        console.error("Error:", error);
+        console.error("Error check-in:", error);
         alert("Gagal check-in: " + error.message);
       }
     }
 
-    // Bind tombol ke fungsi checkIn
+    // Bind tombol
     document.getElementById("btnCheckIn").addEventListener("click", checkIn);
   </script>
 </body>
