@@ -121,8 +121,8 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    const PPN_RATE = 0.11; // 11%
-    const TAX_RATE = 0.10; // 10%
+    const PPN_RATE = 0.11;
+    const TAX_RATE = 0.10;
 
     let menuList = {};
     let pesananSement = {};
@@ -148,19 +148,24 @@
           let aksiBtn = "";
           let pesananHTML = "-";
 
-          if (data.status === "checked-in" && pesanan) {
+          if (data.status === "checked-in" && pesanan && pesanan.items && pesanan.items.length > 0) {
             aksiBtn = `<button class="btn-edit" onclick="checkOutMeja('${id}')">Check-out</button>
                        <button class="btn-del" onclick="hapusMeja('${id}')">Hapus</button>`;
 
+            const total = pesanan.grandTotal || 0;
             pesananHTML = `
               <div class="order-list">
-                <b>${pesanan.pemesan}</b> | Waitress: ${pesanan.waitress}<br>
+                <b>${pesanan.pemesan || '-'}</b> | Waitress: ${pesanan.waitress || '-'}<br>
                 <ul style="margin:5px 0; padding-left:18px;">
-                  ${pesanan.items.map(i => `<li>${i.nama} x${i.qty} = Rp ${i.subtotal.toLocaleString()}</li>`).join("")}
+                  ${pesanan.items.map(i => `<li>${i.nama} x${i.qty} = Rp ${(i.subtotal || 0).toLocaleString()}</li>`).join("")}
                 </ul>
-                <b>Grand Total: Rp ${pesanan.grandTotal.toLocaleString()}</b>
+                <b>Grand Total: Rp ${total.toLocaleString()}</b>
               </div>
             `;
+          } else if (data.status === "checked-in") {
+            aksiBtn = `<button class="btn-edit" onclick="checkOutMeja('${id}')">Check-out</button>
+                       <button class="btn-del" onclick="hapusMeja('${id}')">Hapus</button>`;
+            pesananHTML = "<div class='order-list'>Belum ada pesanan</div>";
           } else {
             aksiBtn = `<button class="btn-tambah" onclick="checkInMeja('${id}')">Check-in</button>
                        <button class="btn-del" onclick="hapusMeja('${id}')">Hapus</button>`;
@@ -216,7 +221,7 @@
               <td>${data.mejaId}</td>
               <td>${data.pemesan}</td>
               <td>${data.waitress || '-'}</td>
-              <td>Rp ${data.grandTotal.toLocaleString()}</td>
+              <td>Rp ${(data.grandTotal || 0).toLocaleString()}</td>
               <td><button class="btn-del" onclick="hapusPesanan('${key}')">Hapus</button></td>
             </tr>`;
         });
@@ -263,30 +268,22 @@
     };
 
     window.checkInMeja = (id) => {
-  const namaPemesan = prompt("Masukkan nama pemesan:");
-  if (!namaPemesan) return;
-  
-  const namaWaitress = prompt("Masukkan nama waitress:");
-  if (!namaWaitress) return;
-  
-  update(ref(db, "meja/" + id), { status: "checked-in" });
-  
-  document.getElementById("selectMeja").value = id;
-  document.getElementById("inputPemesan").value = namaPemesan;
-  document.getElementById("inputWaitress").value = namaWaitress;
+      const namaPemesan = prompt("Masukkan nama pemesan:");
+      if (!namaPemesan) return;
+      const namaWaitress = prompt("Masukkan nama waitress:");
+      if (!namaWaitress) return;
+      update(ref(db, "meja/" + id), { status: "checked-in" });
+      document.getElementById("selectMeja").value = id;
+      document.getElementById("inputPemesan").value = namaPemesan;
+      document.getElementById("inputWaitress").value = namaWaitress;
     };
 
-  window.checkOutMeja = (id) => {
-  if (confirm("Yakin mau check-out meja ini?")) {
-    update(ref(db, "meja/" + id), { 
-      status: "available",
-      namaPemesan: null,
-      namaWaitress: null
-    });
-    remove(ref(db, "pesanan_aktif/" + id));
-  }
-};
-     
+    window.checkOutMeja = (id) => {
+      if (confirm("Yakin mau check-out meja ini?")) {
+        update(ref(db, "meja/" + id), { status: "available" });
+        remove(ref(db, "pesanan_aktif/" + id));
+      }
+    };
 
     window.tambahPesanan = () => {
       const mejaId = document.getElementById("selectMeja").value;
