@@ -6,7 +6,7 @@
   <title>Kasir Naotajun</title>
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; background: #fff0f5; }
-   .section {
+  .section {
       background: white; padding: 15px; margin-bottom: 20px; border-radius: 8px;
       box-shadow: 0 2px 6px rgba(255,105,180,0.2); overflow-x: auto;
       border: 1px solid #ffb6c1;
@@ -24,35 +24,43 @@
       padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; margin: 2px;
       font-weight: bold;
     }
-   .btn-tambah { background: #ff69b4; color: white; }
-   .btn-tambah:hover:not(:disabled) { background: #ff1493; }
-   .btn-edit { background: #ff85c1; color: white; }
-   .btn-edit:hover:not(:disabled) { background: #ff69b4; }
-   .btn-del { background: #ff4d6d; color: white; }
-   .btn-del:hover:not(:disabled) { background: #e63946; }
-   .btn-print { background: #ff9ebc; color: white; }
-   .btn-print:hover:not(:disabled) { background: #ff69b4; }
+  .btn-tambah { background: #ff69b4; color: white; }
+  .btn-tambah:hover:not(:disabled) { background: #ff1493; }
+  .btn-edit { background: #ff85c1; color: white; }
+  .btn-edit:hover:not(:disabled) { background: #ff69b4; }
+  .btn-del { background: #ff4d6d; color: white; }
+  .btn-del:hover:not(:disabled) { background: #e63946; }
+  .btn-print { background: #ff9ebc; color: white; }
+  .btn-print:hover:not(:disabled) { background: #ff69b4; }
     table { width: 100%; border-collapse: collapse; table-layout: auto; }
     th, td { border: 1px solid #ffb6c1; padding: 10px; text-align: left; white-space: nowrap; }
     th { background: #ff69b4; color: white; }
     h2, h3 { color: #d63384; }
-   .order-list { font-size: 13px; background: #fff0f5; padding: 8px; border-radius: 6px; margin-top: 5px; }
-   .order-list li { margin: 3px 0; }
-   .info-text { color: #d63384; font-size: 13px; margin-top: 8px; }
+  .order-list { font-size: 13px; background: #fff0f5; padding: 8px; border-radius: 6px; margin-top: 5px; }
+  .order-list li { margin: 3px 0; }
+  .info-text { color: #d63384; font-size: 13px; margin-top: 8px; }
 
-   .bill {
+  .toggle-wrap {
+      display: flex; align-items: center; gap: 8px; margin: 10px 0;
+      font-size: 14px; color: #d63384;
+    }
+   .toggle-wrap input[type="checkbox"] {
+      width: 18px; height: 18px; cursor: pointer;
+    }
+
+  .bill {
       width: 280px; margin: 20px auto; padding: 10px; background: white;
       border: 1px solid #000; font-family: 'Courier New', monospace; font-size: 12px;
     }
-   .bill h3,.bill p { text-align: center; margin: 4px 0; }
-   .bill table { width: 100%; border-collapse: collapse; font-size: 12px; }
-   .bill th,.bill td { border: none; padding: 3px 2px; }
-   .bill.line { border-top: 1px dashed #000; margin: 6px 0; }
+  .bill h3,.bill p { text-align: center; margin: 4px 0; }
+  .bill table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .bill th,.bill td { border: none; padding: 3px 2px; }
+  .bill.line { border-top: 1px dashed #000; margin: 6px 0; }
 
     @media print {
       body * { visibility: hidden; }
-     .bill,.bill * { visibility: visible; }
-     .bill { position: absolute; left: 0; top: 0; width: 100%; border: none; margin: 0; padding: 0; }
+    .bill,.bill * { visibility: visible; }
+    .bill { position: absolute; left: 0; top: 0; width: 100%; border: none; margin: 0; padding: 0; }
     }
   </style>
 </head>
@@ -83,6 +91,12 @@
     <input type="number" id="inputQty" value="1" min="1" style="width:60px;" disabled>
     <input type="text" id="inputPemesan" placeholder="Nama pemesan" disabled>
     <input type="text" id="inputWaitress" placeholder="Nama waitress" disabled>
+
+    <div class="toggle-wrap">
+      <input type="checkbox" id="toggleCheckout">
+      <label for="toggleCheckout">Auto Checkout saat Print Bill</label>
+    </div>
+
     <button class="btn-tambah" id="btnTambahPesanan" onclick="tambahPesanan()" disabled>Tambah ke Pesanan</button>
     <div id="listPesanan"></div>
     <button class="btn-print" id="btnPrintBill" onclick="printBill()" disabled>Print Bill</button>
@@ -202,9 +216,10 @@
       document.getElementById("inputWaitress").disabled =!isCheckedIn;
       document.getElementById("btnTambahPesanan").disabled =!isCheckedIn;
       document.getElementById("btnPrintBill").disabled =!isCheckedIn;
+      document.getElementById("toggleCheckout").disabled =!isCheckedIn;
 
       document.getElementById("infoText").textContent = isCheckedIn
-       ? "Meja sudah Check-in. Silakan isi pesanan."
+      ? "Meja sudah Check-in. Silakan isi pesanan."
         : "Pilih meja yang sudah Check-in dulu";
     }
 
@@ -390,7 +405,7 @@
       saveToFirebase(mejaId);
     };
 
-    window.printBill = () => {
+    window.printBill = async () => {
       if (!window.pesananAktifSement) return alert("Buat pesanan dulu!");
 
       const { mejaId, pemesan, waitress, items } = window.pesananAktifSement;
@@ -473,11 +488,19 @@
       document.getElementById("billArea").innerHTML = billHTML;
       window.print();
 
-      push(ref(db, "pesanan"), { mejaId, pemesan, waitress, items, subtotal, ppn, tax, grandTotal, waktu });
+      await push(ref(db, "pesanan"), { mejaId, pemesan, waitress, items, subtotal, ppn, tax, grandTotal, waktu });
+
+      const autoCheckout = document.getElementById("toggleCheckout").checked;
+
+      if (autoCheckout) {
+        await update(ref(db, "meja/" + mejaId), { status: "available" });
+        await remove(ref(db, "pesanan_aktif/" + mejaId));
+      }
 
       pesananSement[mejaId] = [];
       document.getElementById("listPesanan").innerHTML = "";
       window.pesananAktifSement = null;
+      document.getElementById("toggleCheckout").checked = false;
       updateFormStatus();
     };
   </script>
