@@ -1,133 +1,239 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-  <title>Kasir Naotajun2</title>
   <meta charset="UTF-8">
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kasir Meja</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    input, button, select { padding: 8px; margin: 5px; }
-    #roleBadge { background:#007bff; color:white; padding:4px 8px; border-radius:4px; }
-    .section { border: 1px solid #ddd; padding: 15px; margin-top: 15px; border-radius: 8px; }
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 30px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .box {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      box-sizing: border-box;
+      font-size: 16px;
+    }
+    button {
+      background: #28a745;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button:hover {
+      background: #218838;
+    }
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    .hidden {
+      display: none;
+    }
+    h2, h3 {
+      margin-top: 0;
+    }
+    #status {
+      padding: 10px;
+      border-radius: 5px;
+      margin-top: 10px;
+      text-align: center;
+    }
+    .success {
+      background: #d4edda;
+      color: #155724;
+    }
+    .error {
+      background: #f8d7da;
+      color: #721c24;
+    }
   </style>
 </head>
 <body>
 
-<div id="loginPage">
-  <h2>Login Kasir Naotajun2</h2>
-  <input type="email" id="email" placeholder="Email">
-  <input type="password" id="password" placeholder="Password">
-  <button onclick="login()">Login</button>
-</div>
-
-<div id="appPage" style="display:none;">
-  <h2>Kasir Naotajun2</h2>
-  <span id="roleBadge">ROLE</span>
-  <span id="userEmail"></span>
-  <button onclick="logout()">Logout</button>
-
-  <div class="section">
-    <h3>1. Manajemen Meja & Check-in</h3>
-
-    <!-- Bagian ini hanya muncul untuk admin -->
-    <div id="tambahMejaSection">
-      <h4>Tambah Meja</h4>
-      <input type="text" id="namaMeja" placeholder="Nama Meja, contoh: Meja 5">
-      <button onclick="tambahMeja()">Tambah Meja</button>
-    </div>
-
-    <h4>Check-in Meja</h4>
-    <select id="pilihMeja">
-      <option>Pilih Meja</option>
-    </select>
-    <input type="text" id="kunciReservasi" placeholder="Masukkan Kunci Reservasi">
-    <button onclick="checkinMeja()">Check-in Meja</button>
+  <!-- LOGIN -->
+  <div id="loginBox" class="box">
+    <h2>Login Kasir</h2>
+    <input type="email" id="email" placeholder="Email" value="waitress@kasir.com">
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+    <div id="loginStatus"></div>
   </div>
 
-  <div class="section">
-    <h3>2. Input Order</h3>
-    <p>Bagian order kamu taruh di sini</p>
-  </div>
-</div>
-
-<script>
-// 1. Config Firebase kamu
-const firebaseConfig = {
-  apiKey: "AIzaSyA94bWbZJA0peV6rDg-vaHac1Ghn9t2ZW4",
-  authDomain: "kasir-naotajun2.firebaseapp.com",
-  databaseURL: "https://kasir-naotajun2-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "kasir-naotajun2",
-  storageBucket: "kasir-naotajun2.firebasestorage.app",
-  messagingSenderId: "346309315110",
-  appId: "1:346309315110:web:1bc443785229fa7a0b74e7"
-};
-
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.database();
-
-// 2. Fungsi Login
-function login() {
-  const email = document.getElementById('email').value;
-  const password = document.getElementById('password').value;
-  
-  auth.signInWithEmailAndPassword(email, password)
-    .catch(err => alert("Login gagal: " + err.message));
-}
-
-// 3. Fungsi Logout
-function logout() {
-  auth.signOut();
-}
-
-// 4. Cek status login dan role
-auth.onAuthStateChanged(async (user) => {
-  if (user) {
-    const snap = await db.ref('users/' + user.uid).once('value');
-    const userData = snap.val();
+  <!-- KASIR -->
+  <div id="kasirBox" class="box hidden">
+    <h2>Check-in Meja</h2>
     
-    if (!userData) {
-      alert("Data user tidak ditemukan di database!");
+    <label>Pilih Meja:</label>
+    <select id="pilihMeja">
+      <option value="">-- Loading meja... --</option>
+    </select>
+    
+    <label>Masukkan Kunci Reservasi:</label>
+    <input type="password" id="kunciInput" placeholder="Contoh: admin123">
+    
+    <button id="checkinBtn" onclick="checkinMeja()">Check-in Meja</button>
+    <div id="status"></div>
+    
+    <button onclick="logout()" style="background:#dc3545; margin-top:15px;">Logout</button>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <script>
+    // GANTI DENGAN CONFIG FIREBASE KAMU
+    const firebaseConfig = {
+      apiKey: "API_KEY_KAMU",
+      authDomain: "kasir-naotajun2.firebaseapp.com",
+      databaseURL: "https://kasir-naotajun2-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "kasir-naotajun2",
+      storageBucket: "kasir-naotajun2.appspot.com",
+      messagingSenderId: "SENDER_ID_KAMU",
+      appId: "APP_ID_KAMU"
+    };
+
+    // Init Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
+
+    let currentUser = null;
+
+    // Cek kalau udah login
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        currentUser = user;
+        document.getElementById('loginBox').classList.add('hidden');
+        document.getElementById('kasirBox').classList.remove('hidden');
+        loadMeja();
+      } else {
+        document.getElementById('loginBox').classList.remove('hidden');
+        document.getElementById('kasirBox').classList.add('hidden');
+      }
+    });
+
+    // LOGIN
+    function login() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const statusDiv = document.getElementById('loginStatus');
+      
+      auth.signInWithEmailAndPassword(email, password)
+        .then(() => {
+          statusDiv.innerHTML = '';
+        })
+        .catch(error => {
+          statusDiv.innerHTML = `<div class="error">${error.message}</div>`;
+        });
+    }
+
+    // LOGOUT
+    function logout() {
       auth.signOut();
-      return;
     }
 
-    document.getElementById('loginPage').style.display = 'none';
-    document.getElementById('appPage').style.display = 'block';
-    document.getElementById('userEmail').innerText = userData.email;
-    document.getElementById('roleBadge').innerText = userData.role.toUpperCase();
-
-    // Sembunyikan menu admin kalau bukan admin
-    if (userData.role !== 'admin') {
-      document.getElementById('tambahMejaSection').style.display = 'none';
+    // LOAD MEJA KE DROPDOWN
+    function loadMeja() {
+      const selectMeja = document.getElementById('pilihMeja');
+      
+      db.ref('/').on('value', (snapshot) => {
+        selectMeja.innerHTML = '<option value="">-- Pilih Meja --</option>';
+        
+        snapshot.forEach((childSnapshot) => {
+          const mejaData = childSnapshot.val();
+          const mejaId = childSnapshot.key;
+          
+          // Hanya tampilkan yang punya field nama dan status kosong
+          if (mejaData && mejaData.nama && mejaData.status === 'kosong') {
+            const option = document.createElement('option');
+            option.value = mejaId;
+            option.textContent = mejaData.nama;
+            selectMeja.appendChild(option);
+          }
+        });
+      });
     }
 
-  } else {
-    document.getElementById('loginPage').style.display = 'block';
-    document.getElementById('appPage').style.display = 'none';
-  }
-});
+    // CHECK-IN MEJA
+    function checkinMeja() {
+      const mejaId = document.getElementById('pilihMeja').value;
+      const kunciInput = document.getElementById('kunciInput').value;
+      const statusDiv = document.getElementById('status');
+      const btn = document.getElementById('checkinBtn');
 
-// 5. Contoh fungsi tambah meja
-function tambahMeja() {
-  const nama = document.getElementById('namaMeja').value;
-  if (!nama) return alert("Isi nama meja dulu");
-  
-  db.ref('meja').push({
-    nama: nama,
-    status: 'kosong',
-    dibuatOleh: auth.currentUser.email
-  });
-  alert("Meja berhasil ditambah");
-  document.getElementById('namaMeja').value = '';
-}
+      if (!mejaId) {
+        showStatus('Pilih meja dulu!', 'error');
+        return;
+      }
+      if (!kunciInput) {
+        showStatus('Masukkan kunci reservasi!', 'error');
+        return;
+      }
 
-function checkinMeja() {
-  alert("Fungsi checkin belum diisi");
-}
-</script>
+      btn.disabled = true;
+      showStatus('Memproses...', '');
 
+      db.ref('/' + mejaId).once('value').then(snapshot => {
+        const mejaData = snapshot.val();
+        
+        if (!mejaData) {
+          showStatus('Meja tidak ditemukan!', 'error');
+          btn.disabled = false;
+          return;
+        }
+        
+        if (mejaData.kunciReservasi !== kunciInput) {
+          showStatus('Kunci reservasi salah!', 'error');
+          btn.disabled = false;
+          return;
+        }
+        
+        if (mejaData.status !== 'kosong') {
+          showStatus('Meja sudah terpakai!', 'error');
+          btn.disabled = false;
+          return;
+        }
+        
+        // Update status jadi aktif
+        return db.ref('/' + mejaId).update({
+          status: 'aktif',
+          waktuCheckin: Date.now(),
+          kasir: currentUser.email
+        });
+        
+      }).then(() => {
+        showStatus('Check-in berhasil! Meja ' + document.getElementById('pilihMeja').options[document.getElementById('pilihMeja').selectedIndex].text, 'success');
+        document.getElementById('kunciInput').value = '';
+        btn.disabled = false;
+      }).catch(error => {
+        showStatus('Error: ' + error.message, 'error');
+        btn.disabled = false;
+      });
+    }
+
+    function showStatus(msg, type) {
+      const statusDiv = document.getElementById('status');
+      statusDiv.textContent = msg;
+      statusDiv.className = type;
+    }
+  </script>
 </body>
 </html>
