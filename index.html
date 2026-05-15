@@ -19,6 +19,7 @@
     select, input { padding: 6px; margin: 2px; border: 1px solid #ccc; border-radius: 4px; }
     .pesanan { font-size: 12px; text-align: left; }
     input[type="text"], input[type="number"] { width: 150px; }
+    input[type="number"].qty { width: 50px; }
     .edit-row { background: #fff3cd; }
     small { font-size: 11px; color: #555; }
   </style>
@@ -160,8 +161,10 @@
         pesananList.forEach(ps => {
           const menu = menuList.find(m => m.id === ps.menuId);
           if (menu) {
-            pesananHTML += `- ${menu.nama} Rp${menu.harga.toLocaleString("id-ID")}<br>`;
-            total += menu.harga;
+            const qty = ps.qty || 1;
+            const subtotal = menu.harga * qty;
+            pesananHTML += `- ${qty}x ${menu.nama} Rp${subtotal.toLocaleString("id-ID")}<br>`;
+            total += subtotal;
           }
         });
 
@@ -198,6 +201,7 @@
                   <option value="">Pilih Menu</option>
                   ${menuList.map(m => `<option value="${m.id}">${m.nama} - Rp${m.harga}</option>`).join("")}
                 </select>
+                <input type="number" id="qty-${docSnap.id}" class="qty" value="1" min="1">
                 <button onclick="tambahPesanan('${docSnap.id}')">Tambah</button>
               ` : "-"}
             </td>
@@ -259,7 +263,7 @@
         status: "checked-in",
         namaPemesan: nama,
         kunci: kunci,
-        waktuCheckin: new Date().toLocaleString("id-ID")
+        waktuCheckin: new Date(). toLocaleString("id-ID")
       });
     };
 
@@ -276,13 +280,18 @@
 
     window.tambahPesanan = async (mejaId) => {
       const menuId = document.getElementById(`menu-${mejaId}`).value;
+      const qty = parseInt(document.getElementById(`qty-${mejaId}`).value);
       if (!menuId) return alert("Pilih menu dulu!");
+      if (!qty || qty < 1) return alert("Qty minimal 1!");
+      
       await addDoc(collection(db, "pesanan"), {
         mejaId: mejaId,
         menuId: menuId,
+        qty: qty,
         waktu: new Date().toLocaleString("id-ID")
       });
       document.getElementById(`menu-${mejaId}`).value = "";
+      document.getElementById(`qty-${mejaId}`).value = "1";
     };
   </script>
 </body>
