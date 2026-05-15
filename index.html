@@ -3,29 +3,28 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Status Meja</title>
+<title>Status Meja Restoran</title>
 <style>
 body{font-family:Arial,sans-serif;padding:20px;background:#f5f5f5}
-h1{text-align:center}
-table{width:100%;max-width:800px;margin:20px auto;border-collapse:collapse;background:white;box-shadow:0 2px 8px rgba(0,0,0,0.1)}
+h1{text-align:center;color:#333}
+table{width:100%;max-width:900px;margin:20px auto;border-collapse:collapse;background:white;box-shadow:0 2px 8px rgba(0,0,0,0.1)}
 th,td{padding:12px;text-align:left;border-bottom:1px solid #ddd}
 th{background:#4CAF50;color:white}
 .status-checkin{color:green;font-weight:bold}
 .status-belum{color:red;font-weight:bold}
-input{padding:6px;margin-right:5px}
+input{padding:6px;margin-right:5px;border:1px solid #ccc;border-radius:4px}
 button{padding:6px 12px;background:#4CAF50;color:white;border:none;border-radius:4px;cursor:pointer}
-button:hover{background:#45a049}
-button.checkout{background:#f44336} /* TAMBAHAN */
-button.checkout:hover{background:#da190b} /* TAMBAHAN */
+button.checkout{background:#f44336}
+.error{color:red;text-align:center;padding:20px}
 </style>
 </head>
 <body>
 <h1>Status Meja Restoran</h1>
-<div id="tables"></div>
+<div id="tables">Loading data meja...</div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, getDocs, doc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"; // TAMBAHAN: serverTimestamp
+import { getFirestore, collection, getDocs, doc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAgiDxm8jmTBpInBQpE6zdEOik8OBm6Y_k",
@@ -41,71 +40,105 @@ const db = getFirestore(app);
 const tablesDiv = document.getElementById('tables');
 
 async function loadTables(){
-  const querySnapshot = await getDocs(collection(db, "tables"));
-  let html = `<table><tr><th>Meja</th><th>Status</th><th>Waktu Check-in</th><th>Kunci Reservasi</th><th>Aksi</th></tr>`; // TAMBAHAN: kolom Waktu Check-in
-  
-  querySnapshot.forEach((docSnap) => {
-    const data = docSnap.data();
-    const name = data.name || docSnap.id;
-    const checked = data.checked_in ? 'Sudah Check-in' : 'Belum Check-in';
-    const statusClass = data.checked_in ? 'status-checkin' : 'status-belum';
+  try{
+    console.log("Mulai load data meja...");
+    const querySnapshot = await getDocs(collection(db, "tables"));
+    console.log("Data diterima:", querySnapshot.size, "dokumen");
     
-    // TAMBAHAN: format waktu check-in
-    let timeStr = '-';
-    if(data.check_in_time && data.check_in_time.toDate){
-      timeStr = data.check_in_time.toDate().toLocaleString('id-ID');
+    if(querySnapshot.empty){
+      tablesDiv.innerHTML = '<p class="error">Belum ada data meja di Firebase</p>';
+      return;
     }
     
-    html += `<tr>
-      <td>${name}</td>
-      <td class="${statusClass}">${checked}</td>
-      <td>${timeStr}</td> <!-- TAMBAHAN -->
-      <td><input type="password" id="key-${docSnap.id}" placeholder="Masukkan kunci"></td>
-      <td>
-        ${data.checked_in ? 
-          `<button class="checkout" onclick="checkout('${docSnap.id}')">Check-out</button>` : // TAMBAHAN: tombol checkout
-          `<button onclick="checkin('${docSnap.id}')">Check-in</button>`
-        }
-      </td>
+    let html = `<table><tr>
+      <th>Meja</th>
+      <th>Status</th>
+      <th>Waktu Check-in</th>
+      <th>Kunci Reservasi</th>
+      <th>Aksi</th>
     </tr>`;
-  });
-  
-  html += '</table>';
-  tablesDiv.innerHTML = html;
+    
+    querySnapshot.forEach((docSnap) => {
+      const data = docSnap.data();
+      const name = data.name || docSnap.id;
+      const checked = data.checked_in ? '✓ Sudah Check-in' : '✗ Belum Check-in';
+      const statusClass = data.checked_in ? 'status-checkin' : 'status-belum';
+      
+      let timeStr = '-';
+      if(data.check_in_time && data.check_in_time.toDate){
+        timeStr = data.check_in_time.toDate().toLocaleString('id-ID');
+      }
+      
+      html += `<tr>
+        <td>${name}</td>
+        <td class="${statusClass}">${checked}</td>
+        <td>${timeStr}</td>
+        <td><input type="password" id="key-${docSnap.id}" placeholder="Masukkan kunci"></td>
+        <td>
+          ${data.checked_in ? 
+            `<button class="checkout" onclick="checkout('${docSnap.id}')">Check-out</button>` : 
+            `<button onclick="checkin('${docSnap.id}')">Check-in</button>`
+          }
+        </td>
+      </tr>`;
+    });
+    
+    html += '</table>';
+    tablesDiv.innerHTML = html;
+    
+  }catch(err){
+    console.error('Error detail:', err);
+    tablesDiv.innerHTML = `<p class="error">Error: ${err.message}<br>Cek console untuk detail</p>`;
+  }
 }
 
 window.checkin = async function(tableId){
   const keyInput = document.getElementById(`key-${tableId}`);
-  const key = keyInput.value;
+  const key = keyInput.value.trim();
   
-  const docRef = doc(db, "tables", tableId);
-  const docSnap = await getDocs(collection(db, "tables"));
-  let correctKey = '';
-  docSnap.forEach(d => {
-    if(d.id === tableId) correctKey = d.data().reservationKey;
-  });
+  if(!key){
+    alert('Masukkan kunci reservasi!');
+    return;
+  }
   
-  if(key === correctKey){
-    await updateDoc(docRef, {
-      checked_in: true,
-      check_in_time: serverTimestamp() // TAMBAHAN: simpan waktu check-in
+  try{
+    const docRef = doc(db, "tables", tableId);
+    const docSnap = await getDocs(collection(db, "tables"));
+    let correctKey = '';
+    docSnap.forEach(d => {
+      if(d.id === tableId) correctKey = d.data().reservationKey;
     });
-    alert('Check-in berhasil!');
-    loadTables();
-  } else {
-    alert('Kunci salah!');
+    
+    if(key === correctKey){
+      await updateDoc(docRef, {
+        checked_in: true,
+        check_in_time: serverTimestamp()
+      });
+      alert('Check-in berhasil!');
+      loadTables();
+    } else {
+      alert('Kunci salah!');
+    }
+  }catch(err){
+    alert('Error: ' + err.message);
   }
 }
 
-// TAMBAHAN: fungsi checkout
 window.checkout = async function(tableId){
-  const docRef = doc(db, "tables", tableId);
-  await updateDoc(docRef, {
-    checked_in: false,
-    check_in_time: null
-  });
-  alert('Check-out berhasil!');
-  loadTables();
+  if(!confirm('Yakin mau check-out meja ini?')){
+    return;
+  }
+  try{
+    const docRef = doc(db, "tables", tableId);
+    await updateDoc(docRef, {
+      checked_in: false,
+      check_in_time: null
+    });
+    alert('Check-out berhasil!');
+    loadTables();
+  }catch(err){
+    alert('Error: ' + err.message);
+  }
 }
 
 loadTables();
