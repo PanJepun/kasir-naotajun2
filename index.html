@@ -1,340 +1,112 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Kasir Meja Restoran</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kasir Naotajun</title>
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
-    .box { background: white; border: 1px solid #ddd; padding: 15px; margin-bottom: 20px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    h2, h3 { margin-top: 0; }
-    table { border-collapse: collapse; width: 100%; margin-top: 10px; }
-    th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
+    table { width: 100%; border-collapse: collapse; background: white; }
+    th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
     th { background: #4CAF50; color: white; }
-    button { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; margin: 2px; }
-    .btn-in { background: #4CAF50; color: white; }
-    .btn-out { background: #f44336; color: white; }
-    .btn-del { background: #ff9800; color: white; }
+    .btn-edit, .btn-del, .btn-save { 
+      padding: 5px 10px; margin: 2px; border: none; cursor: pointer; border-radius: 4px; 
+    }
     .btn-edit { background: #2196F3; color: white; }
+    .btn-del { background: #f44336; color: white; }
     .btn-save { background: #4CAF50; color: white; }
-    .btn-del-sm { background: #f44336; color: white; padding: 2px 6px; font-size: 11px; }
-    .btn-clear { background: #9C27B0; color: white; }
-    select, input { padding: 6px; margin: 2px; border: 1px solid #ccc; border-radius: 4px; }
-    .pesanan { font-size: 12px; text-align: left; }
-    input[type="text"], input[type="number"] { width: 150px; }
-    input[type="number"].qty { width: 50px; }
-    .edit-row { background: #fff3cd; }
-    small { font-size: 11px; color: #555; }
-    .pesanan-item { margin-bottom: 3px; }
+    input[type="text"] { padding: 5px; width: 90%; }
   </style>
 </head>
 <body>
-  <h2>🍽️ Kasir Meja Restoran</h2>
-  
-  <div class="box">
-    <h3>Tambah Menu</h3>
-    <input type="text" id="namaMenu" placeholder="Nama menu">
-    <input type="number" id="hargaMenu" placeholder="Harga">
-    <button class="btn-in" onclick="tambahMenu()">Simpan Menu</button>
-  </div>
-
-  <div class="box">
-    <h3>Daftar Menu</h3>
-    <table id="tabelMenu">
-      <thead>
-        <tr><th>Nama</th><th>Harga</th><th>Aksi</th></tr>
-      </thead>
-      <tbody><tr><td colspan="3">Loading...</td></tr></tbody>
-    </table>
-  </div>
-
-  <div class="box">
-    <h3>Status Meja</h3>
-    <table id="tabelMeja">
-      <thead>
-        <tr>
-          <th>Meja</th><th>Status</th><th>Waktu Check-in</th>
-          <th>Data Check-in</th><th>Menu</th><th>Pesanan</th><th>Aksi</th>
-        </tr>
-      </thead>
-      <tbody><tr><td colspan="7">Loading...</td></tr></tbody>
-    </table>
-  </div>
+  <h2>Daftar Meja</h2>
+  <table id="tabelMeja">
+    <thead>
+      <tr>
+        <th>Meja</th>
+        <th>Status</th>
+        <th>Waktu Check-in</th>
+        <th>Aksi</th>
+      </tr>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getFirestore, collection, doc, updateDoc, addDoc, deleteDoc, onSnapshot, setDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getDatabase, ref, onValue, set, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
     const firebaseConfig = {
-  apiKey: "AIzaSyD...",
-  authDomain: "kasir-naotajun2.firebaseapp.com",
-  projectId: "kasir-naotajun2",
-  storageBucket: "kasir-naotajun2.appspot.com",
-  messagingSenderId: "1234567890",
-  appId: "1:1234567890:web:abcdef123"
-};
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT.firebaseapp.com",
+      databaseURL: "https://YOUR_PROJECT.firebaseio.com",
+      projectId: "YOUR_PROJECT",
+      storageBucket: "YOUR_PROJECT.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
 
     const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+    const db = getDatabase(app);
 
-    let menuList = [];
-    let mejaList = [];
-    let editingMenuId = null;
-    let editingTableId = null;
-    let pesananCache = {};
+    const tbody = document.querySelector("#tabelMeja tbody");
 
-    await initTables();
-
-    async function initTables() {
-      const tablesSnap = await getDocs(collection(db, "tables"));
-      if (tablesSnap.empty) {
-        for (let i = 1; i <= 3; i++) {
-          await setDoc(doc(db, "tables", `meja${i}`), {
-            nama: `Meja ${i}`,
-            status: "checked-out",
-            kunci: "",
-            namaPemesan: "",
-            waktuCheckin: ""
-          });
-        }
-      }
-    }
-
-    onSnapshot(collection(db, "pesanan"), (snap) => {
-      pesananCache = {};
-      snap.forEach(doc => {
-        const p = doc.data();
-        if (!pesananCache[p.mejaId]) pesananCache[p.mejaId] = [];
-        pesananCache[p.mejaId].push({id: doc.id, ...p});
-      });
-      renderMeja();
-    });
-
-    onSnapshot(collection(db, "menu"), (snapshot) => {
-      menuList = [];
-      snapshot.forEach(docSnap => {
-        menuList.push({id: docSnap.id, ...docSnap.data()});
-      });
-      renderMenu();
-      renderMeja();
-    });
-
-    onSnapshot(collection(db, "tables"), (snapshot) => {
-      mejaList = [];
-      snapshot.forEach(docSnap => {
-        mejaList.push({id: docSnap.id, ...docSnap.data()});
-      });
-      renderMeja();
-    });
-
-    function renderMenu() {
-      const tbody = document.querySelector("#tabelMenu tbody");
+    onValue(ref(db, "meja"), (snapshot) => {
       tbody.innerHTML = "";
-      
-      if (menuList.length === 0) {
-        tbody.innerHTML = "<tr><td colspan='3'>Belum ada menu</td></tr>";
-        return;
-      }
-      
-      menuList.forEach(data => {
-        if (editingMenuId === data.id) {
-          tbody.innerHTML += `
-            <tr class="edit-row">
-              <td><input type="text" id="editNamaMenu" value="${data.nama}"></td>
-              <td><input type="number" id="editHargaMenu" value="${data.harga}"></td>
-              <td>
-                <button class="btn-save" onclick="simpanEditMenu('${data.id}')">Simpan</button>
-                <button class="btn-del" onclick="batalEditMenu()">Batal</button>
-              </td>
-            </tr>
-          `;
-        } else {
-          tbody.innerHTML += `
-            <tr>
-              <td>${data.nama}</td>
-              <td>Rp${Number(data.harga).toLocaleString("id-ID")}</td>
-              <td>
-                <button class="btn-edit" onclick="editMenu('${data.id}')">Edit</button>
-                <button class="btn-del" onclick="hapusMenu('${data.id}')">Hapus</button>
-              </td>
-            </tr>
-          `;
-        }
-      });
-    }
-
-    function renderMeja() {
-      const tbody = document.querySelector("#tabelMeja tbody");
-      tbody.innerHTML = "";
-
-      mejaList.forEach(data => {
+      snapshot.forEach((child) => {
+        const data = child.val();
         const tr = document.createElement("tr");
+        tr.id = "meja-" + data.id;
 
-        const pesananList = pesananCache[data.id] || [];
-        let pesananHTML = "";
-        let total = 0;
-        pesananList.forEach(ps => {
-          const menu = menuList.find(m => m.id === ps.menuId);
-          if (menu) {
-            const qty = ps.qty || 1;
-            const subtotal = menu.harga * qty;
-            pesananHTML += `
-              <div class="pesanan-item">
-                - ${qty}x ${menu.nama} Rp${subtotal.toLocaleString("id-ID")}
-                <button class="btn-del-sm" onclick="hapusPesanan('${ps.id}')">X</button>
-              </div>
-            `;
-            total += subtotal;
-          }
-        });
-
-        if (editingTableId === data.id) {
+        if (data.editMode) {
           tr.innerHTML = `
-            <td><input type="text" id="editNamaMeja" value="${data.nama}" style="width:120px;"></td>
-            <td>${data.status === "checked-in" ? "✓ Sudah Check-in" : "✗ Belum Check-in"}${data.namaPemesan ? `<br><small><b>Pemesan:</b> ${data.namaPemesan}</small></td>
-            <td>${data.waktuCheckin || "-"}</td>
-            <td>-</td>
-            <td class="pesanan">${pesananHTML || "-"}</td>
+            <td><input type="text" id="edit-nama-${data.id}" value="${data.nama || ''}"></td>
             <td>
               <button class="btn-save" onclick="simpanEditMeja('${data.id}')">Simpan</button>
               <button class="btn-del" onclick="batalEditMeja()">Batal</button>
             </td>
-            
           `;
         } else {
-          
-           tr.innerHTML = `   // ganti ' jadi `
-...
-`;                 // ganti ' jadi `                                                                                
-            <td><b>${data.nama || data.id}</b> <button class="btn-edit" style="padding:2px 6px;font-size:12px;" onclick="editMeja('${data.id}')">Edit</button></td>
+          tr.innerHTML = `
+            <td><b>${data.nama || data.id}</b> 
+              <button class="btn-edit" style="padding:2px 6px;font-size:12px;" onclick="editMeja('${data.id}')">Edit</button>
+            </td>
             <td>
               ${data.status === "checked-in" ? "✓ Sudah Check-in" : "✗ Belum Check-in"}
               ${data.namaPemesan ? `<br><small><b>Pemesan:</b> ${data.namaPemesan}</small>` : ""}
             </td>
             <td>${data.waktuCheckin || "-"}</td>
             <td>
-              ${data.status !== "checked-in" ? `
-                <input type="text" id="nama-${data.id}" placeholder="Nama pemesan" style="width:120px;margin-bottom:4px;">
-                <input type="text" id="kunci-${data.id}" placeholder="Kunci" style="width:120px;">
-              ` : "-"}
-            </td>
-            <td>
-              ${data.status === "checked-in" ? `
-                <select id="menu-${data.id}">
-                  <option value="">Pilih Menu</option>
-                  ${menuList.map(m => `<option value="${m.id}">${m.nama} - Rp${m.harga}</option>`).join("")}
-                </select>
-                <input type="number" id="qty-${data.id}" class="qty" value="1" min="1">
-                <button onclick="tambahPesanan('${data.id}')">Tambah</button>
-              ` : "-"}
-            </td>
-            <td class="pesanan">
-              ${pesananHTML || "-"}
-              ${total > 0 ? `<br><b>Total: Rp${total.toLocaleString("id-ID")}</b>` : ""}
-            </td>
-            <td>
-              ${data.status !== "checked-in" 
-                ? `<button class="btn-in" onclick="checkIn('${data.id}')">Check-in</button>` 
-                : `
-                  <button class="btn-out" onclick="checkOut('${data.id}')">Check-out</button>
-                  <button class="btn-clear" onclick="hapusSemuaPesanan('${data.id}')">Hapus Semua</button>
-                `
-              }
+              <button class="btn-del" onclick="hapusMeja('${data.id}')">Hapus</button>
             </td>
           `;
         }
+
         tbody.appendChild(tr);
       });
-    }
+    });
 
-    window.tambahMenu = async () => {
-      const nama = document.getElementById("namaMenu").value.trim();
-      const harga = parseInt(document.getElementById("hargaMenu").value);
-      if (!nama || !harga) return alert("Isi nama dan harga menu!");
-      await addDoc(collection(db, "menu"), { nama, harga });
-      document.getElementById("namaMenu").value = "";
-      document.getElementById("hargaMenu").value = "";
+    window.editMeja = (id) => {
+      update(ref(db, "meja/" + id), { editMode: true });
     };
 
-    window.editMenu = (id) => { editingMenuId = id; renderMenu(); };
-    window.batalEditMenu = () => { editingMenuId = null; renderMenu(); };
-    window.simpanEditMenu = async (id) => {
-      const nama = document.getElementById("editNamaMenu").value.trim();
-      const harga = parseInt(document.getElementById("editHargaMenu").value);
-      if (!nama || !harga) return alert("Isi nama dan harga!");
-      await updateDoc(doc(db, "menu", id), { nama, harga });
-      editingMenuId = null;
-    };
-
-    window.hapusMenu = async (id) => {
-      if (confirm("Yakin hapus menu ini?")) {
-        await deleteDoc(doc(db, "menu", id));
-      }
-    };
-
-    window.editMeja = (id) => { editingTableId = id; renderMeja(); };
-    window.batalEditMeja = () => { editingTableId = null; renderMeja(); };
-    window.simpanEditMeja = async (id) => {
-      const nama = document.getElementById("editNamaMeja").value.trim();
-      if (!nama) return alert("Nama meja nggak boleh kosong!");
-      await updateDoc(doc(db, "tables", id), { nama });
-      editingTableId = null;
-    };
-
-    window.checkIn = async (id) => {
-      const nama = document.getElementById(`nama-${id}`).value.trim();
-      const kunci = document.getElementById(`kunci-${id}`).value.trim();
-      if (!nama || !kunci) return alert("Isi nama pemesan dan kunci dulu!");
-      await updateDoc(doc(db, "tables", id), {
-        status: "checked-in",
-        namaPemesan: nama,
-        kunci: kunci,
-        waktuCheckin: new Date().toLocaleString("id-ID")
+    window.batalEditMeja = () => {
+      onValue(ref(db, "meja"), (snapshot) => {
+        snapshot.forEach((child) => {
+          update(ref(db, "meja/" + child.key), { editMode: false });
+        });
       });
     };
 
-    window.checkOut = async (id) => {
-      if (!confirm("Check-out meja ini? Semua pesanan akan dihapus.")) return;
-
-      const pesananMeja = pesananCache[id] || [];
-      const deletePromises = pesananMeja.map(p => deleteDoc(doc(db, "pesanan", p.id)));
-      await Promise.all(deletePromises);
-
-      await updateDoc(doc(db, "tables", id), {
-        status: "checked-out",
-        kunci: "",
-        namaPemesan: "",
-        waktuCheckin: ""
-      });
+    window.simpanEditMeja = (id) => {
+      const namaBaru = document.getElementById("edit-nama-" + id).value;
+      update(ref(db, "meja/" + id), { nama: namaBaru, editMode: false });
     };
 
-    window.hapusSemuaPesanan = async (mejaId) => {
-      const pesananMeja = pesananCache[mejaId] || [];
-      if (pesananMeja.length === 0) return alert("Tidak ada pesanan.");
-      if (!confirm(`Hapus semua ${pesananMeja.length} item pesanan?`)) return;
-
-      const deletePromises = pesananMeja.map(p => deleteDoc(doc(db, "pesanan", p.id)));
-      await Promise.all(deletePromises);
-    };
-
-    window.tambahPesanan = async (mejaId) => {
-      const menuId = document.getElementById(`menu-${mejaId}`).value;
-      const qty = parseInt(document.getElementById(`qty-${mejaId}`).value);
-      if (!menuId) return alert("Pilih menu dulu!");
-      if (!qty || qty < 1) return alert("Qty minimal 1!");
-      
-      await addDoc(collection(db, "pesanan"), {
-        mejaId: mejaId,
-        menuId: menuId,
-        qty: qty,
-        waktu: new Date().toLocaleString("id-ID")
-      });
-      document.getElementById(`menu-${mejaId}`).value = "";
-      document.getElementById(`qty-${mejaId}`).value = "1";
-    };
-
-    window.hapusPesanan = async (pesananId) => {
-      if (confirm("Hapus item pesanan ini?")) {
-        await deleteDoc(doc(db, "pesanan", pesananId));
+    window.hapusMeja = (id) => {
+      if (confirm("Yakin hapus meja ini?")) {
+        set(ref(db, "meja/" + id), null);
       }
     };
   </script>
