@@ -3,48 +3,76 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kasir Naotajun</title>
+  <title>Kasir Naotajun - Check-in Meja</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-      max-width: 500px;
+    body { 
+      font-family: Arial, sans-serif; 
+      padding: 20px; 
+      max-width: 900px;
       margin: auto;
     }
-    label, select, input, button {
-      display: block;
-      width: 100%;
-      margin-top: 10px;
-      padding: 10px;
-      font-size: 16px;
-      box-sizing: border-box;
+    h2 { text-align: center; color: #333; }
+    table { 
+      width: 100%; 
+      border-collapse: collapse; 
+      margin-top: 20px; 
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
-    button {
-      background: #4CAF50;
-      color: white;
-      border: none;
-      cursor: pointer;
-      margin-top: 20px;
+    th, td { 
+      border: 1px solid #ddd; 
+      padding: 12px; 
+      text-align: left; 
     }
-    button:hover {
-      background: #45a049;
+    th { 
+      background: #4CAF50; 
+      color: white; 
+      font-weight: bold;
     }
+    tr:nth-child(even) { background: #f9f9f9; }
+    input { 
+      width: 95%; 
+      padding: 8px; 
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button { 
+      padding: 8px 16px; 
+      background: #4CAF50; 
+      color: white; 
+      border: none; 
+      border-radius: 4px;
+      cursor: pointer; 
+      font-size: 14px;
+    }
+    button:hover { background: #45a049; }
+    button:disabled { 
+      background: #ccc; 
+      cursor: not-allowed; 
+    }
+    .status { 
+      font-weight: bold; 
+      text-align: center;
+    }
+    .checked { color: green; }
+    .not-checked { color: red; }
   </style>
 </head>
 <body>
-  <h2>Check-in Meja</h2>
+  <h2>Daftar Meja - Check-in</h2>
   
-  <div>
-    <label for="mejaSelect">Pilih Meja</label>
-    <select id="mejaSelect">
-      <option value="">-- Pilih Meja --</option>
-    </select>
-
-    <label for="reservationKey">Kunci Reservasi</label>
-    <input type="text" id="reservationKey" placeholder="Masukkan kunci reservasi">
-
-    <button id="btnCheckIn">Check-in Meja</button>
-  </div>
+  <table id="tabelMeja">
+    <thead>
+      <tr>
+        <th width="20%">Meja</th>
+        <th width="25%">Status</th>
+        <th width="35%">Kunci Reservasi</th>
+        <th width="20%">Aksi</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Data otomatis masuk dari Firebase -->
+    </tbody>
+  </table>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -63,45 +91,63 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // Load daftar meja ke dropdown
-    async function loadMeja() {
+    // Load semua meja ke tabel
+    async function loadTabelMeja() {
       try {
-        console.log("Mulai ambil data meja...");
+        console.log("Loading data meja...");
         const querySnapshot = await getDocs(collection(db, "tables"));
-        console.log("Jumlah dokumen ditemukan:", querySnapshot.size);
-        
-        const select = document.getElementById("mejaSelect");
-        
-        querySnapshot.forEach((doc) => {
-          console.log("Ketemu meja:", doc.id, doc.data());
-          const option = document.createElement("option");
-          option.value = doc.id;
-          option.textContent = doc.data().name || doc.id;
-          select.appendChild(option);
-        });
+        const tbody = document.querySelector("#tabelMeja tbody");
+        tbody.innerHTML = "";
 
         if (querySnapshot.size === 0) {
-          console.log("Collection 'tables' kosong");
+          tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">Belum ada data meja</td></tr>`;
+          return;
         }
+
+        querySnapshot.forEach((docSnap) => {
+          const data = docSnap.data();
+          const id = docSnap.id;
+          const checked = data.checked_in === true;
+          
+          const row = `
+            <tr>
+              <td><strong>${data.name || id}</strong></td>
+              <td class="status ${checked ? 'checked' : 'not-checked'}">
+                ${checked ? '✓ Sudah Check-in' : '✗ Belum Check-in'}
+              </td>
+              <td>
+                <input type="text" id="key-${id}" placeholder="Masukkan kunci" ${checked ? 'disabled' : ''}>
+              </td>
+              <td>
+                <button onclick="checkInMeja('${id}')" ${checked ? 'disabled' : ''}>
+                  Check-in
+                </button>
+              </td>
+            </tr>
+          `;
+          tbody.innerHTML += row;
+        });
+
+        console.log("Selesai load", querySnapshot.size, "meja");
+
       } catch (error) {
-        console.error("Gagal load meja:", error);
+        console.error("Gagal load tabel:", error);
         alert("Gagal load data meja: " + error.message);
       }
     }
-    loadMeja();
 
     // Fungsi check-in
-    async function checkIn() {
-      const meja = document.getElementById("mejaSelect").value;
-      const key = document.getElementById("reservationKey").value;
+    window.checkInMeja = async function(mejaId) {
+      const keyInput = document.getElementById(`key-${mejaId}`);
+      const key = keyInput.value.trim();
 
-      if (!meja || !key) {
-        alert("Pilih meja dan isi kunci reservasi!");
+      if (!key) {
+        alert("Isi kunci reservasi dulu!");
         return;
       }
 
       try {
-        const mejaRef = doc(db, "tables", meja);
+        const mejaRef = doc(db, "tables", mejaId);
         const mejaSnap = await getDoc(mejaRef);
 
         if (!mejaSnap.exists()) {
@@ -110,7 +156,6 @@
         }
 
         const data = mejaSnap.data();
-
         if (data.reservationKey !== key) {
           alert("Kunci reservasi salah!");
           return;
@@ -123,6 +168,7 @@
 
         await updateDoc(mejaRef, { checked_in: true });
         alert("Check-in berhasil!");
+        loadTabelMeja(); // refresh tabel
 
       } catch (error) {
         console.error("Error check-in:", error);
@@ -130,8 +176,8 @@
       }
     }
 
-    // Bind tombol
-    document.getElementById("btnCheckIn").addEventListener("click", checkIn);
+    // Jalankan saat halaman dibuka
+    loadTabelMeja();
   </script>
 </body>
 </html>
