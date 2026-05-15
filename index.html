@@ -1,151 +1,245 @@
 <!DOCTYPE html>
-<html lang="id">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Status Meja Restoran</title>
-<style>
-body{font-family:Arial,sans-serif;padding:20px;background:#f5f5f5}
-h1{text-align:center;color:#333}
-table{width:100%;max-width:900px;margin:20px auto;border-collapse:collapse;background:white;box-shadow:0 2px 8px rgba(0,0,0,0.1)}
-th,td{padding:12px;text-align:left;border-bottom:1px solid #ddd}
-th{background:#4CAF50;color:white}
-.status-checkin{color:green;font-weight:bold}
-.status-belum{color:red;font-weight:bold}
-input{padding:6px;margin-right:5px;border:1px solid #ccc;border-radius:4px}
-button{padding:6px 12px;background:#4CAF50;color:white;border:none;border-radius:4px;cursor:pointer}
-button.checkout{background:#f44336}
-.error{color:red;text-align:center;padding:20px}
-</style>
+  <meta charset="UTF-8">
+  <title>Kasir Meja Restoran</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+    .box { background: white; border: 1px solid #ddd; padding: 15px; margin-bottom: 20px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    h2, h3 { margin-top: 0; }
+    table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+    th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
+    th { background: #4CAF50; color: white; }
+    button { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; margin: 2px; }
+    .btn-in { background: #4CAF50; color: white; }
+    .btn-out { background: #f44336; color: white; }
+    .btn-del { background: #ff9800; color: white; }
+    .btn-edit { background: #2196F3; color: white; }
+    .btn-save { background: #4CAF50; color: white; }
+    select, input { padding: 6px; margin: 2px; border: 1px solid #ccc; border-radius: 4px; }
+    .pesanan { font-size: 12px; text-align: left; }
+    input[type="text"], input[type="number"] { width: 150px; }
+    .edit-row { background: #fff3cd; }
+  </style>
 </head>
 <body>
-<h1>Status Meja Restoran</h1>
-<div id="tables">Loading data meja...</div>
+  <h2>🍽️ Kasir Meja Restoran</h2>
+  
+  <div class="box">
+    <h3>Tambah Menu</h3>
+    <input type="text" id="namaMenu" placeholder="Nama menu">
+    <input type="number" id="hargaMenu" placeholder="Harga">
+    <button class="btn-in" onclick="tambahMenu()">Simpan Menu</button>
+  </div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, getDocs, doc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  <div class="box">
+    <h3>Daftar Menu</h3>
+    <table id="tabelMenu">
+      <thead>
+        <tr><th>Nama</th><th>Harga</th><th>Aksi</th></tr>
+      </thead>
+      <tbody><tr><td colspan="3">Loading...</td></tr></tbody>
+    </table>
+  </div>
 
-const firebaseConfig = {
-  apiKey: "xxx",
-  authDomain: "kasir-naotajun2.firebaseapp.com",
-  projectId: "kasir-naotajun2",
-  storageBucket: "kasir-naotajun2.appspot.com",
-  messagingSenderId: "346309315110",
-  appId: "xxx"
-};
+  <div class="box">
+    <h3>Status Meja</h3>
+    <table id="tabelMeja">
+      <thead>
+        <tr>
+          <th>Meja</th><th>Status</th><th>Waktu Check-in</th>
+          <th>Kunci Reservasi</th><th>Menu</th><th>Pesanan</th><th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody><tr><td colspan="7">Loading...</td></tr></tbody>
+    </table>
+  </div>
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const tablesDiv = document.getElementById('tables');
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, collection, doc, updateDoc, addDoc, deleteDoc, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-async function loadTables(){
-  try{
-    console.log("Mulai load data meja...");
-    const querySnapshot = await getDocs(collection(db, "tables"));
-    console.log("Data diterima:", querySnapshot.size, "dokumen");
-    
-    if(querySnapshot.empty){
-      tablesDiv.innerHTML = '<p class="error">Belum ada data meja di Firebase</p>';
-      return;
-    }
-    
-    let html = `<table><tr>
-      <th>Meja</th>
-      <th>Status</th>
-      <th>Waktu Check-in</th>
-      <th>Kunci Reservasi</th>
-      <th>Aksi</th>
-    </tr>`;
-    
-    querySnapshot.forEach((docSnap) => {
-      const data = docSnap.data();
-      const name = data.name || docSnap.id;
-      const checked = data.checked_in ? '✓ Sudah Check-in' : '✗ Belum Check-in';
-      const statusClass = data.checked_in ? 'status-checkin' : 'status-belum';
+    const firebaseConfig = {
+      apiKey: "AIzaSy...",
+      authDomain: "kasir-naotajun2.firebaseapp.com",
+      projectId: "kasir-naotajun2",
+      storageBucket: "kasir-naotajun2.appspot.com",
+      messagingSenderId: "123456",
+      appId: "1:123456:web:abc"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    let menuList = [];
+    let editingId = null;
+
+    // Realtime load menu
+    onSnapshot(collection(db, "menu"), (snapshot) => {
+      menuList = [];
+      const tbody = document.querySelector("#tabelMenu tbody");
+      tbody.innerHTML = "";
       
-      let timeStr = '-';
-      if(data.check_in_time && data.check_in_time.toDate){
-        timeStr = data.check_in_time.toDate().toLocaleString('id-ID');
+      if (snapshot.empty) {
+        tbody.innerHTML = "<tr><td colspan='3'>Belum ada menu</td></tr>";
+        return;
       }
       
-      html += `<tr>
-        <td>${name}</td>
-        <td class="${statusClass}">${checked}</td>
-        <td>${timeStr}</td>
-        <td><input type="password" id="key-${docSnap.id}" placeholder="Masukkan kunci"></td>
-        <td>
-          ${data.checked_in ? 
-            `<button class="checkout" onclick="checkout('${docSnap.id}')">Check-out</button>` : 
-            `<button onclick="checkin('${docSnap.id}')">Check-in</button>`
-          }
-        </td>
-      </tr>`;
-    });
-    
-    html += '</table>';
-    tablesDiv.innerHTML = html;
-    
-  }catch(err){
-    console.error('Error detail:', err);
-    tablesDiv.innerHTML = `<p class="error">Error: ${err.message}<br>Cek console untuk detail</p>`;
-  }
-}
-
-window.checkin = async function(tableId){
-  const keyInput = document.getElementById(`key-${tableId}`);
-  const key = keyInput.value.trim();
-  
-  if(!key){
-    alert('Masukkan kunci reservasi!');
-    return;
-  }
-  
-  try{
-    const docRef = doc(db, "tables", tableId);
-    const docSnap = await getDocs(collection(db, "tables"));
-    let correctKey = '';
-    docSnap.forEach(d => {
-      if(d.id === tableId) correctKey = d.data().reservationKey;
-    });
-    
-    if(key === correctKey){
-      await updateDoc(docRef, {
-        checked_in: true,
-        check_in_time: serverTimestamp()
+      snapshot.forEach(docSnap => {
+        const data = docSnap.data();
+        menuList.push({id: docSnap.id, ...data});
+        
+        if (editingId === docSnap.id) {
+          // Mode edit
+          tbody.innerHTML += `
+            <tr class="edit-row">
+              <td><input type="text" id="editNama" value="${data.nama}"></td>
+              <td><input type="number" id="editHarga" value="${data.harga}"></td>
+              <td>
+                <button class="btn-save" onclick="simpanEdit('${docSnap.id}')">Simpan</button>
+                <button class="btn-del" onclick="batalEdit()">Batal</button>
+              </td>
+            </tr>
+          `;
+        } else {
+          // Mode normal
+          tbody.innerHTML += `
+            <tr>
+              <td>${data.nama}</td>
+              <td>Rp${Number(data.harga).toLocaleString("id-ID")}</td>
+              <td>
+                <button class="btn-edit" onclick="editMenu('${docSnap.id}')">Edit</button>
+                <button class="btn-del" onclick="hapusMenu('${docSnap.id}')">Hapus</button>
+              </td>
+            </tr>
+          `;
+        }
       });
-      alert('Check-in berhasil!');
-      loadTables();
-    } else {
-      alert('Kunci salah!');
-    }
-  }catch(err){
-    alert('Error: ' + err.message);
-  }
-}
-
-window.checkout = async function(tableId){
-  if(!confirm('Yakin mau check-out meja ini?')){
-    return;
-  }
-  try{
-    const docRef = doc(db, "tables", tableId);
-    await updateDoc(docRef, {
-      checked_in: false,
-      check_in_time: null
     });
-    alert('Check-out berhasil!');
-    loadTables();
-  }catch(err){
-    alert('Error: ' + err.message);
-  }
-}
 
-loadTables();
-  
- window.checkin = checkin;
- window.checkout = checkout;
- 
-</script>
+    // Realtime load meja
+    onSnapshot(collection(db, "tables"), async (snapshot) => {
+      const tbody = document.querySelector("#tabelMeja tbody");
+      tbody.innerHTML = "";
+
+      if (snapshot.empty) {
+        tbody.innerHTML = "<tr><td colspan='7'>Belum ada data meja</td></tr>";
+        return;
+      }
+
+      for (const docSnap of snapshot.docs) {
+        const data = docSnap.data();
+        const tr = document.createElement("tr");
+
+        const pesananQ = query(collection(db, "pesanan"), where("mejaId", "==", docSnap.id));
+        const pesananSnap = await getDocs(pesananQ);
+        let pesananHTML = "";
+        let total = 0;
+        pesananSnap.forEach(p => {
+          const ps = p.data();
+          const menu = menuList.find(m => m.id === ps.menuId);
+          if (menu) {
+            pesananHTML += `- ${menu.nama} Rp${menu.harga.toLocaleString("id-ID")}<br>`;
+            total += menu.harga;
+          }
+        });
+
+        tr.innerHTML = `
+          <td><b>${data.nama || docSnap.id}</b></td>
+          <td>${data.status === "checked-in" ? "✓ Sudah Check-in" : "✗ Belum Check-in"}</td>
+          <td>${data.waktuCheckin || "-"}</td>
+          <td><input type="text" id="kunci-${docSnap.id}" placeholder="Masukkan kunci"></td>
+          <td>
+            ${data.status === "checked-in" ? `
+              <select id="menu-${docSnap.id}">
+                <option value="">Pilih Menu</option>
+                ${menuList.map(m => `<option value="${m.id}">${m.nama} - Rp${m.harga}</option>`).join("")}
+              </select>
+              <button onclick="tambahPesanan('${docSnap.id}')">Tambah</button>
+            ` : "-"}
+          </td>
+          <td class="pesanan">
+            ${pesananHTML || "-"}
+            ${total > 0 ? `<br><b>Total: Rp${total.toLocaleString("id-ID")}</b>` : ""}
+          </td>
+          <td>
+            ${data.status !== "checked-in" 
+              ? `<button class="btn-in" onclick="checkIn('${docSnap.id}')">Check-in</button>` 
+              : `<button class="btn-out" onclick="checkOut('${docSnap.id}')">Check-out</button>`
+            }
+          </td>
+        `;
+        tbody.appendChild(tr);
+      }
+    });
+
+    window.tambahMenu = async () => {
+      const nama = document.getElementById("namaMenu").value.trim();
+      const harga = parseInt(document.getElementById("hargaMenu").value);
+      if (!nama || !harga) return alert("Isi nama dan harga menu!");
+      
+      await addDoc(collection(db, "menu"), { nama, harga });
+      document.getElementById("namaMenu").value = "";
+      document.getElementById("hargaMenu").value = "";
+    };
+
+    window.editMenu = (id) => {
+      editingId = id;
+    };
+
+    window.batalEdit = () => {
+      editingId = null;
+    };
+
+    window.simpanEdit = async (id) => {
+      const nama = document.getElementById("editNama").value.trim();
+      const harga = parseInt(document.getElementById("editHarga").value);
+      if (!nama || !harga) return alert("Isi nama dan harga!");
+      
+      await updateDoc(doc(db, "menu", id), { nama, harga });
+      editingId = null;
+      alert("Menu berhasil diupdate!");
+    };
+
+    window.hapusMenu = async (id) => {
+      if (confirm("Yakin hapus menu ini?")) {
+        await deleteDoc(doc(db, "menu", id));
+      }
+    };
+
+    window.checkIn = async (id) => {
+      const kunci = document.getElementById(`kunci-${id}`).value.trim();
+      if (!kunci) return alert("Masukkan kunci dulu!");
+      
+      await updateDoc(doc(db, "tables", id), {
+        status: "checked-in",
+        kunci: kunci,
+        waktuCheckin: new Date().toLocaleString("id-ID")
+      });
+    };
+
+    window.checkOut = async (id) => {
+      if (confirm("Check-out meja ini?")) {
+        await updateDoc(doc(db, "tables", id), {
+          status: "checked-out",
+          kunci: "",
+          waktuCheckin: ""
+        });
+      }
+    };
+
+    window.tambahPesanan = async (mejaId) => {
+      const menuId = document.getElementById(`menu-${mejaId}`).value;
+      if (!menuId) return alert("Pilih menu dulu!");
+      
+      await addDoc(collection(db, "pesanan"), {
+        mejaId: mejaId,
+        menuId: menuId,
+        waktu: new Date().toLocaleString("id-ID")
+      });
+      
+      document.getElementById(`menu-${mejaId}`).value = "";
+    };
+  </script>
 </body>
 </html>
