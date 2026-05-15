@@ -314,94 +314,104 @@
     };
 
     window.printBill = () => {
-      if (!window.pesananAktifSement) return alert("Buat pesanan dulu!");
+      window.printBill = () => {
+  if (!window.pesananAktifSement) return alert("Buat pesanan dulu!");
 
-      const { mejaId, pemesan, waitress, items } = window.pesananAktifSement;
-      const meja = document.querySelector(`#selectMeja option[value="${mejaId}"]`).text;
-      const subtotal = items.reduce((a, b) => a + b.subtotal, 0);
+  const { mejaId, pemesan, waitress, items } = window.pesananAktifSement;
+  const meja = document.querySelector(`#selectMeja option[value="${mejaId}"]`).text;
 
-      const ppn = Math.round(subtotal * PPN_RATE);
-      const tax = Math.round(subtotal * TAX_RATE);
-      const grandTotal = subtotal + ppn + tax;
+  // Hitung PPN & Tax
+  const subtotal = items.reduce((a, b) => a + b.subtotal, 0);
+  const PPN_RATE = 0.11; // 11%
+  const TAX_RATE = 0.10; // 10%
+  const ppn = Math.round(subtotal * PPN_RATE);
+  const tax = Math.round(subtotal * TAX_RATE);
+  const grandTotal = subtotal + ppn + tax;
 
-      const waktu = new Date().toLocaleString("id-ID", {
-        day: "2-digit", month: "2-digit", year: "numeric",
-        hour: "2-digit", minute: "2-digit"
-      });
+  const waktu = new Date().toLocaleString("id-ID", {
+    day: "2-digit", month: "2-digit", year: "numeric",
+    hour: "2-digit", minute: "2-digit"
+  });
 
-      let rows = "";
-      items.forEach((i, idx) => {
-        rows += `
+  let rows = "";
+  items.forEach((i, idx) => {
+    rows += `
+      <tr>
+        <td>${idx + 1}</td>
+        <td>${i.nama}</td>
+        <td style="text-align:center;">${i.qty}</td>
+        <td style="text-align:right;">${i.harga.toLocaleString()}</td>
+        <td style="text-align:right;">${i.subtotal.toLocaleString()}</td>
+      </tr>
+    `;
+  });
+
+  const billHTML = `
+    <div class="bill">
+      <h3>KASIR NAOTAJUN</h3>
+      <p>${waktu}</p>
+      <div class="line"></div>
+      <p style="text-align:left;"><b>Meja:</b> ${meja}</p>
+      <p style="text-align:left;"><b>Pemesan:</b> ${pemesan}</p>
+      <p style="text-align:left;"><b>Waitress:</b> ${waitress}</p>
+      <div class="line"></div>
+
+      <table>
+        <thead>
           <tr>
-            <td>${idx + 1}</td>
-            <td>${i.nama}</td>
-            <td style="text-align:center;">${i.qty}</td>
-            <td style="text-align:right;">${i.harga.toLocaleString()}</td>
-            <td style="text-align:right;">${i.subtotal.toLocaleString()}</td>
+            <th style="text-align:left;">No</th>
+            <th style="text-align:left;">Menu</th>
+            <th style="text-align:center;">Qty</th>
+            <th style="text-align:right;">Harga</th>
+            <th style="text-align:right;">Sub</th>
           </tr>
-        `;
-      });
+        </thead>
+        <tbody>
+          ${rows}
+        </tbody>
+      </table>
 
-      const billHTML = `
-        <div class="bill">
-          <h3>KASIR NAOTAJUN</h3>
-          <p>${waktu}</p>
-          <div class="line"></div>
-          <p style="text-align:left;"><b>Meja:</b> ${meja}</p>
-          <p style="text-align:left;"><b>Pemesan:</b> ${pemesan}</p>
-          <p style="text-align:left;"><b>Waitress:</b> ${waitress}</p>
-          <div class="line"></div>
+      <div class="line"></div>
+      <table>
+        <tr>
+          <td style="text-align:right;">Subtotal</td>
+          <td style="text-align:right; width:80px;">Rp ${subtotal.toLocaleString()}</td>
+        </tr>
+        <tr>
+          <td style="text-align:right;">PPN 11%</td>
+          <td style="text-align:right;">Rp ${ppn.toLocaleString()}</td>
+        </tr>
+        <tr>
+          <td style="text-align:right;">Service 10%</td>
+          <td style="text-align:right;">Rp ${tax.toLocaleString()}</td>
+        </tr>
+        <tr>
+          <td style="text-align:right;"><b>GRAND TOTAL</b></td>
+          <td style="text-align:right;"><b>Rp ${grandTotal.toLocaleString()}</b></td>
+        </tr>
+      </table>
 
-          <table>
-            <thead>
-              <tr>
-                <th style="text-align:left;">No</th>
-                <th style="text-align:left;">Menu</th>
-                <th style="text-align:center;">Qty</th>
-                <th style="text-align:right;">Harga</th>
-                <th style="text-align:right;">Sub</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${rows}
-            </tbody>
-          </table>
+      <div class="line"></div>
+      <p>Waitress: ${waitress}</p>
+      <p>Terima Kasih! 💖</p>
+    </div>
+  `;
 
-          <div class="line"></div>
-          <table>
-            <tr>
-              <td style="text-align:right;">Subtotal</td>
-              <td style="text-align:right; width:80px;">Rp ${subtotal.toLocaleString()}</td>
-            </tr>
-            <tr>
-              <td style="text-align:right;">PPN 11%</td>
-              <td style="text-align:right;">Rp ${ppn.toLocaleString()}</td>
-            </tr>
-            <tr>
-              <td style="text-align:right;">Service 10%</td>
-              <td style="text-align:right;">Rp ${tax.toLocaleString()}</td>
-            </tr>
-            <tr>
-              <td style="text-align:right;"><b>GRAND TOTAL</b></td>
-              <td style="text-align:right;"><b>Rp ${grandTotal.toLocaleString()}</b></td>
-            </tr>
-          </table>
+  document.getElementById("billArea").innerHTML = billHTML;
+  window.print();
 
-          <div class="line"></div>
-          <p>Waitress: ${waitress}</p>
-          <p>Terima Kasih! 💖</p>
-        </div>
-      `;
+  // Simpan ke Firebase
+  push(ref(db, "pesanan"), { mejaId, pemesan, waitress, items, subtotal, ppn, tax, grandTotal, waktu });
+  set(ref(db, "pesanan_aktif/" + mejaId), { pemesan, waitress, items, subtotal, ppn, tax, grandTotal });
 
-      document.getElementById("billArea").innerHTML = billHTML;
-      window.print();
+  pesananSement[mejaId] = [];
+  document.getElementById("listPesanan").innerHTML = "";
+  window.pesananAktifSement = null;
+};
 
-      push(ref(db, "pesanan"), { mejaId, pemesan, waitress, items, subtotal, ppn, tax, grandTotal, waktu });
-      set(ref(db, "pesanan_aktif/" + mejaId), { pemesan, waitress, items, subtotal, ppn, tax, grandTotal });
 
-      pesananSement[mejaId] = [];
-      document.getElementById("listPesanan").innerHTML = "";
-      window.pesananAktifSement = null;
+
+      
     };
   </script>
 </body>
