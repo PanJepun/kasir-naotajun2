@@ -1,548 +1,123 @@
 <!DOCTYPE html>
-<html lang="id">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Kasir Naotajun2</title>
-  <link rel="icon" href="data:,">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
-  <style>
-    body {
-      font-family: "Times New Roman", Times, serif;
-      font-size: 10px;
-      padding: 20px;
-      background: #f5f5f5;
-    }
-.container { max-width: 1100px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-.login-box { max-width: 350px; margin: 50px auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-    input, select, button {
-      width: 100%;
-      padding: 8px;
-      margin: 6px 0;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-      box-sizing: border-box;
-      font-family: "Times New Roman", Times, serif;
-      font-size: 10px;
-    }
-    button { background: #4CAF50; color: white; border: none; cursor: pointer; }
-    button:hover { background: #45a049; }
-.btn-logout { background: #f44336; width: auto; padding: 6px 15px; }
-.btn-hapus { background: #f44336; padding: 4px 8px; font-size: 10px; width: auto; }
-.btn-edit { background: #FF9800; padding: 4px 8px; font-size: 10px; width: auto; margin-right: 5px; }
-.btn-detail { background: none; border: none; color: #1976d2; cursor: pointer; text-align: left; padding: 0; font-size: 10px; text-decoration: underline; }
-.btn-print { background: #2196F3; width: auto; padding: 6px 15px; margin: 10px 5px 10px 0; font-size: 10px; display: inline-block; }
-.btn-pdf { background: #FF5722; width: auto; padding: 6px 15px; margin: 10px 5px 10px 0; font-size: 10px; display: inline-block; }
-.btn-email { background: #9C27B0; width: auto; padding: 6px 15px; margin: 10px 0; font-size: 10px; display: inline-block; }
-.btn-checkin { background: #00BCD4; width: auto; padding: 6px 12px; font-size: 10px; }
-.btn-checkout { background: #9E9E9E; width: auto; padding: 6px 12px; font-size: 10px; }
-.status { padding: 8px; margin-top: 8px; border-radius: 5px; text-align: center; font-size: 10px; }
-.success { background: #d4edda; color: #155724; }
-.error { background: #f8d7da; color: #721c24; }
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    th, td { border: 1px solid #ddd; padding: 6px 8px; text-align: left; font-size: 10px; }
-    th { background: #f2f2f2; font-weight: bold; }
-    tfoot td { font-weight: bold; background: #e8f5e9; font-size: 10px; }
-.hidden { display: none; }
-  h2, h3, h4 { font-size: 14px; margin: 10px 0; }
-.btn-group { margin: 10px 0; }
-.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
-.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-.section { background: #fafafa; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
-.img-thumb { width: 35px; height: 35px; object-fit: cover; border-radius: 4px; }
-.img-preview { width: 80px; height: 80px; object-fit: cover; border-radius: 6px; margin-top: 5px; border: 1px solid #ddd; }
-.badge { padding: 3px 6px; border-radius: 3px; font-size: 9px; color: white; }
-.badge-aktif { background: #4CAF50; }
-.badge-kosong { background: #9E9E9E; }
-.meja-card { border: 1px solid #ddd; padding: 10px; border-radius: 6px; margin-bottom: 8px; background: white; }
-.meja-card.aktif { border-left: 4px solid #4CAF50; }
-.meja-card.kosong { border-left: 4px solid #9E9E9E; }
-.header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-.role-badge { background: #2196F3; color: white; padding: 4px 10px; border-radius: 12px; font-size: 9px; }
-  </style>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body>
-  <!-- LOGIN PAGE -->
-  <div id="loginPage" class="login-box">
-    <h2>🔐 Login Kasir Naotajun2</h2>
-    <input type="email" id="email" placeholder="Email">
-    <input type="password" id="password" placeholder="Password">
-    <button onclick="login()">Login</button>
-    <div id="loginStatus"></div>
-    <p style="margin-top:15px; font-size:9px; color:#666;">
-      Default: admin@kasir.com / admin123<br>
-      Buat user baru di Firebase Authentication
-    </p>
+
+<div id="loginPage">
+  <h2>Login</h2>
+  <input type="email" id="email" placeholder="Email">
+  <input type="password" id="password" placeholder="Password">
+  <button onclick="login()">Login</button>
+</div>
+
+<div id="appPage" style="display:none;">
+  <h2>Kasir Naotajun2</h2>
+  <span id="roleBadge" style="background:#007bff; color:white; padding:4px 8px; border-radius:4px;">WAITRESS</span>
+  <span id="userEmail"></span>
+  <button onclick="logout()">Logout</button>
+
+  <h3>1. Manajemen Meja & Check-in</h3>
+
+  <!-- Ini bagian yang disembunyiin kalau bukan admin -->
+  <div id="tambahMejaSection">
+    <h4>Tambah Meja</h4>
+    <input type="text" id="namaMeja" placeholder="Nama Meja, contoh: Meja 5">
+    <button onclick="tambahMeja()">Tambah Meja</button>
   </div>
 
-  <!-- MAIN APP -->
-  <div id="mainApp" class="container hidden">
-    <div class="header-bar">
-      <h2>📊 Kasir Naotajun2</h2>
-      <div>
-        <span id="userRole" class="role-badge">Role</span>
-        <span id="userEmail" style="margin:0 10px;"></span>
-        <button class="btn-logout" onclick="logout()">Logout</button>
-      </div>
-    </div>
+  <h4>Check-in Meja</h4>
+  <select id="pilihMeja"></select>
+  <input type="text" id="kunciReservasi" placeholder="Masukkan Kunci Reservasi">
+  <button onclick="checkinMeja()">Check-in Meja</button>
 
-    <!-- ADMIN: Manajemen Meja -->
-    <div id="sectionMeja" class="section hidden">
-      <h3>1. Manajemen Meja & Check-in</h3>
-      <div class="grid-3">
-        <div>
-          <h4>Tambah Meja</h4>
-          <input type="text" id="namaMejaBaru" placeholder="Nama Meja, contoh: Meja 5">
-          <button onclick="tambahMeja()">Tambah Meja</button>
+  <h3>2. Input Order untuk</h3>
+  <!-- bagian order kamu taruh di sini -->
+</div>
 
-          <h4 style="margin-top:15px;">Check-in Meja</h4>
-          <select id="pilihMeja"></select>
-          <input type="text" id="kunciMeja" placeholder="Masukkan Kunci Reservasi">
-          <button class="btn-checkin" onclick="checkinMeja()">Check-in Meja</button>
-          <div id="statusMeja"></div>
-        </div>
-        <div id="daftarMeja" style="grid-column: span 2;"></div>
-      </div>
-    </div>
+<script>
+// 1. Ganti config ini pakai punya kamu dari Firebase > Project Settings
+const firebaseConfig = {
+  apiKey: "xxx",
+  authDomain: "xxx.firebaseapp.com",
+  databaseURL: "https://xxx-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "xxx",
+};
 
-    <!-- WAITRESS/KASIR: Input Order -->
-    <div id="sectionOrder" class="section hidden">
-      <h3>2. Input Order untuk <span id="mejaAktif"></span></h3>
-      <div class="grid-2">
-        <select id="pilihMenu">
-          <option value="">-- Pilih Menu --</option>
-        </select>
-        <input type="number" id="jumlah" placeholder="Jumlah">
-      </div>
-      <button onclick="simpanOrder()">Tambah ke Pesanan</button>
-      <button class="btn-checkout hidden" id="btnCheckout" onclick="checkoutMeja()">Checkout & Tutup Meja</button>
-    </div>
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
 
-    <!-- ADMIN: Manajemen Menu -->
-    <div id="sectionMenu" class="section hidden">
-      <h3>Manajemen Menu</h3>
-      <div class="grid-2">
-        <div>
-          <input type="text" id="namaMenu" placeholder="Nama Menu">
-          <input type="number" id="hargaMenu" placeholder="Harga Menu">
-          <input type="file" id="gambarMenu" accept="image/*">
-          <img id="previewGambar" class="img-preview hidden">
-        </div>
-        <div>
-          <button onclick="simpanMenu()">Simpan Menu</button>
-          <button onclick="resetFormMenu()" style="background:#6c757d;">Reset</button>
-        </div>
-      </div>
-      <input type="hidden" id="editKey">
-      <input type="hidden" id="editGambarUrl">
+// 2. Fungsi Login
+function login() {
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+  
+  auth.signInWithEmailAndPassword(email, password)
+    .catch(err => alert("Login gagal: " + err.message));
+}
 
-      <table>
-        <thead>
-          <tr><th>No</th><th>Gambar</th><th>Nama Menu</th><th>Harga</th><th>Aksi</th></tr>
-        </thead>
-        <tbody id="tabelMenu"><tr><td colspan="5">Loading...</td></tr></tbody>
-      </table>
-    </div>
+// 3. Fungsi Logout
+function logout() {
+  auth.signOut();
+}
 
-    <!-- LAPORAN - Admin & Kasir -->
-    <div id="sectionLaporan" class="hidden">
-      <h3>Laporan Penjualan per Meja</h3>
-      <div class="btn-group">
-        <button class="btn-print" onclick="window.print()">🖨️ Print</button>
-        <button class="btn-pdf" onclick="exportPDF()">📄 Export PDF</button>
-        <button class="btn-email" onclick="sendEmail()">✉️ Kirim Email</button>
-      </div>
-
-      <table>
-        <thead>
-          <tr><th>Meja</th><th>Menu</th><th>Gambar</th><th>Qty</th><th>Subtotal</th><th>Status</th></tr>
-        </thead>
-        <tbody id="tabelPenjualan"><tr><td colspan="6">Loading...</td></tr></tbody>
-        <tfoot id="totalPenjualan"></tfoot>
-      </table>
-    </div>
-  </div>
-
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { getDatabase, ref, push, onValue, remove, set, update, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-    import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyA94bWbZJA0peV6rDg-vaHac1Ghn9t2ZW4",
-      authDomain: "kasir-naotajun2.firebaseapp.com",
-      databaseURL: "https://kasir-naotajun2-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "kasir-naotajun2",
-      storageBucket: "kasir-naotajun2.appspot.com",
-      messagingSenderId: "346309315110",
-      appId: "1:346309315110:web:1bc443785229fa7a0b74e7"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getDatabase(app);
-    const storage = getStorage(app);
-
-    const menuRef = ref(db, 'menu');
-    const mejaRef = ref(db, 'meja');
-    const orderRef = ref(db, 'order');
-    const usersRef = ref(db, 'users');
-
-    let menuList = [];
-    let mejaList = [];
-    let orderList = [];
-    let mejaAktif = null;
-    let kunciAktif = null;
-    let userRole = null;
-    let currentUser = null;
-
-    // Cek status login
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        currentUser = user;
-        document.getElementById('loginPage').classList.add('hidden');
-        document.getElementById('mainApp').classList.remove('hidden');
-        document.getElementById('userEmail').textContent = user.email;
-
-        // Ambil role user
-        const snap = await get(ref(db, 'users/' + user.uid));
-        userRole = snap.exists()? snap.val().role : 'waitress';
-        document.getElementById('userRole').textContent = userRole.toUpperCase();
-
-        showMenuByRole(userRole);
-        loadData();
-      } else {
-        document.getElementById('loginPage').classList.remove('hidden');
-        document.getElementById('mainApp').classList.add('hidden');
-      }
-    });
-
-    function showMenuByRole(role) {
-      // Hide semua dulu
-      document.getElementById('sectionMeja').classList.add('hidden');
-      document.getElementById('sectionOrder').classList.add('hidden');
-      document.getElementById('sectionMenu').classList.add('hidden');
-      document.getElementById('sectionLaporan').classList.add('hidden');
-      document.getElementById('btnCheckout').classList.add('hidden');
-
-      if(role === 'admin') {
-        document.getElementById('sectionMeja').classList.remove('hidden');
-        document.getElementById('sectionMenu').classList.remove('hidden');
-        document.getElementById('sectionLaporan').classList.remove('hidden');
-        document.getElementById('sectionOrder').classList.remove('hidden');
-      }
-      if(role === 'kasir') {
-        document.getElementById('sectionLaporan').classList.remove('hidden');
-        document.getElementById('sectionOrder').classList.remove('hidden');
-      }
-      if(role === 'waitress') {
-        document.getElementById('sectionMeja').classList.remove('hidden');
-        document.getElementById('sectionOrder').classList.remove('hidden');
-        document.getElementById('btnCheckout').classList.remove('hidden');
-      }
+// 4. Cek status login dan role
+auth.onAuthStateChanged(async (user) => {
+  if (user) {
+    // Ambil data role dari database
+    const snap = await db.ref('users/' + user.uid).once('value');
+    const userData = snap.val();
+    
+    if (!userData) {
+      alert("Data user tidak ditemukan di database!");
+      auth.signOut();
+      return;
     }
 
-    function loadData() {
-      // Load Menu
-      onValue(menuRef, (snapshot) => {
-        menuList = [];
-        const tbody = document.getElementById('tabelMenu');
-        const select = document.getElementById('pilihMenu');
-        tbody.innerHTML = '';
-        select.innerHTML = '<option value="">-- Pilih Menu --</option>';
+    // Tampilkan halaman app
+    document.getElementById('loginPage').style.display = 'none';
+    document.getElementById('appPage').style.display = 'block';
+    document.getElementById('userEmail').innerText = userData.email;
+    document.getElementById('roleBadge').innerText = userData.role.toUpperCase();
 
-        snapshot.forEach((child) => {
-          let data = { key: child.key,...child.val() };
-          menuList.push(data);
-          if(userRole === 'admin') {
-            tbody.innerHTML += `
-              <tr>
-                <td>${menuList.length}</td>
-                <td>${data.gambar? `<img src="${data.gambar}" class="img-thumb">` : '-'}</td>
-                <td>${data.nama}</td>
-                <td>Rp ${data.harga.toLocaleString('id-ID')}</td>
-                <td>
-                  <button class="btn-edit" onclick="editMenu('${data.key}')">Edit</button>
-                  <button class="btn-hapus" onclick="hapusMenu('${data.key}')">Hapus</button>
-                </td>
-              </tr>
-            `;
-          }
-          select.innerHTML += `<option value="${data.key}" data-harga="${data.harga}">${data.nama}</option>`;
-        });
-      });
-
-      // Load Meja
-      onValue(mejaRef, (snapshot) => {
-        mejaList = [];
-        const select = document.getElementById('pilihMeja');
-        const div = document.getElementById('daftarMeja');
-        select.innerHTML = '<option value="">-- Pilih Meja --</option>';
-        div.innerHTML = '';
-
-        snapshot.forEach((child) => {
-          let data = { key: child.key,...child.val() };
-          mejaList.push(data);
-          select.innerHTML += `<option value="${data.key}">${data.nama}</option>`;
-
-          div.innerHTML += `
-            <div class="meja-card ${data.status}">
-              <strong>${data.nama}</strong>
-              <span class="badge badge-${data.status}">${data.status}</span>
-              ${data.status === 'aktif'? `<br><small>Kunci: ${data.kunci}</small>` : ''}
-              ${userRole === 'admin'? `<button class="btn-hapus" style="margin-top:5px;" onclick="hapusMeja('${data.key}')">Hapus Meja</button>` : ''}
-            </div>
-          `;
-        });
-      });
-
-      // Load Order
-      onValue(orderRef, (snapshot) => {
-        orderList = [];
-        const tbody = document.getElementById('tabelPenjualan');
-        tbody.innerHTML = '';
-        let grandTotal = 0;
-
-        snapshot.forEach((child) => {
-          let data = { key: child.key,...child.val() };
-          orderList.push(data);
-          const menu = menuList.find(m => m.key === data.menuId);
-          const meja = mejaList.find(m => m.key === data.mejaId);
-
-          tbody.innerHTML += `
-            <tr>
-              <td>${meja? meja.nama : '-'}</td>
-              <td>${menu? menu.nama : '-'}</td>
-              <td>${menu && menu.gambar? `<img src="${menu.gambar}" class="img-thumb">` : '-'}</td>
-              <td>${data.jumlah}</td>
-              <td>Rp ${data.subtotal.toLocaleString('id-ID')}</td>
-              <td>${data.status}</td>
-            </tr>
-          `;
-          grandTotal += data.subtotal;
-        });
-
-        document.getElementById('totalPenjualan').innerHTML = `
-          <tr><td colspan="4">Total Semua</td><td colspan="2">Rp ${grandTotal.toLocaleString('id-ID')}</td></tr>
-        `;
-      });
+    // Sembunyikan menu admin kalau role bukan admin
+    if (userData.role !== 'admin') {
+      document.getElementById('tambahMejaSection').style.display = 'none';
     }
 
-    // LOGIN & LOGOUT
-    window.login = function() {
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      signInWithEmailAndPassword(auth, email, password)
-       .catch(err => {
-          document.getElementById('loginStatus').innerHTML = `<div class="error">${err.message}</div>`;
-        });
-    };
+    // Load data meja dll di sini
+    loadMeja();
 
-    window.logout = function() {
-      signOut(auth);
-      mejaAktif = null;
-      kunciAktif = null;
-    };
+  } else {
+    // Kalau belum login, tampilkan halaman login
+    document.getElementById('loginPage').style.display = 'block';
+    document.getElementById('appPage').style.display = 'none';
+  }
+});
 
-    // SETUP ROLE - jalankan 1x di console browser
-    window.setUserRole = function(uid, role) {
-      set(ref(db, 'users/' + uid), { role: role });
-    };
+// 5. Contoh fungsi tambah meja
+function tambahMeja() {
+  const nama = document.getElementById('namaMeja').value;
+  db.ref('meja').push({
+    nama: nama,
+    status: 'aktif',
+    dibuatOleh: auth.currentUser.email
+  });
+}
 
-    // FUNGSI MEJA
-    window.tambahMeja = function() {
-      const nama = document.getElementById('namaMejaBaru').value.trim();
-      if(!nama) return alert('Isi nama meja!');
-      push(mejaRef, { nama: nama, status: 'kosong', kunci: null });
-      document.getElementById('namaMejaBaru').value = '';
-    };
+function loadMeja() {
+  // isi fungsi buat load daftar meja ke dropdown
+}
 
-    window.hapusMeja = function(key) {
-      if(confirm('Yakin hapus meja ini? Semua order akan hilang!')) {
-        orderList.forEach(o => {
-          if(o.mejaId === key) remove(ref(db, 'order/' + o.key));
-        });
-        remove(ref(db, 'meja/' + key));
-      }
-    };
+function checkinMeja() {
+  // isi fungsi checkin
+}
+</script>
 
-    window.checkinMeja = function() {
-      const mejaId = document.getElementById('pilihMeja').value;
-      const kunci = document.getElementById('kunciMeja').value;
-      const statusDiv = document.getElementById('statusMeja');
-
-      if(!mejaId ||!kunci) {
-        statusDiv.innerHTML = '<div class="error">Pilih meja dan isi kunci!</div>';
-        return;
-      }
-
-      const meja = mejaList.find(m => m.key === mejaId);
-      if(meja.status === 'aktif') {
-        statusDiv.innerHTML = '<div class="error">Meja sudah aktif!</div>';
-        return;
-      }
-
-      update(ref(db, 'meja/' + mejaId), {
-        status: 'aktif',
-        kunci: kunci,
-        waktuCheckin: new Date().toISOString()
-      });
-
-      mejaAktif = mejaId;
-      kunciAktif = kunci;
-      document.getElementById('mejaAktif').textContent = meja.nama;
-      statusDiv.innerHTML = '<div class="success">✅ Meja berhasil di check-in!</div>';
-    };
-
-    // ORDER
-    window.simpanOrder = function() {
-      const menuId = document.getElementById('pilihMenu').value;
-      const jumlah = document.getElementById('jumlah').value;
-
-      if(!mejaAktif ||!kunciAktif) return alert('Check-in meja dulu!');
-      if(!menuId ||!jumlah) return alert('Pilih menu dan isi jumlah!');
-
-      const menu = menuList.find(m => m.key === menuId);
-      const dataOrder = {
-        mejaId: mejaAktif,
-        kunci: kunciAktif,
-        menuId: menuId,
-        jumlah: parseInt(jumlah),
-        harga: menu.harga,
-        subtotal: menu.harga * parseInt(jumlah),
-        status: 'proses',
-        waktu: new Date().toISOString()
-      };
-
-      push(orderRef, dataOrder);
-      document.getElementById('jumlah').value = '';
-      document.getElementById('pilihMenu').value = '';
-    };
-
-    window.checkoutMeja = function() {
-      if(!mejaAktif) return;
-      if(!confirm('Yakin checkout meja ini?')) return;
-
-      update(ref(db, 'meja/' + mejaAktif), {
-        status: 'kosong',
-        kunci: null,
-        waktuCheckout: new Date().toISOString()
-      });
-
-      mejaAktif = null;
-      kunciAktif = null;
-      document.getElementById('panelOrder').style.display = 'none';
-      document.getElementById('pilihMeja').value = '';
-      document.getElementById('kunciMeja').value = '';
-    };
-
-    // MENU CRUD
-    window.simpanMenu = async function() {
-      const nama = document.getElementById('namaMenu').value;
-      const harga = document.getElementById('hargaMenu').value;
-      const gambarFile = document.getElementById('gambarMenu').files[0];
-      const editKey = document.getElementById('editKey').value;
-      const editGambarUrl = document.getElementById('editGambarUrl').value;
-
-      if(!nama ||!harga) return alert('Isi nama dan harga menu!');
-
-      let gambarUrl = editGambarUrl;
-      if (gambarFile) {
-        const storageRef = sRef(storage, 'menu/' + Date.now() + '_' + gambarFile.name);
-        const snapshot = await uploadBytes(storageRef, gambarFile);
-        gambarUrl = await getDownloadURL(snapshot.ref);
-      }
-
-      const dataMenu = { nama, harga: parseInt(harga), gambar: gambarUrl };
-
-      if(editKey) {
-        set(ref(db, 'menu/' + editKey), dataMenu);
-      } else {
-        push(menuRef, dataMenu);
-      }
-      resetFormMenu();
-    };
-
-    window.editMenu = function(key) {
-      const menu = menuList.find(m => m.key === key);
-      if (menu) {
-        document.getElementById('namaMenu').value = menu.nama;
-        document.getElementById('hargaMenu').value = menu.harga;
-        document.getElementById('editKey').value = key;
-        document.getElementById('editGambarUrl').value = menu.gambar || '';
-        if (menu.gambar) {
-          document.getElementById('previewGambar').src = menu.gambar;
-          document.getElementById('previewGambar').classList.remove('hidden');
-        }
-      }
-    };
-
-    window.hapusMenu = function(key) {
-      if(confirm('Yakin hapus menu ini?')) remove(ref(db, 'menu/' + key));
-    };
-
-    window.resetFormMenu = function() {
-      document.getElementById('namaMenu').value = '';
-      document.getElementById('hargaMenu').value = '';
-      document.getElementById('gambarMenu').value = '';
-      document.getElementById('editKey').value = '';
-      document.getElementById('editGambarUrl').value = '';
-      document.getElementById('previewGambar').classList.add('hidden');
-    };
-
-    // EXPORT PDF & EMAIL
-    window.exportPDF = function() {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      doc.setFont("times");
-      doc.setFontSize(14);
-      doc.text("Laporan Penjualan per Meja", 14, 15);
-      doc.setFontSize(10);
-      doc.text(`Tanggal: ${new Date().toLocaleString('id-ID')}`, 14, 22);
-
-      const tableData = orderList.map(o => {
-        const menu = menuList.find(m => m.key === o.menuId);
-        const meja = mejaList.find(m => m.key === o.mejaId);
-        return [meja? meja.nama : '-', menu? menu.nama : '-', o.jumlah, `Rp ${o.subtotal.toLocaleString('id-ID')}`, o.status];
-      });
-
-      doc.autoTable({
-        head: [['Meja', 'Menu', 'Qty', 'Subtotal', 'Status']],
-        body: tableData,
-        startY: 28,
-        styles: { font: 'times', fontSize: 9 },
-        headStyles: { fillColor: [76, 175, 80] }
-      });
-
-      doc.save(`Laporan_${new Date().toISOString().split('T')[0]}.pdf`);
-    };
-
-    window.sendEmail = function() {
-      if (orderList.length === 0) return alert('Belum ada data!');
-      let body = "Laporan Penjualan per Meja%0D%0A";
-      body += `Tanggal: ${new Date().toLocaleString('id-ID')}%0D%0A%0D%0A`;
-      orderList.forEach(o => {
-        const menu = menuList.find(m => m.key === o.menuId);
-        const meja = mejaList.find(m => m.key === o.mejaId);
-        body += `${meja.nama} | ${menu.nama} | Qty:${o.jumlah} | Rp ${o.subtotal.toLocaleString('id-ID')}%0D%0A`;
-      });
-      window.location.href = `mailto:?subject=Laporan Penjualan&body=${body}`;
-    };
-
-    // Preview gambar
-    document.getElementById('gambarMenu').addEventListener('change', function(e) {
-      const file = e.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = e => {
-          document.getElementById('previewGambar').src = e.target.result;
-          document.getElementById('previewGambar').classList.remove('hidden');
-        }
-        reader.readAsDataURL(file);
-      }
-    });
-  </script>
 </body>
 </html>
