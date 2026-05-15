@@ -13,35 +13,35 @@
 
     body { font-family: Arial, sans-serif; padding: 0; margin: 0; background: var(--bg); }
 
-   .theme-bar {
+  .theme-bar {
       background: var(--primary); padding: 8px 10px; display: flex; gap: 8px;
       align-items: center; color: white; font-size: 13px;
     }
-   .theme-btn {
+  .theme-btn {
       padding: 5px 10px; border: 2px solid white; background: transparent;
       color: white; border-radius: 4px; cursor: pointer; font-size: 12px;
     }
-   .theme-btn.active { background: white; color: var(--primary); }
+  .theme-btn.active { background: white; color: var(--primary); }
 
-   .navbar {
+  .navbar {
       background: var(--primary); padding: 10px; display: flex; gap: 10px;
       overflow-x: auto; box-shadow: 0 2px 6px rgba(0,0,0,0.2);
     }
-   .nav-btn {
+  .nav-btn {
       padding: 10px 20px; border: none; background: var(--primary-light); color: white;
       border-radius: 6px; cursor: pointer; font-weight: bold; white-space: nowrap;
     }
-   .nav-btn.active {
+  .nav-btn.active {
       background: white; color: var(--primary);
       box-shadow: 0 0 8px rgba(255,255,255,0.8);
       border: 2px solid white;
     }
-   .nav-btn:hover { background: var(--secondary); }
+  .nav-btn:hover { background: var(--secondary); }
 
-   .tab-content { display: none; padding: 20px; }
-   .tab-content.active { display: block; }
+  .tab-content { display: none; padding: 20px; }
+  .tab-content.active { display: block; }
 
-   .section {
+  .section {
       background: var(--card-bg); padding: 15px; margin-bottom: 20px; border-radius: 8px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.1); overflow-x: auto;
       border: 1px solid var(--border);
@@ -59,47 +59,47 @@
       padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; margin: 2px;
       font-weight: bold;
     }
-   .btn-tambah { background: var(--primary); color: white; }
-   .btn-tambah:hover:not(:disabled) { background: var(--primary-dark); }
-   .btn-edit { background: var(--secondary); color: white; }
-   .btn-edit:hover:not(:disabled) { background: var(--primary); }
-   .btn-del { background: var(--accent); color: white; }
-   .btn-del:hover:not(:disabled) { background: #e63946; }
-   .btn-print { background: var(--primary-light); color: white; }
-   .btn-print:hover:not(:disabled) { background: var(--primary); }
+  .btn-tambah { background: var(--primary); color: white; }
+  .btn-tambah:hover:not(:disabled) { background: var(--primary-dark); }
+  .btn-edit { background: var(--secondary); color: white; }
+  .btn-edit:hover:not(:disabled) { background: var(--primary); }
+  .btn-del { background: var(--accent); color: white; }
+  .btn-del:hover:not(:disabled) { background: #e63946; }
+  .btn-print { background: var(--primary-light); color: white; }
+  .btn-print:hover:not(:disabled) { background: var(--primary); }
 
     table { width: 100%; border-collapse: collapse; table-layout: auto; }
     th, td { border: 1px solid var(--border); padding: 10px; text-align: left; white-space: nowrap; }
     th { background: var(--primary); color: white; }
     h2, h3 { color: var(--text); }
-   .order-list { font-size: 13px; background: var(--bg); padding: 8px; border-radius: 6px; margin-top: 5px; }
-   .order-list li { margin: 3px 0; }
-   .info-text { color: var(--text); font-size: 13px; margin-top: 8px; }
-   .category-filter { margin: 10px 0; }
-   .category-filter button { margin-right: 5px; }
-   .category-filter button.active { background: var(--primary); color: white; }
+  .order-list { font-size: 13px; background: var(--bg); padding: 8px; border-radius: 6px; margin-top: 5px; }
+  .order-list li { margin: 3px 0; }
+  .info-text { color: var(--text); font-size: 13px; margin-top: 8px; }
+  .category-filter { margin: 10px 0; }
+  .category-filter button { margin-right: 5px; }
+  .category-filter button.active { background: var(--primary); color: white; }
 
-   .toggle-wrap {
+  .toggle-wrap {
       display: flex; align-items: center; gap: 8px; margin: 10px 0;
       font-size: 14px; color: var(--text);
     }
-   .toggle-wrap input[type="checkbox"] {
+  .toggle-wrap input[type="checkbox"] {
       width: 18px; height: 18px; cursor: pointer;
     }
 
-   .bill {
+  .bill {
       width: 280px; margin: 20px auto; padding: 10px; background: white;
       border: 1px solid #000; font-family: 'Courier New', monospace; font-size: 12px;
     }
-   .bill h3,.bill p { text-align: center; margin: 4px 0; }
-   .bill table { width: 100%; border-collapse: collapse; font-size: 12px; }
-   .bill th,.bill td { border: none; padding: 3px 2px; }
-   .bill.line { border-top: 1px dashed #000; margin: 6px 0; }
+  .bill h3,.bill p { text-align: center; margin: 4px 0; }
+  .bill table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .bill th,.bill td { border: none; padding: 3px 2px; }
+  .bill.line { border-top: 1px dashed #000; margin: 6px 0; }
 
     @media print {
       body * { visibility: hidden; }
-     .bill,.bill * { visibility: visible; }
-     .bill { position: absolute; left: 0; top: 0; width: 100%; border: none; margin: 0; padding: 0; }
+    .bill,.bill * { visibility: visible; }
+    .bill { position: absolute; left: 0; top: 0; width: 100%; border: none; margin: 0; padding: 0; }
     }
   </style>
 </head>
@@ -109,7 +109,7 @@
     <button class="theme-btn" onclick="setTheme('green', this)">Hijau</button>
     <button class="theme-btn" onclick="setTheme('pink', this)">Pink</button>
     <button class="theme-btn" onclick="setTheme('blue', this)">Biru</button>
-    <button class="theme-btn" onclick="setTheme('brown', this)">Coklat</button>
+    <button class="theme-btn" onclick="setTheme('brown', this)">Brown</button>
   </div>
 
   <div class="navbar">
@@ -254,6 +254,7 @@
       brown: { bg: '#faf5f0', primary: '#8b4513', 'primary-light': '#a0522d', 'primary-dark': '#654321', secondary: '#a0522d', accent: '#dc143c', border: '#deb887', text: '#8b4513' }
     };
 
+    // Semua function harus di-attach ke window
     window.setTheme = (themeName, btnElement) => {
       const root = document.documentElement;
       const theme = themes[themeName];
@@ -307,16 +308,28 @@
       remove(ref(db, "pesanan_aktif/" + id));
     };
 
-    window.forceHapusMeja = (namaMeja) => {
-      if (!confirm(`Force delete meja "${namaMeja}"?`)) return;
+    // FORCE DELETE - ini yang fix buat hapus meja1 dan meja 12
+    window.forceHapusMeja = async (namaMeja) => {
+      if (!confirm(`FORCE DELETE meja "${namaMeja}"? Ini bakal hapus semua versi ID-nya.`)) return;
+
       const idBersih = namaMeja.toLowerCase().replace(/[^a-z0-9]/g, '');
-      remove(ref(db, "meja/" + idBersih));
-      remove(ref(db, "meja/" + namaMeja));
-      remove(ref(db, "meja/" + namaMeja.toLowerCase()));
-      remove(ref(db, "pesanan_aktif/" + idBersih));
-      remove(ref(db, "pesanan_aktif/" + namaMeja));
-      remove(ref(db, "pesanan_aktif/" + namaMeja.toLowerCase()));
-      alert(`Sudah hapus meja "${namaMeja}"`);
+      const idSpasi = namaMeja;
+      const idEncode = encodeURIComponent(namaMeja);
+
+      try {
+        // Hapus semua kemungkinan path
+        await Promise.all([
+          remove(ref(db, "meja/" + idBersih)),
+          remove(ref(db, "meja/" + idSpasi)),
+          remove(ref(db, "meja/" + idEncode)),
+          remove(ref(db, "pesanan_aktif/" + idBersih)),
+          remove(ref(db, "pesanan_aktif/" + idSpasi)),
+          remove(ref(db, "pesanan_aktif/" + idEncode))
+        ]);
+        alert(`Meja "${namaMeja}" sudah dihapus total!`);
+      } catch (err) {
+        alert("Gagal hapus: " + err.message);
+      }
     };
 
     window.tambahMenu = () => {
@@ -483,7 +496,7 @@
       document.getElementById("btnPrintBill").disabled =!isCheckedIn;
       document.getElementById("toggleCheckout").disabled =!isCheckedIn;
       document.getElementById("infoText").textContent = isCheckedIn
-       ? "Meja sudah Check-in. Silakan isi pesanan."
+      ? "Meja sudah Check-in. Silakan isi pesanan."
         : "Pilih meja yang sudah Check-in dulu";
     }
 
@@ -544,15 +557,4 @@
         const kategoriLabel = data.kategori === 'food'? '🍜 Food' : '🥤 Beverage';
         tbody.innerHTML += `<tr><td>${kategoriLabel}</td><td>${data.nama}</td><td>Rp ${data.harga.toLocaleString()}</td><td><button class="btn-del" onclick="hapusMenu('${data.id}')">Hapus</button></td></tr>`;
         if (kategoriAktif === 'all' || kategoriAktif === data.kategori) {
-          selectMenu.innerHTML += `<option value="${data.id}">${data.nama} - Rp ${data.harga.toLocaleString()}</option>`;
-        }
-      });
-    });
-
-    window.addEventListener('DOMContentLoaded', () => {
-      const saved = localStorage.getItem('kasirTheme') || 'green';
-      setTheme(saved, document.querySelector(`.theme-btn[onclick*="${saved}"]`));
-    });
-  </script>
-</body>
-</html>
+          selectMenu.inner
