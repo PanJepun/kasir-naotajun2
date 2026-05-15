@@ -20,6 +20,7 @@
     .pesanan { font-size: 12px; text-align: left; }
     input[type="text"], input[type="number"] { width: 150px; }
     .edit-row { background: #fff3cd; }
+    small { font-size: 11px; color: #555; }
   </style>
 </head>
 <body>
@@ -48,7 +49,7 @@
       <thead>
         <tr>
           <th>Meja</th><th>Status</th><th>Waktu Check-in</th>
-          <th>Kunci Reservasi</th><th>Menu</th><th>Pesanan</th><th>Aksi</th>
+          <th>Data Check-in</th><th>Menu</th><th>Pesanan</th><th>Aksi</th>
         </tr>
       </thead>
       <tbody><tr><td colspan="7">Loading...</td></tr></tbody>
@@ -74,6 +75,7 @@
     let menuList = [];
     let editingMenuId = null;
     let editingTableId = null;
+    let pesananCache = {};
 
     // Auto buat 3 meja kalau belum ada
     async function initTables() {
@@ -84,6 +86,7 @@
             nama: `Meja ${i}`,
             status: "checked-out",
             kunci: "",
+            namaPemesan: "",
             waktuCheckin: ""
           });
         }
@@ -91,7 +94,7 @@
     }
     await initTables();
 
-    // Realtime load menu
+    // Load menu realtime
     onSnapshot(collection(db, "menu"), (snapshot) => {
       menuList = [];
       const tbody = document.querySelector("#tabelMenu tbody");
@@ -132,21 +135,29 @@
       });
     });
 
-    // Realtime load meja
-    onSnapshot(collection(db, "tables"), async (snapshot) => {
+    // Load pesanan ke cache
+    onSnapshot(collection(db, "pesanan"), (snap) => {
+      pesananCache = {};
+      snap.forEach(doc => {
+        const p = doc.data();
+        if (!pesananCache[p.mejaId]) pesananCache[p.mejaId] = [];
+        pesananCache[p.mejaId].push(p);
+      });
+    });
+
+    // Load meja realtime
+    onSnapshot(collection(db, "tables"), (snapshot) => {
       const tbody = document.querySelector("#tabelMeja tbody");
       tbody.innerHTML = "";
 
-      for (const docSnap of snapshot.docs) {
+      snapshot.forEach(docSnap => {
         const data = docSnap.data();
         const tr = document.createElement("tr");
 
-        const pesananQ = query(collection(db, "pesanan"), where("mejaId", "==", docSnap.id));
-        const pesananSnap = await getDocs(pesananQ);
+        const pesananList = pesananCache[docSnap.id] || [];
         let pesananHTML = "";
         let total = 0;
-        pesananSnap.forEach(p => {
-          const ps = p.data();
+        pesananList.forEach(ps => {
           const menu = menuList.find(m => m.id === ps.menuId);
           if (menu) {
             pesananHTML += `- ${menu.nama} Rp${menu.harga.toLocaleString("id-ID")}<br>`;
@@ -157,10 +168,10 @@
         if (editingTableId === docSnap.id) {
           tr.innerHTML = `
             <td><input type="text" id="editNamaMeja" value="${data.nama}" style="width:120px;"></td>
-            <td>${data.status === "checked-in" ? "✓ Sudah Check-in" : "✗ Belum Check-in"}</td>
+            <td>${data.status === "checked-in" ? "✓ Sudah Check-in" : "✗ Belum Check-in"}${data.namaPemesan ? `<br><small><b>Pemesan:</b> ${data.namaPemesan}</small>` : ""}</td>
             <td>${data.waktuCheckin || "-"}</td>
-            <td><input type="text" id="kunci-${docSnap.id}" placeholder="Masukkan kunci"></td>
             <td>-</td>
+            <td class="pesanan">${pesananHTML || "-"}</td>
             <td class="pesanan">${pesananHTML || "-"}</td>
             <td>
               <button class="btn-save" onclick="simpanEditMeja('${docSnap.id}')">Simpan</button>
@@ -170,9 +181,17 @@
         } else {
           tr.innerHTML = `
             <td><b>${data.nama || docSnap.id}</b> <button class="btn-edit" style="padding:2px 6px;font-size:12px;" onclick="editMeja('${docSnap.id}')">Edit</button></td>
-            <td>${data.status === "checked-in" ? "✓ Sudah Check-in" : "✗ Belum Check-in"}</td>
+            <td>
+              ${data.status === "checked-in" ? "✓ Sudah Check-in" : "✗ Belum Check-in"}
+              ${data.namaPemesan ? `<br><small><b>Pemesan:</b> ${data.namaPemesan}</small>` : ""}
+            </td>
             <td>${data.waktuCheckin || "-"}</td>
-            <td><input type="text" id="kunci-${docSnap.id}" placeholder="Masukkan kunci"></td>
+            <td>
+              ${data.status !== "checked-in" ? `
+                <input type="text" id="nama-${docSnap.id}" placeholder="Nama pemesan" style="width:120px;margin-bottom:4px;">
+                <input type="text" id="kunci-${docSnap.id}" placeholder="Kunci" style="width:120px;">
+              ` : "-"}
+            </td>
             <td>
               ${data.status === "checked-in" ? `
                 <select id="menu-${docSnap.id}">
@@ -195,7 +214,7 @@
           `;
         }
         tbody.appendChild(tr);
-      }
+      });
     });
 
     window.tambahMenu = async () => {
@@ -233,10 +252,12 @@
     };
 
     window.checkIn = async (id) => {
+      const nama = document.getElementById(`nama-${id}`).value.trim();
       const kunci = document.getElementById(`kunci-${id}`).value.trim();
-      if (!kunci) return alert("Masukkan kunci dulu!");
+      if (!nama || !kunci) return alert("Isi nama pemesan dan kunci dulu!");
       await updateDoc(doc(db, "tables", id), {
         status: "checked-in",
+        namaPemesan: nama,
         kunci: kunci,
         waktuCheckin: new Date().toLocaleString("id-ID")
       });
@@ -247,6 +268,7 @@
         await updateDoc(doc(db, "tables", id), {
           status: "checked-out",
           kunci: "",
+          namaPemesan: "",
           waktuCheckin: ""
         });
       }
