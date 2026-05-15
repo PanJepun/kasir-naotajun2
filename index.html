@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Kasir Naotajun</title>
-  <style id="themeStyle">
+  <style>
     :root {
       --bg: #f0fff4; --primary: #2e8b57; --primary-light: #3cb371;
       --primary-dark: #228b22; --secondary: #3cb371; --accent: #dc143c;
@@ -113,10 +113,10 @@
   </div>
 
   <div class="navbar">
-    <button class="nav-btn active" onclick="openTab('meja')">🍽️ Menu Meja</button>
-    <button class="nav-btn" onclick="openTab('menu')">🍜 Menu Makanan</button>
-    <button class="nav-btn" onclick="openTab('kasir')">💳 Menu Kasir</button>
-    <button class="nav-btn" onclick="openTab('laporan')">📊 Laporan</button>
+    <button class="nav-btn active" onclick="openTab('meja', this)">🍽️ Menu Meja</button>
+    <button class="nav-btn" onclick="openTab('menu', this)">🍜 Menu Makanan</button>
+    <button class="nav-btn" onclick="openTab('kasir', this)">💳 Menu Kasir</button>
+    <button class="nav-btn" onclick="openTab('laporan', this)">📊 Laporan</button>
   </div>
 
   <!-- TAB 1: MENU MEJA -->
@@ -254,42 +254,30 @@
       brown: { bg: '#faf5f0', primary: '#8b4513', 'primary-light': '#a0522d', 'primary-dark': '#654321', secondary: '#a0522d', accent: '#dc143c', border: '#deb887', text: '#8b4513' }
     };
 
-    // Semua function harus di-attach ke window
     window.setTheme = (themeName, btnElement) => {
       const root = document.documentElement;
       const theme = themes[themeName];
-
       for (let key in theme) {
         root.style.setProperty(`--${key}`, theme[key]);
       }
-
       document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.remove('active'));
-
-      if (btnElement) {
-        btnElement.classList.add('active');
-      } else {
-        const btn = document.querySelector(`.theme-btn[onclick*="${themeName}"]`);
-        if (btn) btn.classList.add('active');
-      }
-
+      if (btnElement) btnElement.classList.add('active');
       localStorage.setItem('kasirTheme', themeName);
     }
 
-    window.openTab = (tabName) => {
+    window.openTab = (tabName, btnElement) => {
       document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
       document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
       document.getElementById(tabName).classList.add('active');
-      event.target.classList.add('active');
+      btnElement.classList.add('active');
     }
 
     window.filterKategori = (kat, btnElement) => {
       kategoriAktif = kat;
       document.querySelectorAll('.category-filter button').forEach(btn => btn.classList.remove('active'));
       btnElement.classList.add('active');
-
       const selectMenu = document.querySelector("#selectMenu");
       selectMenu.innerHTML = "<option value=''>Pilih Menu</option>";
-
       for (let id in menuList) {
         const data = menuList[id];
         if (kat === 'all' || kat === data.kategori) {
@@ -352,15 +340,7 @@
       const namaWaitress = prompt("Masukkan nama waitress:");
       if (!namaWaitress) return;
       update(ref(db, "meja/" + id), { status: "checked-in" });
-      set(ref(db, "pesanan_aktif/" + id), {
-        pemesan: namaPemesan,
-        waitress: namaWaitress,
-        items: [],
-        subtotal: 0,
-        ppn: 0,
-        tax: 0,
-        grandTotal: 0
-      });
+      set(ref(db, "pesanan_aktif/" + id), { pemesan: namaPemesan, waitress: namaWaitress, items: [], subtotal: 0, ppn: 0, tax: 0, grandTotal: 0 });
       document.getElementById("selectMeja").value = id;
       updateFormStatus();
     };
@@ -368,16 +348,13 @@
     window.editPesanan = (id) => {
       const pesanan = pesananAktif[id];
       if (!pesanan) return alert("Pesanan tidak ditemukan");
-      openTab('kasir');
-      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-      document.querySelector('.nav-btn:nth-child(3)').classList.add('active');
+      openTab('kasir', document.querySelector('.nav-btn:nth-child(3)'));
       document.getElementById("selectMeja").value = id;
       document.getElementById("inputPemesan").value = pesanan.pemesan || "";
       document.getElementById("inputWaitress").value = pesanan.waitress || "";
       pesananSement[id] = pesanan.items || [];
       document.getElementById("listPesanan").innerHTML = pesananSement[id].map((p,i) =>
-        `<p>${p.nama} x${p.qty} = Rp ${p.subtotal.toLocaleString()}
-         <button class="btn-del" style="padding:2px 6px;" onclick="hapusItemPesanan(${i})">x</button></p>`
+        `<p>${p.nama} x${p.qty} = Rp ${p.subtotal.toLocaleString()} <button class="btn-del" style="padding:2px 6px;" onclick="hapusItemPesanan(${i})">x</button></p>`
       ).join("");
       window.pesananAktifSement = { mejaId: id, pemesan: pesanan.pemesan, waitress: pesanan.waitress, items: pesananSement[id] };
       updateFormStatus();
@@ -402,8 +379,7 @@
       if (!pesananSement[mejaId]) pesananSement[mejaId] = [];
       pesananSement[mejaId].push({ menuId, nama: menu.nama, harga: menu.harga, qty, subtotal: menu.harga * qty });
       document.getElementById("listPesanan").innerHTML = pesananSement[mejaId].map((p,i) =>
-        `<p>${p.nama} x${p.qty} = Rp ${p.subtotal.toLocaleString()}
-         <button class="btn-del" style="padding:2px 6px;" onclick="hapusItemPesanan(${i})">x</button></p>`
+        `<p>${p.nama} x${p.qty} = Rp ${p.subtotal.toLocaleString()} <button class="btn-del" style="padding:2px 6px;" onclick="hapusItemPesanan(${i})">x</button></p>`
       ).join("");
       window.pesananAktifSement = { mejaId, pemesan, waitress, items: pesananSement[mejaId] };
       saveToFirebase(mejaId);
@@ -413,8 +389,7 @@
       const mejaId = document.getElementById("selectMeja").value;
       pesananSement[mejaId].splice(index, 1);
       document.getElementById("listPesanan").innerHTML = pesananSement[mejaId].map((p,i) =>
-        `<p>${p.nama} x${p.qty} = Rp ${p.subtotal.toLocaleString()}
-         <button class="btn-del" style="padding:2px 6px;" onclick="hapusItemPesanan(${i})">x</button></p>`
+        `<p>${p.nama} x${p.qty} = Rp ${p.subtotal.toLocaleString()} <button class="btn-del" style="padding:2px 6px;" onclick="hapusItemPesanan(${i})">x</button></p>`
       ).join("");
       saveToFirebase(mejaId);
     };
@@ -427,10 +402,7 @@
       const ppn = Math.round(subtotal * PPN_RATE);
       const tax = Math.round(subtotal * TAX_RATE);
       const grandTotal = subtotal + ppn + tax;
-      const waktu = new Date().toLocaleString("id-ID", {
-        day: "2-digit", month: "2-digit", year: "numeric",
-        hour: "2-digit", minute: "2-digit"
-      });
+      const waktu = new Date().toLocaleString("id-ID", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
       let rows = "";
       items.forEach((i, idx) => {
         rows += `<tr><td>${idx + 1}</td><td>${i.nama}</td><td style="text-align:center;">${i.qty}</td><td style="text-align:right;">${i.harga.toLocaleString()}</td><td style="text-align:right;">${i.subtotal.toLocaleString()}</td></tr>`;
@@ -511,7 +483,7 @@
       document.getElementById("btnPrintBill").disabled =!isCheckedIn;
       document.getElementById("toggleCheckout").disabled =!isCheckedIn;
       document.getElementById("infoText").textContent = isCheckedIn
-      ? "Meja sudah Check-in. Silakan isi pesanan."
+       ? "Meja sudah Check-in. Silakan isi pesanan."
         : "Pilih meja yang sudah Check-in dulu";
     }
 
@@ -579,431 +551,8 @@
 
     window.addEventListener('DOMContentLoaded', () => {
       const saved = localStorage.getItem('kasirTheme') || 'green';
-      setTheme(saved, null);
+      setTheme(saved, document.querySelector(`.theme-btn[onclick*="${saved}"]`));
     });
-</script>
- 
-    window.openTab = (tabName) => {
-      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-      document.getElementById(tabName).classList.add('active');
-      event.target.classList.add('active');
-    }
-
-    onValue(ref(db, "pesanan_aktif"), (snapshot) => {
-      pesananAktif = snapshot.val() || {};
-      loadMeja();
-    });
-
-    function loadMeja() {
-      onValue(ref(db, "meja"), (snapshot) => {
-        const tbody = document.querySelector("#tabelMeja tbody");
-        const selectMeja = document.querySelector("#selectMeja");
-        tbody.innerHTML = "";
-        selectMeja.innerHTML = "<option value=''>Pilih Meja</option>";
-
-        snapshot.forEach((child) => {
-          const data = child.val();
-          const id = data.id;
-          const pesanan = pesananAktif[id];
-
-          let aksiBtn = `<button class="btn-edit" onclick="editMeja('${id}')">Edit</button>
-                         <button class="btn-del" onclick="hapusMeja('${id}')">Hapus</button>
-                         <button class="btn-del" style="background:#8b0000;" onclick="forceHapusMeja('${data.nama}')">Force</button>`;
-
-          let pesananHTML = "-";
-          if (data.status === "checked-in" && pesanan && pesanan.items && pesanan.items.length > 0) {
-            aksiBtn = `<button class="btn-edit" onclick="editPesanan('${id}')">Edit Pesanan</button>
-                       <button class="btn-edit" onclick="checkOutMeja('${id}')">Check-out</button>
-                       <button class="btn-del" onclick="hapusMeja('${id}')">Hapus</button>
-                       <button class="btn-del" style="background:#8b0000;" onclick="forceHapusMeja('${data.nama}')">Force</button>`;
-
-            const total = pesanan.grandTotal || 0;
-            pesananHTML = `
-              <div class="order-list">
-                <b>${pesanan.pemesan || '-'}</b> | Waitress: ${pesanan.waitress || '-'}<br>
-                <ul style="margin:5px 0; padding-left:18px;">
-                  ${pesanan.items.map(i => `<li>${i.nama} x${i.qty} = Rp ${(i.subtotal || 0).toLocaleString()}</li>`).join("")}
-                </ul>
-                <b>Grand Total: Rp ${total.toLocaleString()}</b>
-              </div>
-            `;
-          } else if (data.status === "checked-in") {
-            aksiBtn = `<button class="btn-edit" onclick="editPesanan('${id}')">Edit Pesanan</button>
-                       <button class="btn-edit" onclick="checkOutMeja('${id}')">Check-out</button>
-                       <button class="btn-del" onclick="hapusMeja('${id}')">Hapus</button>
-                       <button class="btn-del" style="background:#8b0000;" onclick="forceHapusMeja('${data.nama}')">Force</button>`;
-            pesananHTML = "<div class='order-list'>Belum ada pesanan</div>";
-          } else {
-            aksiBtn = `<button class="btn-tambah" onclick="checkInMeja('${id}')">Check-in</button>
-                       <button class="btn-edit" onclick="editMeja('${id}')">Edit</button>
-                       <button class="btn-del" onclick="hapusMeja('${id}')">Hapus</button>
-                       <button class="btn-del" style="background:#8b0000;" onclick="forceHapusMeja('${data.nama}')">Force</button>`;
-          }
-
-          tbody.innerHTML += `
-            <tr>
-              <td><b>${data.nama}</b></td>
-              <td>${data.status === "checked-in"? "✓ Check-in" : "✗ Kosong"}</td>
-              <td>${pesananHTML}</td>
-              <td>${aksiBtn}</td>
-            </tr>`;
-
-          selectMeja.innerHTML += `<option value="${id}">${data.nama}</option>`;
-        });
-
-        updateFormStatus();
-      });
-    }
-
-    window.editMeja = (id) => {
-      const meja = prompt("Masukkan nama meja baru:");
-      if (!meja) return;
-
-      const status = confirm("Status Check-in? OK = Check-in, Cancel = Kosong")? "checked-in" : "available";
-
-      update(ref(db, "meja/" + id), {
-        id: id,
-        nama: meja,
-        status: status
-      });
-    };
-
-    function updateFormStatus() {
-      const selectMeja = document.getElementById("selectMeja");
-      const mejaId = selectMeja.value;
-      const isCheckedIn = mejaId && mejaId!== "" && pesananAktif[mejaId];
-
-      document.getElementById("selectMenu").disabled =!isCheckedIn;
-      document.getElementById("inputQty").disabled =!isCheckedIn;
-      document.getElementById("inputPemesan").disabled =!isCheckedIn;
-      document.getElementById("inputWaitress").disabled =!isCheckedIn;
-      document.getElementById("btnTambahPesanan").disabled =!isCheckedIn;
-      document.getElementById("btnPrintBill").disabled =!isCheckedIn;
-      document.getElementById("toggleCheckout").disabled =!isCheckedIn;
-
-      document.getElementById("infoText").textContent = isCheckedIn
-       ? "Meja sudah Check-in. Silakan isi pesanan."
-        : "Pilih meja yang sudah Check-in dulu";
-    }
-
-    onValue(ref(db, "menu"), (snapshot) => {
-      const tbody = document.querySelector("#tabelMenu tbody");
-      const selectMenu = document.querySelector("#selectMenu");
-      tbody.innerHTML = "";
-      selectMenu.innerHTML = "<option value=''>Pilih Menu</option>";
-      menuList = {};
-
-      snapshot.forEach((child) => {
-        const data = child.val();
-        menuList[data.id] = data;
-
-        const kategoriLabel = data.kategori === 'food'? '🍜 Food' : '🥤 Beverage';
-
-        tbody.innerHTML += `
-          <tr>
-            <td>${kategoriLabel}</td>
-            <td>${data.nama}</td>
-            <td>Rp ${data.harga.toLocaleString()}</td>
-            <td><button class="btn-del" onclick="hapusMenu('${data.id}')">Hapus</button></td>
-          </tr>`;
-
-        if (kategoriAktif === 'all' || kategoriAktif === data.kategori) {
-          selectMenu.innerHTML += `<option value="${id}">${data.nama} - Rp ${data.harga.toLocaleString()}</option>`;
-        }
-      });
-    });
-
-    window.filterKategori = (kat, btnElement) => {
-      kategoriAktif = kat;
-      document.querySelectorAll('.category-filter button').forEach(btn => btn.classList.remove('active'));
-      btnElement.classList.add('active');
-
-      const selectMenu = document.querySelector("#selectMenu");
-      selectMenu.innerHTML = "<option value=''>Pilih Menu</option>";
-
-      for (let id in menuList) {
-        const data = menuList[id];
-        if (kat === 'all' || kat === data.kategori) {
-          selectMenu.innerHTML += `<option value="${id}">${data.nama} - Rp ${data.harga.toLocaleString()}</option>`;
-        }
-      }
-    };
-
-    window.loadLaporan = () => {
-      const tanggal = document.getElementById("filterTanggal").value;
-      const bulan = document.getElementById("filterBulan").value;
-      const tahun = document.getElementById("filterTahun").value;
-
-      onValue(ref(db, "pesanan"), (snapshot) => {
-        const tbody = document.querySelector("#tabelLaporan tbody");
-        tbody.innerHTML = "";
-        let total = 0;
-        let count = 0;
-
-        if (!snapshot.exists()) {
-          tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">Belum ada pesanan</td></tr>`;
-          document.getElementById("totalLaporan").textContent = "Total: Rp 0";
-          return;
-        }
-
-        snapshot.forEach((child) => {
-          const data = child.val();
-          let show = true;
-
-          if (tanggal &&!data.waktu.includes(tanggal.split('-').reverse().join('/'))) show = false;
-          if (bulan && tahun &&!data.waktu.includes(`${bulan}/${tahun}`)) show = false;
-          if (bulan &&!tahun &&!data.waktu.includes(`/${bulan}/`)) show = false;
-          if (tahun &&!bulan &&!data.waktu.includes(`/${tahun}`)) show = false;
-
-          if (show) {
-            tbody.innerHTML += `
-              <tr>
-                <td>${data.waktu}</td>
-                <td>${data.mejaId}</td>
-                <td>${data.pemesan}</td>
-                <td>${data.waitress || '-'}</td>
-                <td>Rp ${(data.grandTotal || 0).toLocaleString()}</td>
-              </tr>`;
-            total += data.grandTotal || 0;
-            count++;
-          }
-        });
-
-        document.getElementById("totalLaporan").textContent = `Total: Rp ${total.toLocaleString()} dari ${count} transaksi`;
-
-        let judul = "Riwayat Pesanan";
-        if (tanggal) judul = `Laporan Tanggal ${tanggal}`;
-        else if (bulan && tahun) judul = `Laporan Bulan ${bulan}/${tahun}`;
-        else if (bulan) judul = `Laporan Bulan ${bulan}`;
-        else if (tahun) judul = `Laporan Tahun ${tahun}`;
-        document.getElementById("judulLaporan").textContent = judul;
-      });
-    };
-
-    window.tambahMeja = () => {
-      const nama = document.getElementById("inputNamaMeja").value.trim();
-      if (!nama) return alert("Isi nama meja!");
-      const id = nama.toLowerCase().replace(/[^a-z0-9]/g, '');
-      set(ref(db, "meja/" + id), { id, nama, status: "available" });
-      document.getElementById("inputNamaMeja").value = "";
-    };
-
-    window.tambahMenu = () => {
-      const nama = document.getElementById("inputNamaMenu").value.trim();
-      const harga = parseInt(document.getElementById("inputHargaMenu").value);
-      const kategori = document.getElementById("inputKategori").value;
-      if (!nama ||!harga) return alert("Isi nama dan harga!");
-      const id = "menu" + Date.now();
-      set(ref(db, "menu/" + id), { id, nama, harga, kategori });
-      document.getElementById("inputNamaMenu").value = "";
-      document.getElementById("inputHargaMenu").value = "";
-    };
-
-    window.hapusMenu = (id) => {
-      if (confirm("Hapus menu ini?")) remove(ref(db, "menu/" + id));
-    };
-
-    window.hapusMeja = (id) => {
-      if (!confirm("Hapus meja ini? Data pesanan aktif juga akan ikut terhapus.")) return;
-      remove(ref(db, "meja/" + id));
-      remove(ref(db, "pesanan_aktif/" + id));
-    };
-
-    window.forceHapusMeja = (namaMeja) => {
-      if (!confirm(`Force delete meja "${namaMeja}"? Ini akan hapus semua data terkait.`)) return;
-
-      const idBersih = namaMeja.toLowerCase().replace(/[^a-z0-9]/g, '');
-
-      remove(ref(db, "meja/" + idBersih));
-      remove(ref(db, "meja/" + namaMeja));
-      remove(ref(db, "meja/" + namaMeja.toLowerCase()));
-      remove(ref(db, "pesanan_aktif/" + idBersih));
-      remove(ref(db, "pesanan_aktif/" + namaMeja));
-      remove(ref(db, "pesanan_aktif/" + namaMeja.toLowerCase()));
-
-      alert(`Sudah hapus meja "${namaMeja}" dari database.`);
-    };
-
-    window.checkInMeja = (id) => {
-      const namaPemesan = prompt("Masukkan nama pemesan:");
-      if (!namaPemesan) return;
-      const namaWaitress = prompt("Masukkan nama waitress:");
-      if (!namaWaitress) return;
-
-      update(ref(db, "meja/" + id), { status: "checked-in" });
-      set(ref(db, "pesanan_aktif/" + id), {
-        pemesan: namaPemesan,
-        waitress: namaWaitress,
-        items: [],
-        subtotal: 0,
-        ppn: 0,
-        tax: 0,
-        grandTotal: 0
-      });
-
-      document.getElementById("selectMeja").value = id;
-      updateFormStatus();
-    };
-
-    window.editPesanan = (id) => {
-      const pesanan = pesananAktif[id];
-      if (!pesanan) return alert("Pesanan tidak ditemukan");
-
-      openTab('kasir');
-      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-      document.querySelector('.nav-btn:nth-child(3)').classList.add('active');
-
-      document.getElementById("selectMeja").value = id;
-      document.getElementById("inputPemesan").value = pesanan.pemesan || "";
-      document.getElementById("inputWaitress").value = pesanan.waitress || "";
-
-      pesananSement[id] = pesanan.items || [];
-
-      document.getElementById("listPesanan").innerHTML = pesananSement[id].map((p,i) =>
-        `<p>${p.nama} x${p.qty} = Rp ${p.subtotal.toLocaleString()}
-         <button class="btn-del" style="padding:2px 6px;" onclick="hapusItemPesanan(${i})">x</button></p>`
-      ).join("");
-
-      window.pesananAktifSement = { mejaId: id, pemesan: pesanan.pemesan, waitress: pesanan.waitress, items: pesananSement[id] };
-      updateFormStatus();
-    };
-
-    window.checkOutMeja = (id) => {
-      if (confirm("Yakin mau check-out meja ini?")) {
-        update(ref(db, "meja/" + id), { status: "available" });
-        remove(ref(db, "pesanan_aktif/" + id));
-        updateFormStatus();
-      }
-    };
-
-    function saveToFirebase(mejaId) {
-      const pemesan = document.getElementById("inputPemesan").value.trim();
-      const waitress = document.getElementById("inputWaitress").value.trim();
-      const items = pesananSement[mejaId] || [];
-      const subtotal = items.reduce((a, b) => a + b.subtotal, 0);
-      const ppn = Math.round(subtotal * PPN_RATE);
-      const tax = Math.round(subtotal * TAX_RATE);
-      const grandTotal = subtotal + ppn + tax;
-
-      set(ref(db, "pesanan_aktif/" + mejaId), {
-        pemesan, waitress, items, subtotal, ppn, tax, grandTotal
-      });
-    }
-
-    window.tambahPesanan = () => {
-      const mejaId = document.getElementById("selectMeja").value;
-      const menuId = document.getElementById("selectMenu").value;
-      const qty = parseInt(document.getElementById("inputQty").value);
-      const pemesan = document.getElementById("inputPemesan").value.trim();
-      const waitress = document.getElementById("inputWaitress").value.trim();
-
-      if (!mejaId || menuId === "" ||!pemesan ||!waitress)
-        return alert("Lengkapi semua field!");
-
-      const menu = menuList[menuId];
-      if (!pesananSement[mejaId]) pesananSement[mejaId] = [];
-
-      pesananSement[mejaId].push({ menuId, nama: menu.nama, harga: menu.harga, qty, subtotal: menu.harga * qty });
-
-      document.getElementById("listPesanan").innerHTML = pesananSement[mejaId].map((p,i) =>
-        `<p>${p.nama} x${p.qty} = Rp ${p.subtotal.toLocaleString()}
-         <button class="btn-del" style="padding:2px 6px;" onclick="hapusItemPesanan(${i})">x</button></p>`
-      ).join("");
-
-      window.pesananAktifSement = { mejaId, pemesan, waitress, items: pesananSement[mejaId] };
-      saveToFirebase(mejaId);
-    };
-
-    window.hapusItemPesanan = (index) => {
-      const mejaId = document.getElementById("selectMeja").value;
-      pesananSement[mejaId].splice(index, 1);
-      document.getElementById("listPesanan").innerHTML = pesananSement[mejaId].map((p,i) =>
-        `<p>${p.nama} x${p.qty} = Rp ${p.subtotal.toLocaleString()}
-         <button class="btn-del" style="padding:2px 6px;" onclick="hapusItemPesanan(${i})">x</button></p>`
-      ).join("");
-
-      saveToFirebase(mejaId);
-    };
-
-    window.printBill = async () => {
-      if (!window.pesananAktifSement) return alert("Buat pesanan dulu!");
-
-      const { mejaId, pemesan, waitress, items } = window.pesananAktifSement;
-      const meja = document.querySelector(`#selectMeja option[value="${mejaId}"]`).text;
-      const subtotal = items.reduce((a, b) => a + b.subtotal, 0);
-
-      const ppn = Math.round(subtotal * PPN_RATE);
-      const tax = Math.round(subtotal * TAX_RATE);
-      const grandTotal = subtotal + ppn + tax;
-
-      const waktu = new Date().toLocaleString("id-ID", {
-        day: "2-digit", month: "2-digit", year: "numeric",
-        hour: "2-digit", minute: "2-digit"
-      });
-
-      let rows = "";
-      items.forEach((i, idx) => {
-        rows += `
-          <tr>
-            <td>${idx + 1}</td>
-            <td>${i.nama}</td>
-            <td style="text-align:center;">${i.qty}</td>
-            <td style="text-align:right;">${i.harga.toLocaleString()}</td>
-            <td style="text-align:right;">${i.subtotal.toLocaleString()}</td>
-          </tr>
-        `;
-      });
-
-      const billHTML = `
-        <div class="bill">
-          <h3>KASIR NAOTAJUN</h3>
-          <p>${waktu}</p>
-          <div class="line"></div>
-          <p style="text-align:left;"><b>Meja:</b> ${meja}</p>
-          <p style="text-align:left;"><b>Pemesan:</b> ${pemesan}</p>
-          <p style="text-align:left;"><b>Waitress:</b> ${waitress}</p>
-          <div class="line"></div>
-
-          <table>
-            <thead>
-              <tr>
-                <th style="text-align:left;">No</th>
-                <th style="text-align:left;">Menu</th>
-                <th style="text-align:center;">Qty</th>
-                <th style="text-align:right;">Harga</th>
-                <th style="text-align:right;">Sub</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${rows}
-            </tbody>
-          </table>
-
-          <div class="line"></div>
-          <table>
-            <tr>
-              <td style="text-align:right;">Subtotal</td>
-              <td style="text-align:right; width:80px;">Rp ${subtotal.toLocaleString()}</td>
-            </tr>
-            <tr>
-              <td style="text-align:right;">PPN 11%</td>
-              <td style="text-align:right;">Rp ${ppn.toLocaleString()}</td>
-            </tr>
-            <tr>
-              <td style="text-align:right;">Service 10%</td>
-              <td style="text-align:right;">Rp ${tax.toLocaleString()}</td>
-            </tr>
-            <tr>
-              <td style="text-align:right;"><b>GRAND TOTAL</b></td>
-              <td style="text-align:right;"><b>Rp ${grandTotal.toLocaleString()}</b></td>
-            </tr>
-          </table>
-
-          <div class="line"></div>
-          <p>Waitress: ${waitress}</p>
-          <p>Terima Kasih! 💖</p>
-        </div>
-      `;
-
-      document.getElementById("billArea").innerHTML =
+  </script>
+</body>
+</html>
