@@ -13,35 +13,35 @@
 
     body { font-family: Arial, sans-serif; padding: 0; margin: 0; background: var(--bg); }
 
-  .theme-bar {
+   .theme-bar {
       background: var(--primary); padding: 8px 10px; display: flex; gap: 8px;
       align-items: center; color: white; font-size: 13px;
     }
-  .theme-btn {
+   .theme-btn {
       padding: 5px 10px; border: 2px solid white; background: transparent;
       color: white; border-radius: 4px; cursor: pointer; font-size: 12px;
     }
-  .theme-btn.active { background: white; color: var(--primary); }
+   .theme-btn.active { background: white; color: var(--primary); }
 
-  .navbar {
+   .navbar {
       background: var(--primary); padding: 10px; display: flex; gap: 10px;
       overflow-x: auto; box-shadow: 0 2px 6px rgba(0,0,0,0.2);
     }
-  .nav-btn {
+   .nav-btn {
       padding: 10px 20px; border: none; background: var(--primary-light); color: white;
       border-radius: 6px; cursor: pointer; font-weight: bold; white-space: nowrap;
     }
-  .nav-btn.active {
+   .nav-btn.active {
       background: white; color: var(--primary);
       box-shadow: 0 0 8px rgba(255,255,255,0.8);
       border: 2px solid white;
     }
-  .nav-btn:hover { background: var(--secondary); }
+   .nav-btn:hover { background: var(--secondary); }
 
-  .tab-content { display: none; padding: 20px; }
-  .tab-content.active { display: block; }
+   .tab-content { display: none; padding: 20px; }
+   .tab-content.active { display: block; }
 
-  .section {
+   .section {
       background: var(--card-bg); padding: 15px; margin-bottom: 20px; border-radius: 8px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.1); overflow-x: auto;
       border: 1px solid var(--border);
@@ -59,57 +59,57 @@
       padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; margin: 2px;
       font-weight: bold;
     }
-  .btn-tambah { background: var(--primary); color: white; }
-  .btn-tambah:hover:not(:disabled) { background: var(--primary-dark); }
-  .btn-edit { background: var(--secondary); color: white; }
-  .btn-edit:hover:not(:disabled) { background: var(--primary); }
-  .btn-del { background: var(--accent); color: white; }
-  .btn-del:hover:not(:disabled) { background: #e63946; }
-  .btn-print { background: var(--primary-light); color: white; }
-  .btn-print:hover:not(:disabled) { background: var(--primary); }
+   .btn-tambah { background: var(--primary); color: white; }
+   .btn-tambah:hover:not(:disabled) { background: var(--primary-dark); }
+   .btn-edit { background: var(--secondary); color: white; }
+   .btn-edit:hover:not(:disabled) { background: var(--primary); }
+   .btn-del { background: var(--accent); color: white; }
+   .btn-del:hover:not(:disabled) { background: #e63946; }
+   .btn-print { background: var(--primary-light); color: white; }
+   .btn-print:hover:not(:disabled) { background: var(--primary); }
 
     table { width: 100%; border-collapse: collapse; table-layout: auto; }
     th, td { border: 1px solid var(--border); padding: 10px; text-align: left; white-space: nowrap; }
     th { background: var(--primary); color: white; }
     h2, h3 { color: var(--text); }
-  .order-list { font-size: 13px; background: var(--bg); padding: 8px; border-radius: 6px; margin-top: 5px; }
-  .order-list li { margin: 3px 0; }
-  .info-text { color: var(--text); font-size: 13px; margin-top: 8px; }
-  .category-filter { margin: 10px 0; }
-  .category-filter button { margin-right: 5px; }
-  .category-filter button.active { background: var(--primary); color: white; }
+   .order-list { font-size: 13px; background: var(--bg); padding: 8px; border-radius: 6px; margin-top: 5px; }
+   .order-list li { margin: 3px 0; }
+   .info-text { color: var(--text); font-size: 13px; margin-top: 8px; }
+   .category-filter { margin: 10px 0; }
+   .category-filter button { margin-right: 5px; }
+   .category-filter button.active { background: var(--primary); color: white; }
 
-  .toggle-wrap {
+   .toggle-wrap {
       display: flex; align-items: center; gap: 8px; margin: 10px 0;
       font-size: 14px; color: var(--text);
     }
-  .toggle-wrap input[type="checkbox"] {
+   .toggle-wrap input[type="checkbox"] {
       width: 18px; height: 18px; cursor: pointer;
     }
 
-  .bill {
+   .bill {
       width: 280px; margin: 20px auto; padding: 10px; background: white;
       border: 1px solid #000; font-family: 'Courier New', monospace; font-size: 12px;
     }
-  .bill h3,.bill p { text-align: center; margin: 4px 0; }
-  .bill table { width: 100%; border-collapse: collapse; font-size: 12px; }
-  .bill th,.bill td { border: none; padding: 3px 2px; }
-  .bill.line { border-top: 1px dashed #000; margin: 6px 0; }
+   .bill h3,.bill p { text-align: center; margin: 4px 0; }
+   .bill table { width: 100%; border-collapse: collapse; font-size: 12px; }
+   .bill th,.bill td { border: none; padding: 3px 2px; }
+   .bill.line { border-top: 1px dashed #000; margin: 6px 0; }
 
     @media print {
       body * { visibility: hidden; }
-    .bill,.bill * { visibility: visible; }
-    .bill { position: absolute; left: 0; top: 0; width: 100%; border: none; margin: 0; padding: 0; }
+     .bill,.bill * { visibility: visible; }
+     .bill { position: absolute; left: 0; top: 0; width: 100%; border: none; margin: 0; padding: 0; }
     }
   </style>
 </head>
 <body>
   <div class="theme-bar">
     <span>Tema:</span>
-    <button class="theme-btn active" onclick="setTheme('green')">Hijau</button>
-    <button class="theme-btn" onclick="setTheme('pink')">Pink</button>
-    <button class="theme-btn" onclick="setTheme('blue')">Biru</button>
-    <button class="theme-btn" onclick="setTheme('brown')">Coklat</button>
+    <button class="theme-btn" onclick="setTheme('green', this)">Hijau</button>
+    <button class="theme-btn" onclick="setTheme('pink', this)">Pink</button>
+    <button class="theme-btn" onclick="setTheme('blue', this)">Biru</button>
+    <button class="theme-btn" onclick="setTheme('brown', this)">Coklat</button>
   </div>
 
   <div class="navbar">
@@ -124,7 +124,7 @@
     <h2>🍽️ Kelola Meja</h2>
     <div class="section">
       <h3>Tambah Meja</h3>
-      <input type="text" id="inputNamaMeja" placeholder="meja 13">
+      <input type="text" id="inputNamaMeja" placeholder="meja12">
       <button class="btn-tambah" onclick="tambahMeja()">Tambah</button>
     </div>
 
@@ -168,9 +168,9 @@
       <select id="selectMeja" onchange="updateFormStatus()"></select>
 
       <div class="category-filter">
-        <button class="active" onclick="filterKategori('all')">All</button>
-        <button onclick="filterKategori('food')">Food</button>
-        <button onclick="filterKategori('beverage')">Beverage</button>
+        <button class="active" onclick="filterKategori('all', this)">All</button>
+        <button onclick="filterKategori('food', this)">Food</button>
+        <button onclick="filterKategori('beverage', this)">Beverage</button>
       </div>
 
       <select id="selectMenu" disabled></select>
@@ -247,7 +247,6 @@
     let pesananAktif = {};
     let kategoriAktif = 'all';
 
-    // THEME SWITCHER
     const themes = {
       green: { bg: '#f0fff4', primary: '#2e8b57', 'primary-light': '#3cb371', 'primary-dark': '#228b22', secondary: '#3cb371', accent: '#dc143c', border: '#90ee90', text: '#2e8b57' },
       pink: { bg: '#fff0f5', primary: '#ff69b4', 'primary-light': '#ff9ebc', 'primary-dark': '#ff1493', secondary: '#ff85c1', accent: '#ff4d6d', border: '#ffb6c1', text: '#d63384' },
@@ -255,20 +254,29 @@
       brown: { bg: '#faf5f0', primary: '#8b4513', 'primary-light': '#a0522d', 'primary-dark': '#654321', secondary: '#a0522d', accent: '#dc143c', border: '#deb887', text: '#8b4513' }
     };
 
-    window.setTheme = (themeName) => {
+    window.setTheme = (themeName, btnElement) => {
       const root = document.documentElement;
       const theme = themes[themeName];
+
       for (let key in theme) {
         root.style.setProperty(`--${key}`, theme[key]);
       }
+
       document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.remove('active'));
-      event.target.classList.add('active');
+
+      if (btnElement) {
+        btnElement.classList.add('active');
+      } else {
+        const btn = document.querySelector(`.theme-btn[onclick*="${themeName}"]`);
+        if (btn) btn.classList.add('active');
+      }
+
       localStorage.setItem('kasirTheme', themeName);
     }
 
     window.addEventListener('DOMContentLoaded', () => {
       const saved = localStorage.getItem('kasirTheme') || 'green';
-      setTheme(saved);
+      setTheme(saved, null);
     });
 
     window.openTab = (tabName) => {
@@ -296,14 +304,15 @@
           const pesanan = pesananAktif[id];
 
           let aksiBtn = `<button class="btn-edit" onclick="editMeja('${id}')">Edit</button>
-               <button class="btn-del" onclick="hapusMeja('${id}')">Hapus</button>
-               <button class="btn-del" style="background:#8b0000;" onclick="forceHapusMeja('${data.nama}')">Force</button>`;
+                         <button class="btn-del" onclick="hapusMeja('${id}')">Hapus</button>
+                         <button class="btn-del" style="background:#8b0000;" onclick="forceHapusMeja('${data.nama}')">Force</button>`;
 
           let pesananHTML = "-";
           if (data.status === "checked-in" && pesanan && pesanan.items && pesanan.items.length > 0) {
             aksiBtn = `<button class="btn-edit" onclick="editPesanan('${id}')">Edit Pesanan</button>
                        <button class="btn-edit" onclick="checkOutMeja('${id}')">Check-out</button>
-                       <button class="btn-del" onclick="hapusMeja('${id}')">Hapus</button>`;
+                       <button class="btn-del" onclick="hapusMeja('${id}')">Hapus</button>
+                       <button class="btn-del" style="background:#8b0000;" onclick="forceHapusMeja('${data.nama}')">Force</button>`;
 
             const total = pesanan.grandTotal || 0;
             pesananHTML = `
@@ -318,12 +327,14 @@
           } else if (data.status === "checked-in") {
             aksiBtn = `<button class="btn-edit" onclick="editPesanan('${id}')">Edit Pesanan</button>
                        <button class="btn-edit" onclick="checkOutMeja('${id}')">Check-out</button>
-                       <button class="btn-del" onclick="hapusMeja('${id}')">Hapus</button>`;
+                       <button class="btn-del" onclick="hapusMeja('${id}')">Hapus</button>
+                       <button class="btn-del" style="background:#8b0000;" onclick="forceHapusMeja('${data.nama}')">Force</button>`;
             pesananHTML = "<div class='order-list'>Belum ada pesanan</div>";
           } else {
             aksiBtn = `<button class="btn-tambah" onclick="checkInMeja('${id}')">Check-in</button>
                        <button class="btn-edit" onclick="editMeja('${id}')">Edit</button>
-                       <button class="btn-del" onclick="hapusMeja('${id}')">Hapus</button>`;
+                       <button class="btn-del" onclick="hapusMeja('${id}')">Hapus</button>
+                       <button class="btn-del" style="background:#8b0000;" onclick="forceHapusMeja('${data.nama}')">Force</button>`;
           }
 
           tbody.innerHTML += `
@@ -368,7 +379,7 @@
       document.getElementById("toggleCheckout").disabled =!isCheckedIn;
 
       document.getElementById("infoText").textContent = isCheckedIn
-      ? "Meja sudah Check-in. Silakan isi pesanan."
+     ? "Meja sudah Check-in. Silakan isi pesanan."
         : "Pilih meja yang sudah Check-in dulu";
     }
 
@@ -399,10 +410,10 @@
       });
     });
 
-    window.filterKategori = (kat) => {
+    window.filterKategori = (kat, btnElement) => {
       kategoriAktif = kat;
       document.querySelectorAll('.category-filter button').forEach(btn => btn.classList.remove('active'));
-      event.target.classList.add('active');
+      btnElement.classList.add('active');
 
       const selectMenu = document.querySelector("#selectMenu");
       selectMenu.innerHTML = "<option value=''>Pilih Menu</option>";
@@ -469,7 +480,7 @@
     window.tambahMeja = () => {
       const nama = document.getElementById("inputNamaMeja").value.trim();
       if (!nama) return alert("Isi nama meja!");
-      const id = nama.toLowerCase().replace(/\s+/g, '');
+      const id = nama.toLowerCase().replace(/[^a-z0-9]/g, '');
       set(ref(db, "meja/" + id), { id, nama, status: "available" });
       document.getElementById("inputNamaMeja").value = "";
     };
@@ -490,10 +501,24 @@
     };
 
     window.hapusMeja = (id) => {
-      if (confirm("Hapus meja ini?")) {
-        remove(ref(db, "meja/" + id));
-        remove(ref(db, "pesanan_aktif/" + id));
-      }
+      if (!confirm("Hapus meja ini? Data pesanan aktif juga akan ikut terhapus.")) return;
+      remove(ref(db, "meja/" + id));
+      remove(ref(db, "pesanan_aktif/" + id));
+    };
+
+    window.forceHapusMeja = (namaMeja) => {
+      if (!confirm(`Force delete meja "${namaMeja}"? Ini akan hapus semua data terkait.`)) return;
+
+      const idBersih = namaMeja.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+      remove(ref(db, "meja/" + idBersih));
+      remove(ref(db, "meja/" + namaMeja));
+      remove(ref(db, "meja/" + namaMeja.toLowerCase()));
+      remove(ref(db, "pesanan_aktif/" + idBersih));
+      remove(ref(db, "pesanan_aktif/" + namaMeja));
+      remove(ref(db, "pesanan_aktif/" + namaMeja.toLowerCase()));
+
+      alert(`Sudah hapus meja "${namaMeja}" dari database.`);
     };
 
     window.checkInMeja = (id) => {
@@ -677,24 +702,4 @@
         </div>
       `;
 
-      document.getElementById("billArea").innerHTML = billHTML;
-      window.print();
-
-      await push(ref(db, "pesanan"), { mejaId, pemesan, waitress, items, subtotal, ppn, tax, grandTotal, waktu });
-
-      const autoCheckout = document.getElementById("toggleCheckout").checked;
-
-      if (autoCheckout) {
-        await update(ref(db, "meja/" + mejaId), { status: "available" });
-        await remove(ref(db, "pesanan_aktif/" + mejaId));
-      }
-
-      pesananSement[mejaId] = [];
-      document.getElementById("listPesanan").innerHTML = "";
-      window.pesananAktifSement = null;
-      document.getElementById("toggleCheckout").checked = false;
-      updateFormStatus();
-    };
-  </script>
-</body>
-</html>
+      document.getElementById("billArea").
