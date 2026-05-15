@@ -57,8 +57,9 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getFirestore, collection, doc, updateDoc, addDoc, deleteDoc, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getFirestore, collection, doc, updateDoc, addDoc, deleteDoc, onSnapshot, query, where, setDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+    // GANTI DENGAN CONFIG FIREBASE KAMU
     const firebaseConfig = {
       apiKey: "AIzaSy...",
       authDomain: "kasir-naotajun2.firebaseapp.com",
@@ -73,6 +74,22 @@
 
     let menuList = [];
     let editingId = null;
+
+    // Auto buat 5 meja kalau belum ada
+    async function initTables() {
+      const tablesSnap = await getDocs(collection(db, "tables"));
+      if (tablesSnap.empty) {
+        for (let i = 1; i <= 5; i++) {
+          await setDoc(doc(db, "tables", `meja${i}`), {
+            nama: `Meja ${i}`,
+            status: "checked-out",
+            kunci: "",
+            waktuCheckin: ""
+          });
+        }
+      }
+    }
+    await initTables();
 
     // Realtime load menu
     onSnapshot(collection(db, "menu"), (snapshot) => {
@@ -90,7 +107,6 @@
         menuList.push({id: docSnap.id, ...data});
         
         if (editingId === docSnap.id) {
-          // Mode edit
           tbody.innerHTML += `
             <tr class="edit-row">
               <td><input type="text" id="editNama" value="${data.nama}"></td>
@@ -102,7 +118,6 @@
             </tr>
           `;
         } else {
-          // Mode normal
           tbody.innerHTML += `
             <tr>
               <td>${data.nama}</td>
@@ -153,7 +168,7 @@
             ${data.status === "checked-in" ? `
               <select id="menu-${docSnap.id}">
                 <option value="">Pilih Menu</option>
-                ${menuList.map(m => `<option value="${m.id}">${m.nama} - Rp${m.harga}</option>`).join("")}
+                ${menuList.map(m => `<option value="${m.id}">${m.nama} - Rp${menu.harga}</option>`).join("")}
               </select>
               <button onclick="tambahPesanan('${docSnap.id}')">Tambah</button>
             ` : "-"}
@@ -183,22 +198,15 @@
       document.getElementById("hargaMenu").value = "";
     };
 
-    window.editMenu = (id) => {
-      editingId = id;
-    };
-
-    window.batalEdit = () => {
-      editingId = null;
-    };
+    window.editMenu = (id) => { editingId = id; };
+    window.batalEdit = () => { editingId = null; };
 
     window.simpanEdit = async (id) => {
       const nama = document.getElementById("editNama").value.trim();
       const harga = parseInt(document.getElementById("editHarga").value);
       if (!nama || !harga) return alert("Isi nama dan harga!");
-      
       await updateDoc(doc(db, "menu", id), { nama, harga });
       editingId = null;
-      alert("Menu berhasil diupdate!");
     };
 
     window.hapusMenu = async (id) => {
