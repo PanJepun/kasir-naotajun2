@@ -263,22 +263,30 @@
     };
 
     window.checkInMeja = (id) => {
-      const namaPemesan = prompt("Masukkan nama pemesan:");
-      if (!namaPemesan) return;
-      const namaWaitress = prompt("Masukkan nama waitress:");
-      if (!namaWaitress) return;
-      update(ref(db, "meja/" + id), { status: "checked-in" });
-      document.getElementById("selectMeja").value = id;
-      document.getElementById("inputPemesan").value = namaPemesan;
-      document.getElementById("inputWaitress").value = namaWaitress;
+  const namaPemesan = prompt("Masukkan nama pemesan:");
+  if (!namaPemesan) return;
+  
+  const namaWaitress = prompt("Masukkan nama waitress:");
+  if (!namaWaitress) return;
+  
+  update(ref(db, "meja/" + id), { status: "checked-in" });
+  
+  document.getElementById("selectMeja").value = id;
+  document.getElementById("inputPemesan").value = namaPemesan;
+  document.getElementById("inputWaitress").value = namaWaitress;
     };
 
-    window.checkOutMeja = (id) => {
-      if (confirm("Yakin mau check-out meja ini?")) {
-        update(ref(db, "meja/" + id), { status: "available" });
-        remove(ref(db, "pesanan_aktif/" + id));
-      }
-    };
+  window.checkOutMeja = (id) => {
+  if (confirm("Yakin mau check-out meja ini?")) {
+    update(ref(db, "meja/" + id), { 
+      status: "available",
+      namaPemesan: null,
+      namaWaitress: null
+    });
+    remove(ref(db, "pesanan_aktif/" + id));
+  }
+};
+     
 
     window.tambahPesanan = () => {
       const mejaId = document.getElementById("selectMeja").value;
