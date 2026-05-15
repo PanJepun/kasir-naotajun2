@@ -2,14 +2,21 @@
 <html>
 <head>
   <title>Kasir Naotajun2</title>
+  <meta charset="UTF-8">
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    input, button, select { padding: 8px; margin: 5px; }
+    #roleBadge { background:#007bff; color:white; padding:4px 8px; border-radius:4px; }
+    .section { border: 1px solid #ddd; padding: 15px; margin-top: 15px; border-radius: 8px; }
+  </style>
 </head>
 <body>
 
 <div id="loginPage">
-  <h2>Login</h2>
+  <h2>Login Kasir Naotajun2</h2>
   <input type="email" id="email" placeholder="Email">
   <input type="password" id="password" placeholder="Password">
   <button onclick="login()">Login</button>
@@ -17,35 +24,44 @@
 
 <div id="appPage" style="display:none;">
   <h2>Kasir Naotajun2</h2>
-  <span id="roleBadge" style="background:#007bff; color:white; padding:4px 8px; border-radius:4px;">WAITRESS</span>
+  <span id="roleBadge">ROLE</span>
   <span id="userEmail"></span>
   <button onclick="logout()">Logout</button>
 
-  <h3>1. Manajemen Meja & Check-in</h3>
+  <div class="section">
+    <h3>1. Manajemen Meja & Check-in</h3>
 
-  <!-- Ini bagian yang disembunyiin kalau bukan admin -->
-  <div id="tambahMejaSection">
-    <h4>Tambah Meja</h4>
-    <input type="text" id="namaMeja" placeholder="Nama Meja, contoh: Meja 5">
-    <button onclick="tambahMeja()">Tambah Meja</button>
+    <!-- Bagian ini hanya muncul untuk admin -->
+    <div id="tambahMejaSection">
+      <h4>Tambah Meja</h4>
+      <input type="text" id="namaMeja" placeholder="Nama Meja, contoh: Meja 5">
+      <button onclick="tambahMeja()">Tambah Meja</button>
+    </div>
+
+    <h4>Check-in Meja</h4>
+    <select id="pilihMeja">
+      <option>Pilih Meja</option>
+    </select>
+    <input type="text" id="kunciReservasi" placeholder="Masukkan Kunci Reservasi">
+    <button onclick="checkinMeja()">Check-in Meja</button>
   </div>
 
-  <h4>Check-in Meja</h4>
-  <select id="pilihMeja"></select>
-  <input type="text" id="kunciReservasi" placeholder="Masukkan Kunci Reservasi">
-  <button onclick="checkinMeja()">Check-in Meja</button>
-
-  <h3>2. Input Order untuk</h3>
-  <!-- bagian order kamu taruh di sini -->
+  <div class="section">
+    <h3>2. Input Order</h3>
+    <p>Bagian order kamu taruh di sini</p>
+  </div>
 </div>
 
 <script>
-// 1. Ganti config ini pakai punya kamu dari Firebase > Project Settings
+// 1. Config Firebase kamu
 const firebaseConfig = {
-  apiKey: "xxx",
-  authDomain: "xxx.firebaseapp.com",
-  databaseURL: "https://xxx-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "xxx",
+  apiKey: "AIzaSyA94bWbZJA0peV6rDg-vaHac1Ghn9t2ZW4",
+  authDomain: "kasir-naotajun2.firebaseapp.com",
+  databaseURL: "https://kasir-naotajun2-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "kasir-naotajun2",
+  storageBucket: "kasir-naotajun2.firebasestorage.app",
+  messagingSenderId: "346309315110",
+  appId: "1:346309315110:web:1bc443785229fa7a0b74e7"
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -69,7 +85,6 @@ function logout() {
 // 4. Cek status login dan role
 auth.onAuthStateChanged(async (user) => {
   if (user) {
-    // Ambil data role dari database
     const snap = await db.ref('users/' + user.uid).once('value');
     const userData = snap.val();
     
@@ -79,22 +94,17 @@ auth.onAuthStateChanged(async (user) => {
       return;
     }
 
-    // Tampilkan halaman app
     document.getElementById('loginPage').style.display = 'none';
     document.getElementById('appPage').style.display = 'block';
     document.getElementById('userEmail').innerText = userData.email;
     document.getElementById('roleBadge').innerText = userData.role.toUpperCase();
 
-    // Sembunyikan menu admin kalau role bukan admin
+    // Sembunyikan menu admin kalau bukan admin
     if (userData.role !== 'admin') {
       document.getElementById('tambahMejaSection').style.display = 'none';
     }
 
-    // Load data meja dll di sini
-    loadMeja();
-
   } else {
-    // Kalau belum login, tampilkan halaman login
     document.getElementById('loginPage').style.display = 'block';
     document.getElementById('appPage').style.display = 'none';
   }
@@ -103,19 +113,19 @@ auth.onAuthStateChanged(async (user) => {
 // 5. Contoh fungsi tambah meja
 function tambahMeja() {
   const nama = document.getElementById('namaMeja').value;
+  if (!nama) return alert("Isi nama meja dulu");
+  
   db.ref('meja').push({
     nama: nama,
-    status: 'aktif',
+    status: 'kosong',
     dibuatOleh: auth.currentUser.email
   });
-}
-
-function loadMeja() {
-  // isi fungsi buat load daftar meja ke dropdown
+  alert("Meja berhasil ditambah");
+  document.getElementById('namaMeja').value = '';
 }
 
 function checkinMeja() {
-  // isi fungsi checkin
+  alert("Fungsi checkin belum diisi");
 }
 </script>
 
