@@ -3,31 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Check-in Meja</title>
+  <title>Kasir Naotajun</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      max-width: 500px;
-      margin: 50px auto;
       padding: 20px;
-      background: #f5f5f5;
+      max-width: 500px;
+      margin: auto;
     }
-    .card {
-      background: white;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    h2 {
-      margin-top: 0;
-      color: #333;
-    }
-    select, input, button {
+    label, select, input, button {
+      display: block;
       width: 100%;
-      padding: 12px;
-      margin: 10px 0;
-      border: 1px solid #ddd;
-      border-radius: 8px;
+      margin-top: 10px;
+      padding: 10px;
       font-size: 16px;
       box-sizing: border-box;
     }
@@ -36,7 +24,7 @@
       color: white;
       border: none;
       cursor: pointer;
-      font-weight: bold;
+      margin-top: 20px;
     }
     button:hover {
       background: #45a049;
@@ -44,26 +32,23 @@
   </style>
 </head>
 <body>
-  <div class="card">
-    <h2>Check-in Meja</h2>
-    
-    <label>Pilih Meja</label>
+  <h2>Check-in Meja</h2>
+  
+  <div>
+    <label for="mejaSelect">Pilih Meja</label>
     <select id="mejaSelect">
       <option value="">-- Pilih Meja --</option>
-      <option value="meja1">Meja 1</option>
-      <option value="meja2">Meja 2</option>
-      <option value="meja3">Meja 3</option>
     </select>
 
-    <label>Kunci Reservasi</label>
+    <label for="reservationKey">Kunci Reservasi</label>
     <input type="text" id="reservationKey" placeholder="Masukkan kunci reservasi">
 
-    <button onclick="checkIn()">Check-in Meja</button>
+    <button id="btnCheckIn">Check-in Meja</button>
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     // GANTI INI DENGAN CONFIG FIREBASE KAMU
     const firebaseConfig = {
@@ -78,17 +63,27 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    window.checkIn = async function() {
+    // Load daftar meja ke dropdown pas halaman dibuka
+    async function loadMeja() {
+      const querySnapshot = await getDocs(collection(db, "tables"));
+      const select = document.getElementById("mejaSelect");
+      
+      querySnapshot.forEach((doc) => {
+        const option = document.createElement("option");
+        option.value = doc.id;
+        option.textContent = doc.data().name || doc.id;
+        select.appendChild(option);
+      });
+    }
+    loadMeja();
+
+    // Fungsi check-in
+    async function checkIn() {
       const meja = document.getElementById("mejaSelect").value;
       const key = document.getElementById("reservationKey").value;
 
-      if (!meja) {
-        alert("Pilih meja dulu!");
-        return;
-      }
-
-      if (!key) {
-        alert("Masukkan kunci reservasi!");
+      if (!meja || !key) {
+        alert("Pilih meja dan isi kunci reservasi!");
         return;
       }
 
@@ -97,7 +92,7 @@
         const mejaSnap = await getDoc(mejaRef);
 
         if (!mejaSnap.exists()) {
-          alert("Meja tidak ditemukan di database!");
+          alert("Meja tidak ditemukan!");
           return;
         }
 
@@ -109,22 +104,21 @@
         }
 
         if (data.checked_in === true) {
-          alert("Meja ini sudah check-in!");
+          alert("Meja sudah check-in!");
           return;
         }
 
         await updateDoc(mejaRef, { checked_in: true });
         alert("Check-in berhasil!");
-        
-        // Reset form
-        document.getElementById("mejaSelect").value = "";
-        document.getElementById("reservationKey").value = "";
 
       } catch (error) {
-        console.error("Error check-in:", error);
+        console.error("Error:", error);
         alert("Gagal check-in: " + error.message);
       }
     }
+
+    // Bind tombol ke fungsi checkIn
+    document.getElementById("btnCheckIn").addEventListener("click", checkIn);
   </script>
 </body>
 </html>
