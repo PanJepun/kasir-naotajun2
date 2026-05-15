@@ -379,7 +379,7 @@
       document.getElementById("toggleCheckout").disabled =!isCheckedIn;
 
       document.getElementById("infoText").textContent = isCheckedIn
-     ? "Meja sudah Check-in. Silakan isi pesanan."
+       ? "Meja sudah Check-in. Silakan isi pesanan."
         : "Pilih meja yang sudah Check-in dulu";
     }
 
@@ -405,7 +405,7 @@
           </tr>`;
 
         if (kategoriAktif === 'all' || kategoriAktif === data.kategori) {
-          selectMenu.innerHTML += `<option value="${data.id}">${data.nama} - Rp ${data.harga.toLocaleString()}</option>`;
+          selectMenu.innerHTML += `<option value="${id}">${data.nama} - Rp ${data.harga.toLocaleString()}</option>`;
         }
       });
     });
@@ -702,4 +702,4 @@
         </div>
       `;
 
-      document.getElementById("billArea").
+      document.getElementById("billArea").innerHTML =
