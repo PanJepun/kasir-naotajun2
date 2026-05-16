@@ -1,560 +1,159 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kasir Naotajun</title>
-  <style>
-    :root {
-      --bg: #f0fff4; --primary: #2e8b57; --primary-light: #3cb371;
-      --primary-dark: #228b22; --secondary: #3cb371; --accent: #dc143c;
-      --border: #90ee90; --text: #2e8b57; --card-bg: #ffffff;
-    }
-
-    body { font-family: Arial, sans-serif; padding: 0; margin: 0; background: var(--bg); }
-
-  .theme-bar {
-      background: var(--primary); padding: 8px 10px; display: flex; gap: 8px;
-      align-items: center; color: white; font-size: 13px;
-    }
-  .theme-btn {
-      padding: 5px 10px; border: 2px solid white; background: transparent;
-      color: white; border-radius: 4px; cursor: pointer; font-size: 12px;
-    }
-  .theme-btn.active { background: white; color: var(--primary); }
-
-  .navbar {
-      background: var(--primary); padding: 10px; display: flex; gap: 10px;
-      overflow-x: auto; box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-    }
-  .nav-btn {
-      padding: 10px 20px; border: none; background: var(--primary-light); color: white;
-      border-radius: 6px; cursor: pointer; font-weight: bold; white-space: nowrap;
-    }
-  .nav-btn.active {
-      background: white; color: var(--primary);
-      box-shadow: 0 0 8px rgba(255,255,255,0.8);
-      border: 2px solid white;
-    }
-  .nav-btn:hover { background: var(--secondary); }
-
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kasir Naotajun</title>
+<style>
+  body { font-family: sans-serif; margin: 0; padding: 0; }
+  body.green { background: #e8f5e9; }
+  body.pink { background: #fce4ec; }
+  body.blue { background: #e3f2fd; }
+  body.brown { background: #efebe9; }
+  
+  .theme-bar { padding: 10px; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+  .theme-btn { margin: 0 5px; padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; }
+  .theme-btn.active { outline: 2px solid #000; }
+  
+  .navbar { display: flex; background: #333; }
+  .nav-btn { flex: 1; padding: 12px; border: none; background: #333; color: #fff; cursor: pointer; }
+  .nav-btn.active { background: #555; }
+  
   .tab-content { display: none; padding: 20px; }
   .tab-content.active { display: block; }
-
-  .section {
-      background: var(--card-bg); padding: 15px; margin-bottom: 20px; border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1); overflow-x: auto;
-      border: 1px solid var(--border);
-    }
-    input, select {
-      padding: 8px; margin: 5px; border: 1px solid var(--border); border-radius: 4px;
-    }
-    input:focus, select:focus {
-      outline: none; border-color: var(--primary); box-shadow: 0 0 5px var(--border);
-    }
-    input:disabled, select:disabled, button:disabled {
-      background: #f5f5f5; cursor: not-allowed; opacity: 0.6;
-    }
-    button {
-      padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; margin: 2px;
-      font-weight: bold;
-    }
-  .btn-tambah { background: var(--primary); color: white; }
-  .btn-tambah:hover:not(:disabled) { background: var(--primary-dark); }
-  .btn-edit { background: var(--secondary); color: white; }
-  .btn-edit:hover:not(:disabled) { background: var(--primary); }
-  .btn-del { background: var(--accent); color: white; }
-  .btn-del:hover:not(:disabled) { background: #e63946; }
-  .btn-print { background: var(--primary-light); color: white; }
-  .btn-print:hover:not(:disabled) { background: var(--primary); }
-
-    table { width: 100%; border-collapse: collapse; table-layout: auto; }
-    th, td { border: 1px solid var(--border); padding: 10px; text-align: left; white-space: nowrap; }
-    th { background: var(--primary); color: white; }
-    h2, h3 { color: var(--text); }
-  .order-list { font-size: 13px; background: var(--bg); padding: 8px; border-radius: 6px; margin-top: 5px; }
-  .order-list li { margin: 3px 0; }
-  .info-text { color: var(--text); font-size: 13px; margin-top: 8px; }
-  .category-filter { margin: 10px 0; }
-  .category-filter button { margin-right: 5px; }
-  .category-filter button.active { background: var(--primary); color: white; }
-
-  .toggle-wrap {
-      display: flex; align-items: center; gap: 8px; margin: 10px 0;
-      font-size: 14px; color: var(--text);
-    }
-  .toggle-wrap input[type="checkbox"] {
-      width: 18px; height: 18px; cursor: pointer;
-    }
-
-  .bill {
-      width: 280px; margin: 20px auto; padding: 10px; background: white;
-      border: 1px solid #000; font-family: 'Courier New', monospace; font-size: 12px;
-    }
-  .bill h3,.bill p { text-align: center; margin: 4px 0; }
-  .bill table { width: 100%; border-collapse: collapse; font-size: 12px; }
-  .bill th,.bill td { border: none; padding: 3px 2px; }
-  .bill.line { border-top: 1px dashed #000; margin: 6px 0; }
-
-    @media print {
-      body * { visibility: hidden; }
-    .bill,.bill * { visibility: visible; }
-    .bill { position: absolute; left: 0; top: 0; width: 100%; border: none; margin: 0; padding: 0; }
-    }
-  </style>
+  
+  button { cursor: pointer; padding: 8px 15px; margin: 5px; border: none; border-radius: 5px; }
+  .btn-primary { background: #4caf50; color: white; }
+  .btn-danger { background: #f44336; color: white; }
+  
+  .meja-card { background: white; padding: 15px; margin: 10px 0; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+  
+  @media print {
+    body * { visibility: hidden; }
+    .bill, .bill * { visibility: visible; }
+    .bill { position: absolute; left: 0; top: 0; width: 100%; }
+  }
+</style>
 </head>
 <body>
-  <div class="theme-bar">
-    <span>Tema:</span>
-    <button class="theme-btn" onclick="setTheme('green', this)">Hijau</button>
-    <button class="theme-btn" onclick="setTheme('pink', this)">Pink</button>
-    <button class="theme-btn" onclick="setTheme('blue', this)">Biru</button>
-    <button class="theme-btn" onclick="setTheme('brown', this)">Brown</button>
-  </div>
 
-  <div class="navbar">
-    <button class="nav-btn active" onclick="openTab('meja', this)">🍽️ Menu Meja</button>
-    <button class="nav-btn" onclick="openTab('menu', this)">🍜 Menu Makanan</button>
-    <button class="nav-btn" onclick="openTab('kasir', this)">💳 Menu Kasir</button>
-    <button class="nav-btn" onclick="openTab('laporan', this)">📊 Laporan</button>
-  </div>
+<div class="theme-bar">
+  <span>Tema:</span>
+  <button class="theme-btn" onclick="setTheme('green', this)">Hijau</button>
+  <button class="theme-btn" onclick="setTheme('pink', this)">Pink</button>
+  <button class="theme-btn" onclick="setTheme('blue', this)">Biru</button>
+  <button class="theme-btn" onclick="setTheme('brown', this)">Brown</button>
+</div>
 
-  <!-- TAB 1: MENU MEJA -->
-  <div id="meja" class="tab-content active">
-    <h2>🍽️ Kelola Meja</h2>
-    <div class="section">
-      <h3>Tambah Meja</h3>
-      <input type="text" id="inputNamaMeja" placeholder="meja12">
-      <button class="btn-tambah" onclick="tambahMeja()">Tambah</button>
-    </div>
+<div class="navbar">
+  <button class="nav-btn active" onclick="openTab('meja', this)">📋 Menu Meja</button>
+  <button class="nav-btn" onclick="openTab('menu', this)">🍽️ Menu Makanan</button>
+  <button class="nav-btn" onclick="openTab('kasir', this)">💰 Menu Kasir</button>
+  <button class="nav-btn" onclick="openTab('laporan', this)">📊 Laporan</button>
+</div>
 
-    <div class="section">
-      <h3>Daftar Meja</h3>
-      <table id="tabelMeja">
-        <thead><tr><th>Meja</th><th>Status</th><th>Pesanan Aktif</th><th>Aksi</th></tr></thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </div>
+<!-- TAB 1: MENU MEJA -->
+<div id="meja" class="tab-content active">
+  <h2>📋 Kelola Meja</h2>
+  <button class="btn-primary" onclick="tambahMeja()">+ Tambah Meja</button>
+  <div id="daftar-meja"></div>
+</div>
 
-  <!-- TAB 2: MENU MAKAN -->
-  <div id="menu" class="tab-content">
-    <h2>🍜 Kelola Menu Makanan & Minuman</h2>
-    <div class="section">
-      <h3>Tambah Menu</h3>
-      <input type="text" id="inputNamaMenu" placeholder="Nama menu">
-      <input type="number" id="inputHargaMenu" placeholder="Harga">
-      <select id="inputKategori">
-        <option value="food">Food</option>
-        <option value="beverage">Beverage</option>
-      </select>
-      <button class="btn-tambah" onclick="tambahMenu()">Tambah Menu</button>
-    </div>
+<!-- TAB 2: MENU MAKAN -->
+<div id="menu" class="tab-content">
+  <h2>🍽️ Menu Makanan</h2>
+  <button class="btn-primary" onclick="tambahMenu()">+ Tambah Menu</button>
+  <div id="daftar-menu"></div>
+</div>
 
-    <div class="section">
-      <h3>Daftar Menu</h3>
-      <table id="tabelMenu">
-        <thead><tr><th>Kategori</th><th>Menu</th><th>Harga</th><th>Aksi</th></tr></thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </div>
+<!-- TAB 3: KASIR -->
+<div id="kasir" class="tab-content">
+  <h2>💰 Kasir</h2>
+  <div id="kasir-content"></div>
+</div>
 
-  <!-- TAB 3: MENU KASIR -->
-  <div id="kasir" class="tab-content">
-    <h2>💳 Kasir</h2>
-    <div class="section">
-      <h3>Buat Pesanan</h3>
-      <select id="selectMeja" onchange="updateFormStatus()"></select>
+<!-- TAB 4: LAPORAN -->
+<div id="laporan" class="tab-content">
+  <h2>📊 Laporan</h2>
+  <div id="laporan-content"></div>
+</div>
 
-      <div class="category-filter">
-        <button class="active" onclick="filterKategori('all', this)">All</button>
-        <button onclick="filterKategori('food', this)">Food</button>
-        <button onclick="filterKategori('beverage', this)">Beverage</button>
+<script type="module">
+  // Data
+  let mejaList = JSON.parse(localStorage.getItem('mejaList') || '[]');
+  let menuList = JSON.parse(localStorage.getItem('menuList') || '[]');
+  
+  // === FIX: Semua function harus di-attach ke window ===
+  
+  window.setTheme = (themeName, btnElement) => {
+    document.body.className = themeName;
+    document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.remove('active'));
+    if(btnElement) btnElement.classList.add('active');
+    localStorage.setItem('theme', themeName);
+  };
+  
+  window.openTab = (tabName, btnElement) => {
+    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById(tabName).classList.add('active');
+    if(btnElement) btnElement.classList.add('active');
+  };
+  
+  window.tambahMeja = () => {
+    const nama = prompt('Masukkan nama meja:');
+    if(nama) {
+      mejaList.push({ id: Date.now(), nama: nama, pesanan: [] });
+      localStorage.setItem('mejaList', JSON.stringify(mejaList));
+      renderMeja();
+    }
+  };
+  
+  window.hapusMeja = (id) => {
+    if(confirm('Hapus meja ini?')) {
+      mejaList = mejaList.filter(m => m.id !== id);
+      localStorage.setItem('mejaList', JSON.stringify(mejaList));
+      renderMeja();
+    }
+  };
+  
+  window.tambahMenu = () => {
+    const nama = prompt('Nama menu:');
+    const harga = prompt('Harga:');
+    if(nama && harga) {
+      menuList.push({ id: Date.now(), nama: nama, harga: parseInt(harga) });
+      localStorage.setItem('menuList', JSON.stringify(menuList));
+      renderMenu();
+    }
+  };
+  
+  function renderMeja() {
+    const container = document.getElementById('daftar-meja');
+    container.innerHTML = mejaList.map(m => `
+      <div class="meja-card">
+        <h3>${m.nama}</h3>
+        <button class="btn-danger" onclick="hapusMeja(${m.id})">Hapus</button>
       </div>
-
-      <select id="selectMenu" disabled></select>
-      <input type="number" id="inputQty" value="1" min="1" style="width:60px;" disabled>
-      <input type="text" id="inputPemesan" placeholder="Nama pemesan" disabled>
-      <input type="text" id="inputWaitress" placeholder="Nama waitress" disabled>
-
-      <div class="toggle-wrap">
-        <input type="checkbox" id="toggleCheckout">
-        <label for="toggleCheckout">Auto Checkout saat Print Bill</label>
+    `).join('') || '<p>Belum ada meja</p>';
+  }
+  
+  function renderMenu() {
+    const container = document.getElementById('daftar-menu');
+    container.innerHTML = menuList.map(m => `
+      <div class="meja-card">
+        <h3>${m.nama}</h3>
+        <p>Rp ${m.harga}</p>
       </div>
+    `).join('') || '<p>Belum ada menu</p>';
+  }
+  
+  // Init
+  window.addEventListener('DOMContentLoaded', () => {
+    const savedTheme = localStorage.getItem('theme') || 'green';
+    window.setTheme(savedTheme, document.querySelector(`[onclick*="${savedTheme}"]`));
+    renderMeja();
+    renderMenu();
+  });
+</script>
 
-      <button class="btn-tambah" id="btnTambahPesanan" onclick="tambahPesanan()" disabled>Tambah ke Pesanan</button>
-      <div id="listPesanan"></div>
-      <button class="btn-print" id="btnPrintBill" onclick="printBill()" disabled>Print Bill</button>
-      <p class="info-text" id="infoText">Pilih meja yang sudah Check-in dulu</p>
-    </div>
-
-    <div id="billArea"></div>
-  </div>
-
-  <!-- TAB 4: LAPORAN -->
-  <div id="laporan" class="tab-content">
-    <h2>📊 Laporan Penjualan</h2>
-    <div class="section">
-      <h3>Filter Laporan</h3>
-      <input type="date" id="filterTanggal">
-      <select id="filterBulan">
-        <option value="">Pilih Bulan</option>
-        <option value="01">Januari</option><option value="02">Februari</option>
-        <option value="03">Maret</option><option value="04">April</option>
-        <option value="05">Mei</option><option value="06">Juni</option>
-        <option value="07">Juli</option><option value="08">Agustus</option>
-        <option value="09">September</option><option value="10">Oktober</option>
-        <option value="11">November</option><option value="12">Desember</option>
-      </select>
-      <input type="number" id="filterTahun" placeholder="2025">
-      <button class="btn-edit" onclick="loadLaporan()">Tampilkan Laporan</button>
-      <button class="btn-print" onclick="window.print()">Print Laporan</button>
-    </div>
-
-    <div class="section">
-      <h3 id="judulLaporan">Riwayat Pesanan</h3>
-      <table id="tabelLaporan">
-        <thead><tr><th>Waktu</th><th>Meja</th><th>Pemesan</th><th>Waitress</th><th>Grand Total</th></tr></thead>
-        <tbody></tbody>
-      </table>
-      <h3 id="totalLaporan" style="text-align:right;">Total: Rp 0</h3>
-    </div>
-  </div>
-
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getDatabase, ref, onValue, set, update, push, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyA94bWbZJA0PeV6rDg-vaHac1Ghn9t2ZW4",
-      authDomain: "kasir-naotajun2.firebaseapp.com",
-      databaseURL: "https://kasir-naotajun2-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "kasir-naotajun2",
-      storageBucket: "kasir-naotajun2.firebasestorage.app",
-      messagingSenderId: "346309315110",
-      appId: "1:346309315110:web:1bc443785229fa7a0b74e7"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-
-    const PPN_RATE = 0.11;
-    const TAX_RATE = 0.10;
-
-    let menuList = {};
-    let pesananSement = {};
-    let pesananAktif = {};
-    let kategoriAktif = 'all';
-
-    const themes = {
-      green: { bg: '#f0fff4', primary: '#2e8b57', 'primary-light': '#3cb371', 'primary-dark': '#228b22', secondary: '#3cb371', accent: '#dc143c', border: '#90ee90', text: '#2e8b57' },
-      pink: { bg: '#fff0f5', primary: '#ff69b4', 'primary-light': '#ff9ebc', 'primary-dark': '#ff1493', secondary: '#ff85c1', accent: '#ff4d6d', border: '#ffb6c1', text: '#d63384' },
-      blue: { bg: '#f0f8ff', primary: '#1e90ff', 'primary-light': '#4169e1', 'primary-dark': '#0000cd', secondary: '#4169e1', accent: '#dc143c', border: '#add8e6', text: '#1e90ff' },
-      brown: { bg: '#faf5f0', primary: '#8b4513', 'primary-light': '#a0522d', 'primary-dark': '#654321', secondary: '#a0522d', accent: '#dc143c', border: '#deb887', text: '#8b4513' }
-    };
-
-    // Semua function harus di-attach ke window
-    window.setTheme = (themeName, btnElement) => {
-      const root = document.documentElement;
-      const theme = themes[themeName];
-      for (let key in theme) {
-        root.style.setProperty(`--${key}`, theme[key]);
-      }
-      document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.remove('active'));
-      if (btnElement) btnElement.classList.add('active');
-      localStorage.setItem('kasirTheme', themeName);
-    }
-
-    window.openTab = (tabName, btnElement) => {
-      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-      document.getElementById(tabName).classList.add('active');
-      btnElement.classList.add('active');
-    }
-
-    window.filterKategori = (kat, btnElement) => {
-      kategoriAktif = kat;
-      document.querySelectorAll('.category-filter button').forEach(btn => btn.classList.remove('active'));
-      btnElement.classList.add('active');
-      const selectMenu = document.querySelector("#selectMenu");
-      selectMenu.innerHTML = "<option value=''>Pilih Menu</option>";
-      for (let id in menuList) {
-        const data = menuList[id];
-        if (kat === 'all' || kat === data.kategori) {
-          selectMenu.innerHTML += `<option value="${id}">${data.nama} - Rp ${data.harga.toLocaleString()}</option>`;
-        }
-      }
-    };
-
-    window.tambahMeja = () => {
-      const nama = document.getElementById("inputNamaMeja").value.trim();
-      if (!nama) return alert("Isi nama meja!");
-      const id = nama.toLowerCase().replace(/[^a-z0-9]/g, '');
-      set(ref(db, "meja/" + id), { id, nama, status: "available" });
-      document.getElementById("inputNamaMeja").value = "";
-    };
-
-    window.editMeja = (id) => {
-      const meja = prompt("Masukkan nama meja baru:");
-      if (!meja) return;
-      const status = confirm("Status Check-in? OK = Check-in, Cancel = Kosong")? "checked-in" : "available";
-      update(ref(db, "meja/" + id), { id: id, nama: meja, status: status });
-    };
-
-    window.hapusMeja = (id) => {
-      if (!confirm("Hapus meja ini? Data pesanan aktif juga akan ikut terhapus.")) return;
-      remove(ref(db, "meja/" + id));
-      remove(ref(db, "pesanan_aktif/" + id));
-    };
-
-    // FORCE DELETE - ini yang fix buat hapus meja1 dan meja 12
-    window.forceHapusMeja = async (namaMeja) => {
-      if (!confirm(`FORCE DELETE meja "${namaMeja}"? Ini bakal hapus semua versi ID-nya.`)) return;
-
-      const idBersih = namaMeja.toLowerCase().replace(/[^a-z0-9]/g, '');
-      const idSpasi = namaMeja;
-      const idEncode = encodeURIComponent(namaMeja);
-
-      try {
-        // Hapus semua kemungkinan path
-        await Promise.all([
-          remove(ref(db, "meja/" + idBersih)),
-          remove(ref(db, "meja/" + idSpasi)),
-          remove(ref(db, "meja/" + idEncode)),
-          remove(ref(db, "pesanan_aktif/" + idBersih)),
-          remove(ref(db, "pesanan_aktif/" + idSpasi)),
-          remove(ref(db, "pesanan_aktif/" + idEncode))
-        ]);
-        alert(`Meja "${namaMeja}" sudah dihapus total!`);
-      } catch (err) {
-        alert("Gagal hapus: " + err.message);
-      }
-    };
-
-    window.tambahMenu = () => {
-      const nama = document.getElementById("inputNamaMenu").value.trim();
-      const harga = parseInt(document.getElementById("inputHargaMenu").value);
-      const kategori = document.getElementById("inputKategori").value;
-      if (!nama ||!harga) return alert("Isi nama dan harga!");
-      const id = "menu" + Date.now();
-      set(ref(db, "menu/" + id), { id, nama, harga, kategori });
-      document.getElementById("inputNamaMenu").value = "";
-      document.getElementById("inputHargaMenu").value = "";
-    };
-
-    window.hapusMenu = (id) => {
-      if (confirm("Hapus menu ini?")) remove(ref(db, "menu/" + id));
-    };
-
-    window.checkInMeja = (id) => {
-      const namaPemesan = prompt("Masukkan nama pemesan:");
-      if (!namaPemesan) return;
-      const namaWaitress = prompt("Masukkan nama waitress:");
-      if (!namaWaitress) return;
-      update(ref(db, "meja/" + id), { status: "checked-in" });
-      set(ref(db, "pesanan_aktif/" + id), { pemesan: namaPemesan, waitress: namaWaitress, items: [], subtotal: 0, ppn: 0, tax: 0, grandTotal: 0 });
-      document.getElementById("selectMeja").value = id;
-      updateFormStatus();
-    };
-
-    window.editPesanan = (id) => {
-      const pesanan = pesananAktif[id];
-      if (!pesanan) return alert("Pesanan tidak ditemukan");
-      openTab('kasir', document.querySelector('.nav-btn:nth-child(3)'));
-      document.getElementById("selectMeja").value = id;
-      document.getElementById("inputPemesan").value = pesanan.pemesan || "";
-      document.getElementById("inputWaitress").value = pesanan.waitress || "";
-      pesananSement[id] = pesanan.items || [];
-      document.getElementById("listPesanan").innerHTML = pesananSement[id].map((p,i) =>
-        `<p>${p.nama} x${p.qty} = Rp ${p.subtotal.toLocaleString()} <button class="btn-del" style="padding:2px 6px;" onclick="hapusItemPesanan(${i})">x</button></p>`
-      ).join("");
-      window.pesananAktifSement = { mejaId: id, pemesan: pesanan.pemesan, waitress: pesanan.waitress, items: pesananSement[id] };
-      updateFormStatus();
-    };
-
-    window.checkOutMeja = (id) => {
-      if (confirm("Yakin mau check-out meja ini?")) {
-        update(ref(db, "meja/" + id), { status: "available" });
-        remove(ref(db, "pesanan_aktif/" + id));
-        updateFormStatus();
-      }
-    };
-
-    window.tambahPesanan = () => {
-      const mejaId = document.getElementById("selectMeja").value;
-      const menuId = document.getElementById("selectMenu").value;
-      const qty = parseInt(document.getElementById("inputQty").value);
-      const pemesan = document.getElementById("inputPemesan").value.trim();
-      const waitress = document.getElementById("inputWaitress").value.trim();
-      if (!mejaId || menuId === "" ||!pemesan ||!waitress) return alert("Lengkapi semua field!");
-      const menu = menuList[menuId];
-      if (!pesananSement[mejaId]) pesananSement[mejaId] = [];
-      pesananSement[mejaId].push({ menuId, nama: menu.nama, harga: menu.harga, qty, subtotal: menu.harga * qty });
-      document.getElementById("listPesanan").innerHTML = pesananSement[mejaId].map((p,i) =>
-        `<p>${p.nama} x${p.qty} = Rp ${p.subtotal.toLocaleString()} <button class="btn-del" style="padding:2px 6px;" onclick="hapusItemPesanan(${i})">x</button></p>`
-      ).join("");
-      window.pesananAktifSement = { mejaId, pemesan, waitress, items: pesananSement[mejaId] };
-      saveToFirebase(mejaId);
-    };
-
-    window.hapusItemPesanan = (index) => {
-      const mejaId = document.getElementById("selectMeja").value;
-      pesananSement[mejaId].splice(index, 1);
-      document.getElementById("listPesanan").innerHTML = pesananSement[mejaId].map((p,i) =>
-        `<p>${p.nama} x${p.qty} = Rp ${p.subtotal.toLocaleString()} <button class="btn-del" style="padding:2px 6px;" onclick="hapusItemPesanan(${i})">x</button></p>`
-      ).join("");
-      saveToFirebase(mejaId);
-    };
-
-    window.printBill = async () => {
-      if (!window.pesananAktifSement) return alert("Buat pesanan dulu!");
-      const { mejaId, pemesan, waitress, items } = window.pesananAktifSement;
-      const meja = document.querySelector(`#selectMeja option[value="${mejaId}"]`).text;
-      const subtotal = items.reduce((a, b) => a + b.subtotal, 0);
-      const ppn = Math.round(subtotal * PPN_RATE);
-      const tax = Math.round(subtotal * TAX_RATE);
-      const grandTotal = subtotal + ppn + tax;
-      const waktu = new Date().toLocaleString("id-ID", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
-      let rows = "";
-      items.forEach((i, idx) => {
-        rows += `<tr><td>${idx + 1}</td><td>${i.nama}</td><td style="text-align:center;">${i.qty}</td><td style="text-align:right;">${i.harga.toLocaleString()}</td><td style="text-align:right;">${i.subtotal.toLocaleString()}</td></tr>`;
-      });
-      const billHTML = `<div class="bill"><h3>KASIR NAOTAJUN</h3><p>${waktu}</p><div class="line"></div><p style="text-align:left;"><b>Meja:</b> ${meja}</p><p style="text-align:left;"><b>Pemesan:</b> ${pemesan}</p><p style="text-align:left;"><b>Waitress:</b> ${waitress}</p><div class="line"></div><table><thead><tr><th style="text-align:left;">No</th><th style="text-align:left;">Menu</th><th style="text-align:center;">Qty</th><th style="text-align:right;">Harga</th><th style="text-align:right;">Sub</th></tr></thead><tbody>${rows}</tbody></table><div class="line"></div><table><tr><td style="text-align:right;">Subtotal</td><td style="text-align:right; width:80px;">Rp ${subtotal.toLocaleString()}</td></tr><tr><td style="text-align:right;">PPN 11%</td><td style="text-align:right;">Rp ${ppn.toLocaleString()}</td></tr><tr><td style="text-align:right;">Service 10%</td><td style="text-align:right;">Rp ${tax.toLocaleString()}</td></tr><tr><td style="text-align:right;"><b>GRAND TOTAL</b></td><td style="text-align:right;"><b>Rp ${grandTotal.toLocaleString()}</b></td></tr></table><div class="line"></div><p>Waitress: ${waitress}</p><p>Terima Kasih! 💖</p></div>`;
-      document.getElementById("billArea").innerHTML = billHTML;
-      window.print();
-      await push(ref(db, "pesanan"), { mejaId, pemesan, waitress, items, subtotal, ppn, tax, grandTotal, waktu });
-      const autoCheckout = document.getElementById("toggleCheckout").checked;
-      if (autoCheckout) {
-        await update(ref(db, "meja/" + mejaId), { status: "available" });
-        await remove(ref(db, "pesanan_aktif/" + mejaId));
-      }
-      pesananSement[mejaId] = [];
-      document.getElementById("listPesanan").innerHTML = "";
-      window.pesananAktifSement = null;
-      document.getElementById("toggleCheckout").checked = false;
-      updateFormStatus();
-    };
-
-    window.loadLaporan = () => {
-      const tanggal = document.getElementById("filterTanggal").value;
-      const bulan = document.getElementById("filterBulan").value;
-      const tahun = document.getElementById("filterTahun").value;
-      onValue(ref(db, "pesanan"), (snapshot) => {
-        const tbody = document.querySelector("#tabelLaporan tbody");
-        tbody.innerHTML = "";
-        let total = 0;
-        let count = 0;
-        if (!snapshot.exists()) {
-          tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">Belum ada pesanan</td></tr>`;
-          document.getElementById("totalLaporan").textContent = "Total: Rp 0";
-          return;
-        }
-        snapshot.forEach((child) => {
-          const data = child.val();
-          let show = true;
-          if (tanggal &&!data.waktu.includes(tanggal.split('-').reverse().join('/'))) show = false;
-          if (bulan && tahun &&!data.waktu.includes(`${bulan}/${tahun}`)) show = false;
-          if (bulan &&!tahun &&!data.waktu.includes(`/${bulan}/`)) show = false;
-          if (tahun &&!bulan &&!data.waktu.includes(`/${tahun}`)) show = false;
-          if (show) {
-            tbody.innerHTML += `<tr><td>${data.waktu}</td><td>${data.mejaId}</td><td>${data.pemesan}</td><td>${data.waitress || '-'}</td><td>Rp ${(data.grandTotal || 0).toLocaleString()}</td></tr>`;
-            total += data.grandTotal || 0;
-            count++;
-          }
-        });
-        document.getElementById("totalLaporan").textContent = `Total: Rp ${total.toLocaleString()} dari ${count} transaksi`;
-        let judul = "Riwayat Pesanan";
-        if (tanggal) judul = `Laporan Tanggal ${tanggal}`;
-        else if (bulan && tahun) judul = `Laporan Bulan ${bulan}/${tahun}`;
-        else if (bulan) judul = `Laporan Bulan ${bulan}`;
-        else if (tahun) judul = `Laporan Tahun ${tahun}`;
-        document.getElementById("judulLaporan").textContent = judul;
-      });
-    };
-
-    function saveToFirebase(mejaId) {
-      const pemesan = document.getElementById("inputPemesan").value.trim();
-      const waitress = document.getElementById("inputWaitress").value.trim();
-      const items = pesananSement[mejaId] || [];
-      const subtotal = items.reduce((a, b) => a + b.subtotal, 0);
-      const ppn = Math.round(subtotal * PPN_RATE);
-      const tax = Math.round(subtotal * TAX_RATE);
-      const grandTotal = subtotal + ppn + tax;
-      set(ref(db, "pesanan_aktif/" + mejaId), { pemesan, waitress, items, subtotal, ppn, tax, grandTotal });
-    }
-
-    function updateFormStatus() {
-      const selectMeja = document.getElementById("selectMeja");
-      const mejaId = selectMeja.value;
-      const isCheckedIn = mejaId && mejaId!== "" && pesananAktif[mejaId];
-      document.getElementById("selectMenu").disabled =!isCheckedIn;
-      document.getElementById("inputQty").disabled =!isCheckedIn;
-      document.getElementById("inputPemesan").disabled =!isCheckedIn;
-      document.getElementById("inputWaitress").disabled =!isCheckedIn;
-      document.getElementById("btnTambahPesanan").disabled =!isCheckedIn;
-      document.getElementById("btnPrintBill").disabled =!isCheckedIn;
-      document.getElementById("toggleCheckout").disabled =!isCheckedIn;
-      document.getElementById("infoText").textContent = isCheckedIn
-      ? "Meja sudah Check-in. Silakan isi pesanan."
-        : "Pilih meja yang sudah Check-in dulu";
-    }
-
-    function loadMeja() {
-      onValue(ref(db, "meja"), (snapshot) => {
-        const tbody = document.querySelector("#tabelMeja tbody");
-        const selectMeja = document.querySelector("#selectMeja");
-        tbody.innerHTML = "";
-        selectMeja.innerHTML = "<option value=''>Pilih Meja</option>";
-        snapshot.forEach((child) => {
-          const data = child.val();
-          const id = data.id;
-          const pesanan = pesananAktif[id];
-          let aksiBtn = `<button class="btn-edit" onclick="editMeja('${id}')">Edit</button>
-                         <button class="btn-del" onclick="hapusMeja('${id}')">Hapus</button>
-                         <button class="btn-del" style="background:#8b0000;" onclick="forceHapusMeja('${data.nama}')">Force</button>`;
-          let pesananHTML = "-";
-          if (data.status === "checked-in" && pesanan && pesanan.items && pesanan.items.length > 0) {
-            aksiBtn = `<button class="btn-edit" onclick="editPesanan('${id}')">Edit Pesanan</button>
-                       <button class="btn-edit" onclick="checkOutMeja('${id}')">Check-out</button>
-                       <button class="btn-del" onclick="hapusMeja('${id}')">Hapus</button>
-                       <button class="btn-del" style="background:#8b0000;" onclick="forceHapusMeja('${data.nama}')">Force</button>`;
-            const total = pesanan.grandTotal || 0;
-            pesananHTML = `<div class="order-list"><b>${pesanan.pemesan || '-'}</b> | Waitress: ${pesanan.waitress || '-'}<br><ul style="margin:5px 0; padding-left:18px;">${pesanan.items.map(i => `<li>${i.nama} x${i.qty} = Rp ${(i.subtotal || 0).toLocaleString()}</li>`).join("")}</ul><b>Grand Total: Rp ${total.toLocaleString()}</b></div>`;
-          } else if (data.status === "checked-in") {
-            aksiBtn = `<button class="btn-edit" onclick="editPesanan('${id}')">Edit Pesanan</button>
-                       <button class="btn-edit" onclick="checkOutMeja('${id}')">Check-out</button>
-                       <button class="btn-del" onclick="hapusMeja('${id}')">Hapus</button>
-                       <button class="btn-del" style="background:#8b0000;" onclick="forceHapusMeja('${data.nama}')">Force</button>`;
-            pesananHTML = "<div class='order-list'>Belum ada pesanan</div>";
-          } else {
-            aksiBtn = `<button class="btn-tambah" onclick="checkInMeja('${id}')">Check-in</button>
-                       <button class="btn-edit" onclick="editMeja('${id}')">Edit</button>
-                       <button class="btn-del" onclick="hapusMeja('${id}')">Hapus</button>
-                       <button class="btn-del" style="background:#8b0000;" onclick="forceHapusMeja('${data.nama}')">Force</button>`;
-          }
-          tbody.innerHTML += `<tr><td><b>${data.nama}</b></td><td>${data.status === "checked-in"? "✓ Check-in" : "✗ Kosong"}</td><td>${pesananHTML}</td><td>${aksiBtn}</td></tr>`;
-          selectMeja.innerHTML += `<option value="${id}">${data.nama}</option>`;
-        });
-        updateFormStatus();
-      });
-    }
-
-    onValue(ref(db, "pesanan_aktif"), (snapshot) => {
-      pesananAktif = snapshot.val() || {};
-      loadMeja();
-    });
-
-    onValue(ref(db, "menu"), (snapshot) => {
-      const tbody = document.querySelector("#tabelMenu tbody");
-      const selectMenu = document.querySelector("#selectMenu");
-      tbody.innerHTML = "";
-      selectMenu.innerHTML = "<option value=''>Pilih Menu</option>";
-      menuList = {};
-      snapshot.forEach((child) => {
-        const data = child.val();
-        menuList[data.id] = data;
-        const kategoriLabel = data.kategori === 'food'? '🍜 Food' : '🥤 Beverage';
-        tbody.innerHTML += `<tr><td>${kategoriLabel}</td><td>${data.nama}</td><td>Rp ${data.harga.toLocaleString()}</td><td><button class="btn-del" onclick="hapusMenu('${data.id}')">Hapus</button></td></tr>`;
-        if (kategoriAktif === 'all' || kategoriAktif === data.kategori) {
-          selectMenu.inner
+</body>
+</html>
