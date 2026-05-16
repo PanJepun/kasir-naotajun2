@@ -27,6 +27,7 @@
   .btn-warning { background: #ff9800; color: white; }
   .btn-danger { background: #f44336; color: white; }
   .btn-secondary { background: #9e9e9e; color: white; }
+  .btn-small { padding: 4px 8px; font-size: 12px; }
   
   /* Toolbar */
   .toolbar {
@@ -34,6 +35,7 @@
     gap: 10px;
     margin-top: 15px;
     flex-wrap: wrap;
+    align-items: center;
   }
   .toolbar input, .toolbar select {
     padding: 8px 12px;
@@ -77,6 +79,7 @@
   }
   .badge-food { background: #ff9800; }
   .badge-beverage { background: #2196f3; }
+  .badge-cat { background: #9c27b0; }
 
   /* Modal */
   .modal {
@@ -95,7 +98,7 @@
     padding: 25px;
     border-radius: 10px;
     width: 90%;
-    max-width: 400px;
+    max-width: 450px;
     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
   }
   .modal-content h3 { margin-top: 0; }
@@ -111,6 +114,12 @@
     text-align: right;
     margin-top: 15px;
   }
+  .cat-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .cat-row select { flex: 1; }
 </style>
 </head>
 <body>
@@ -142,12 +151,16 @@
   <h2>🍽️ Food & Beverage</h2>
   <div class="toolbar">
     <input type="text" id="searchMenu" placeholder="Cari menu..." onkeyup="renderMenu()">
-    <select id="filterTipe" onchange="renderMenu()">
+    <select id="filterTipe" onchange="updateKategoriFilter(); renderMenu()">
       <option value="">Semua Tipe</option>
       <option value="Food">Food</option>
       <option value="Beverage">Beverage</option>
     </select>
+    <select id="filterKategori" onchange="renderMenu()">
+      <option value="">Semua Kategori</option>
+    </select>
     <button class="btn-primary" onclick="openMenuModal()">+ Tambah Menu</button>
+    <button class="btn-secondary" onclick="openKategoriModal()">Kelola Kategori</button>
   </div>
   <div id="daftar-menu"></div>
 </div>
@@ -183,10 +196,14 @@
     <h3 id="modalMenuTitle">Tambah Menu</h3>
     <input type="hidden" id="menuId">
     <input type="text" id="menuNama" placeholder="Nama menu">
-    <select id="menuTipe">
+    <select id="menuTipe" onchange="updateKategoriSelect()">
       <option value="Food">Food</option>
       <option value="Beverage">Beverage</option>
     </select>
+    <div class="cat-row">
+      <select id="menuKategori"></select>
+      <button class="btn-small btn-secondary" onclick="openKategoriModal()">+</button>
+    </div>
     <input type="number" id="menuHarga" placeholder="Harga">
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeMenuModal()">Batal</button>
@@ -195,14 +212,43 @@
   </div>
 </div>
 
+<!-- MODAL KATEGORI -->
+<div id="modalKategori" class="modal">
+  <div class="modal-content">
+    <h3>Kelola Kategori</h3>
+    <div id="daftarKategori"></div>
+    <input type="text" id="kategoriNama" placeholder="Nama kategori baru">
+    <select id="kategoriTipe">
+      <option value="Food">Food</option>
+      <option value="Beverage">Beverage</option>
+    </select>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeKategoriModal()">Tutup</button>
+      <button class="btn-primary" onclick="tambahKategori()">Tambah</button>
+    </div>
+  </div>
+</div>
+
 <script type="module">
   // Data
   let mejaList = JSON.parse(localStorage.getItem('mejaList') || '[]');
   let menuList = JSON.parse(localStorage.getItem('menuList') || '[]');
+  let kategoriList = JSON.parse(localStorage.getItem('kategoriList') || JSON.stringify([
+    {id: 1, nama: 'Makanan Berat', tipe: 'Food'},
+    {id: 2, nama: 'Snack', tipe: 'Food'},
+    {id: 3, nama: 'Dessert', tipe: 'Food'},
+    {id: 4, nama: 'Coffee', tipe: 'Beverage'},
+    {id: 5, nama: 'Juice', tipe: 'Beverage'},
+    {id: 6, nama: 'Soda', tipe: 'Beverage'}
+  ]));
   let menuSort = { key: 'nama', order: 'asc' };
   
-  // Migrasi data lama biar punya tipe default Food
-  menuList = menuList.map(m => ({ ...m, tipe: m.tipe || 'Food' }));
+  // Migrasi data lama
+  menuList = menuList.map(m => ({ 
+    ...m, 
+    tipe: m.tipe || 'Food',
+    kategori: m.kategori || (m.tipe === 'Beverage' ? 'Coffee' : 'Makanan Berat')
+  }));
   
   // === Fungsi global ===
   window.setTheme = (themeName, btnElement) => {
@@ -219,7 +265,7 @@
     if(btnElement) btnElement.classList.add('active');
   };
 
-  // === MODAL MEJA ===
+  // === MEJA ===
   window.openMejaModal = (id = null) => {
     const modal = document.getElementById('modalMeja');
     const title = document.getElementById('modalMejaTitle');
@@ -240,9 +286,7 @@
     namaInput.focus();
   };
   
-  window.closeMejaModal = () => {
-    document.getElementById('modalMeja').classList.remove('active');
-  };
+  window.closeMejaModal = () => document.getElementById('modalMeja').classList.remove('active');
   
   window.saveMeja = () => {
     const id = document.getElementById('mejaId').value;
@@ -269,13 +313,89 @@
     }
   };
 
-  // === MODAL MENU ===
+  // === KATEGORI ===
+  function saveKategori() {
+    localStorage.setItem('kategoriList', JSON.stringify(kategoriList));
+    updateKategoriFilter();
+    updateKategoriSelect();
+  }
+  
+  window.openKategoriModal = () => {
+    renderKategoriList();
+    document.getElementById('modalKategori').classList.add('active');
+  };
+  
+  window.closeKategoriModal = () => {
+    document.getElementById('modalKategori').classList.remove('active');
+    document.getElementById('kategoriNama').value = '';
+  };
+  
+  function renderKategoriList() {
+    const container = document.getElementById('daftarKategori');
+    container.innerHTML = kategoriList.map(k => `
+      <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee;">
+        <span>${k.nama} <small style="color:#666">(${k.tipe})</small></span>
+        <button class="btn-danger btn-small" onclick="hapusKategori(${k.id})">Hapus</button>
+      </div>
+    `).join('') || '<p>Belum ada kategori</p>';
+  }
+  
+  window.tambahKategori = () => {
+    const nama = document.getElementById('kategoriNama').value.trim();
+    const tipe = document.getElementById('kategoriTipe').value;
+    if(!nama) return alert('Nama kategori wajib diisi!');
+    
+    if(kategoriList.some(k => k.nama.toLowerCase() === nama.toLowerCase())) {
+      return alert('Kategori sudah ada!');
+    }
+    
+    kategoriList.push({ id: Date.now(), nama, tipe });
+    saveKategori();
+    renderKategoriList();
+    document.getElementById('kategoriNama').value = '';
+  };
+  
+  window.hapusKategori = (id) => {
+    if(confirm('Hapus kategori ini? Menu dengan kategori ini akan jadi tanpa kategori.')) {
+      kategoriList = kategoriList.filter(k => k.id !== id);
+      menuList.forEach(m => {
+        if(m.kategori === kategoriList.find(k => k.id === id)?.nama) {
+          m.kategori = '';
+        }
+      });
+      saveKategori();
+      localStorage.setItem('menuList', JSON.stringify(menuList));
+      renderKategoriList();
+      renderMenu();
+    }
+  };
+  
+  function updateKategoriFilter() {
+    const tipe = document.getElementById('filterTipe').value;
+    const select = document.getElementById('filterKategori');
+    const filtered = tipe ? kategoriList.filter(k => k.tipe === tipe) : kategoriList;
+    
+    select.innerHTML = '<option value="">Semua Kategori</option>' + 
+      filtered.map(k => `<option value="${k.nama}">${k.nama}</option>`).join('');
+  }
+  
+  function updateKategoriSelect() {
+    const tipe = document.getElementById('menuTipe').value;
+    const select = document.getElementById('menuKategori');
+    const filtered = kategoriList.filter(k => k.tipe === tipe);
+    
+    select.innerHTML = filtered.map(k => `<option value="${k.nama}">${k.nama}</option>`).join('');
+  }
+
+  // === MENU ===
   window.openMenuModal = (id = null) => {
+    updateKategoriSelect();
     const modal = document.getElementById('modalMenu');
     const title = document.getElementById('modalMenuTitle');
     const idInput = document.getElementById('menuId');
     const namaInput = document.getElementById('menuNama');
     const tipeInput = document.getElementById('menuTipe');
+    const kategoriInput = document.getElementById('menuKategori');
     const hargaInput = document.getElementById('menuHarga');
     
     if(id) {
@@ -284,12 +404,15 @@
       idInput.value = menu.id;
       namaInput.value = menu.nama;
       tipeInput.value = menu.tipe;
+      updateKategoriSelect();
+      kategoriInput.value = menu.kategori;
       hargaInput.value = menu.harga;
     } else {
       title.textContent = 'Tambah Menu';
       idInput.value = '';
       namaInput.value = '';
       tipeInput.value = 'Food';
+      updateKategoriSelect();
       hargaInput.value = '';
     }
     modal.classList.add('active');
@@ -304,6 +427,7 @@
     const id = document.getElementById('menuId').value;
     const nama = document.getElementById('menuNama').value.trim();
     const tipe = document.getElementById('menuTipe').value;
+    const kategori = document.getElementById('menuKategori').value;
     const harga = document.getElementById('menuHarga').value;
     
     if(!nama || !harga || isNaN(harga)) return alert('Lengkapi data dengan benar!');
@@ -312,9 +436,10 @@
       const menu = menuList.find(m => m.id == id);
       menu.nama = nama;
       menu.tipe = tipe;
+      menu.kategori = kategori;
       menu.harga = parseInt(harga);
     } else {
-      menuList.push({ id: Date.now(), nama: nama, tipe: tipe, harga: parseInt(harga) });
+      menuList.push({ id: Date.now(), nama, tipe, kategori, harga: parseInt(harga) });
     }
     
     localStorage.setItem('menuList', JSON.stringify(menuList));
@@ -373,11 +498,13 @@
     const container = document.getElementById('daftar-menu');
     const search = document.getElementById('searchMenu').value.toLowerCase();
     const filterTipe = document.getElementById('filterTipe').value;
+    const filterKategori = document.getElementById('filterKategori').value;
     
     let filtered = menuList.filter(m => {
       const matchSearch = m.nama.toLowerCase().includes(search);
       const matchTipe = filterTipe ? m.tipe === filterTipe : true;
-      return matchSearch && matchTipe;
+      const matchKategori = filterKategori ? m.kategori === filterKategori : true;
+      return matchSearch && matchTipe && matchKategori;
     });
     
     filtered.sort((a, b) => {
@@ -403,6 +530,7 @@
             <th>No</th>
             <th onclick="sortMenu('nama')" class="${menuSort.key==='nama' ? 'sort-'+menuSort.order : ''}">Nama Menu</th>
             <th onclick="sortMenu('tipe')" class="${menuSort.key==='tipe' ? 'sort-'+menuSort.order : ''}">Tipe</th>
+            <th onclick="sortMenu('kategori')" class="${menuSort.key==='kategori' ? 'sort-'+menuSort.order : ''}">Kategori</th>
             <th onclick="sortMenu('harga')" class="${menuSort.key==='harga' ? 'sort-'+menuSort.order : ''}">Harga</th>
             <th>Aksi</th>
           </tr>
@@ -413,6 +541,7 @@
               <td>${i + 1}</td>
               <td>${m.nama}</td>
               <td><span class="badge ${m.tipe === 'Food' ? 'badge-food' : 'badge-beverage'}">${m.tipe}</span></td>
+              <td><span class="badge badge-cat">${m.kategori}</span></td>
               <td>Rp ${m.harga.toLocaleString('id-ID')}</td>
               <td>
                 <button class="btn-warning" onclick="openMenuModal(${m.id})">Edit</button>
@@ -436,6 +565,7 @@
   window.addEventListener('DOMContentLoaded', () => {
     const savedTheme = localStorage.getItem('theme') || 'green';
     window.setTheme(savedTheme, document.querySelector(`[onclick*="${savedTheme}"]`));
+    updateKategoriFilter();
     renderMeja();
     renderMenu();
   });
