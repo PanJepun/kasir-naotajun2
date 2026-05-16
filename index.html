@@ -22,8 +22,9 @@
   .tab-content { display: none; padding: 20px; }
   .tab-content.active { display: block; }
   
-  button { cursor: pointer; padding: 8px 15px; margin: 5px; border: none; border-radius: 5px; }
+  button { cursor: pointer; padding: 6px 12px; margin: 2px; border: none; border-radius: 5px; }
   .btn-primary { background: #4caf50; color: white; }
+  .btn-warning { background: #ff9800; color: white; }
   .btn-danger { background: #f44336; color: white; }
   
   /* Tabel */
@@ -113,10 +114,21 @@
     if(btnElement) btnElement.classList.add('active');
   };
   
+  // === MEJA ===
   window.tambahMeja = () => {
     const nama = prompt('Masukkan nama meja:');
     if(nama) {
       mejaList.push({ id: Date.now(), nama: nama });
+      localStorage.setItem('mejaList', JSON.stringify(mejaList));
+      renderMeja();
+    }
+  };
+  
+  window.editMeja = (id) => {
+    const meja = mejaList.find(m => m.id === id);
+    const namaBaru = prompt('Edit nama meja:', meja.nama);
+    if(namaBaru && namaBaru.trim() !== '') {
+      meja.nama = namaBaru.trim();
       localStorage.setItem('mejaList', JSON.stringify(mejaList));
       renderMeja();
     }
@@ -130,11 +142,24 @@
     }
   };
   
+  // === MENU ===
   window.tambahMenu = () => {
     const nama = prompt('Nama menu:');
     const harga = prompt('Harga:');
     if(nama && harga && !isNaN(harga)) {
       menuList.push({ id: Date.now(), nama: nama, harga: parseInt(harga) });
+      localStorage.setItem('menuList', JSON.stringify(menuList));
+      renderMenu();
+    }
+  };
+  
+  window.editMenu = (id) => {
+    const menu = menuList.find(m => m.id === id);
+    const namaBaru = prompt('Edit nama menu:', menu.nama);
+    const hargaBaru = prompt('Edit harga:', menu.harga);
+    if(namaBaru && hargaBaru && !isNaN(hargaBaru)) {
+      menu.nama = namaBaru.trim();
+      menu.harga = parseInt(hargaBaru);
       localStorage.setItem('menuList', JSON.stringify(menuList));
       renderMenu();
     }
@@ -165,7 +190,10 @@
             <tr>
               <td>${i + 1}</td>
               <td>${m.nama}</td>
-              <td><button class="btn-danger" onclick="hapusMeja(${m.id})">Hapus</button></td>
+              <td>
+                <button class="btn-warning" onclick="editMeja(${m.id})">Edit</button>
+                <button class="btn-danger" onclick="hapusMeja(${m.id})">Hapus</button>
+              </td>
             </tr>
           `).join('')}
         </tbody>
@@ -190,7 +218,10 @@
               <td>${i + 1}</td>
               <td>${m.nama}</td>
               <td>Rp ${m.harga.toLocaleString('id-ID')}</td>
-              <td><button class="btn-danger" onclick="hapusMenu(${m.id})">Hapus</button></td>
+              <td>
+                <button class="btn-warning" onclick="editMenu(${m.id})">Edit</button>
+                <button class="btn-danger" onclick="hapusMenu(${m.id})">Hapus</button>
+              </td>
             </tr>
           `).join('')}
         </tbody>
