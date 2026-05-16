@@ -12,80 +12,100 @@
   body.pink { background: #fce4ec; }
   body.blue { background: #e3f2fd; }
   body.brown { background: #efebe9; }
-  
-  .theme-bar { padding: 10px; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-  .theme-btn { margin: 0 5px; padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; }
-  .theme-btn.active { outline: 2px solid #000; }
-  
-  .navbar { display: flex; background: #333; }
-  .nav-btn { flex: 1; padding: 12px; border: none; background: #333; color: #fff; cursor: pointer; }
-  .nav-btn.active { background: #555; }
-  
-  .tab-content { display: none; padding: 20px; }
-  .tab-content.active { display: block; }
-  
+
+ .theme-bar { padding: 10px; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+ .theme-btn { margin: 0 5px; padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; }
+ .theme-btn.active { outline: 2px solid #000; }
+
+ .navbar { display: flex; background: #333; }
+ .nav-btn { flex: 1; padding: 12px; border: none; background: #333; color: #fff; cursor: pointer; }
+ .nav-btn.active { background: #555; }
+
+ .tab-content { display: none; padding: 20px; }
+ .tab-content.active { display: block; }
+
   button { cursor: pointer; padding: 6px 12px; margin: 2px; border: none; border-radius: 5px; }
-  .btn-primary { background: #4caf50; color: white; }
-  .btn-warning { background: #ff9800; color: white; }
-  .btn-danger { background: #f44336; color: white; }
-  .btn-secondary { background: #9e9e9e; color: white; }
-  .btn-info { background: #2196f3; color: white; }
-  .btn-small { padding: 4px 8px; font-size: 12px; }
-  
+ .btn-primary { background: #4caf50; color: white; }
+ .btn-warning { background: #ff9800; color: white; }
+ .btn-danger { background: #f44336; color: white; }
+ .btn-secondary { background: #9e9e9e; color: white; }
+ .btn-info { background: #2196f3; color: white; }
+ .btn-small { padding: 4px 8px; font-size: 11px; }
+
   /* Toolbar */
-  .toolbar {
+ .toolbar {
     display: flex;
     gap: 10px;
     margin-top: 15px;
     flex-wrap: wrap;
     align-items: center;
   }
-  .toolbar input, .toolbar select {
+ .toolbar input,.toolbar select {
     padding: 8px 12px;
     border: 1px solid #ddd;
     border-radius: 5px;
   }
-  .toolbar input { flex: 1; min-width: 200px; }
-  
-  /* Tabel */
+ .toolbar input { flex: 1; min-width: 200px; }
+
+  /* Tabel compact + scroll */
+ .table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    margin-top: 15px;
+    border-radius: 6px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+
   table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 15px;
     background: white;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    font-size: 13px;
+    min-width: 600px; /* biar scroll muncul kalau layar kecil */
   }
+
   th, td {
-    padding: 12px 15px;
+    padding: 6px 10px;
     text-align: left;
     border-bottom: 1px solid #ddd;
+    white-space: nowrap;
   }
+
   th {
     background: #333;
     color: white;
     cursor: pointer;
     user-select: none;
+    font-size: 12px;
+    padding: 8px 10px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
   }
+
   th:hover { background: #444; }
   th.sort-asc::after { content: " ▲"; }
   th.sort-desc::after { content: " ▼"; }
   tr:hover { background: #f5f5f5; }
-  
-  .badge {
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 12px;
+
+  td button {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+
+ .badge {
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-size: 11px;
     color: white;
     font-weight: bold;
   }
-  .badge-food { background: #ff9800; }
-  .badge-beverage { background: #2196f3; }
-  .badge-cat { background: #9c27b0; }
+ .badge-food { background: #ff9800; }
+ .badge-beverage { background: #2196f3; }
+ .badge-cat { background: #9c27b0; }
 
   /* Modal */
-  .modal {
+ .modal {
     display: none;
     position: fixed;
     z-index: 1000;
@@ -95,8 +115,8 @@
     justify-content: center;
     align-items: center;
   }
-  .modal.active { display: flex; }
-  .modal-content {
+ .modal.active { display: flex; }
+ .modal-content {
     background: white;
     padding: 25px;
     border-radius: 10px;
@@ -104,8 +124,8 @@
     max-width: 450px;
     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
   }
-  .modal-content h3 { margin-top: 0; }
-  .modal-content input, .modal-content select {
+ .modal-content h3 { margin-top: 0; }
+ .modal-content input,.modal-content select {
     width: 100%;
     padding: 10px;
     margin: 10px 0;
@@ -113,22 +133,29 @@
     border-radius: 5px;
     box-sizing: border-box;
   }
-  .modal-actions {
+ .modal-actions {
     text-align: right;
     margin-top: 15px;
   }
-  .cat-row {
+ .cat-row {
     display: flex;
     gap: 10px;
     align-items: center;
   }
-  .cat-row select { flex: 1; }
-  
-  .export-box {
+ .cat-row select { flex: 1; }
+
+ .export-box {
     background: #f5f5f5;
     padding: 15px;
     border-radius: 8px;
     margin-bottom: 15px;
+  }
+
+  /* Scroll hint */
+ .table-hint {
+    font-size: 12px;
+    color: #666;
+    margin-top: 5px;
   }
 </style>
 </head>
@@ -172,25 +199,26 @@
     <button class="btn-secondary" onclick="openKategoriModal()">Kelola Kategori</button>
   </div>
   <div id="daftar-menu"></div>
+  <div class="table-hint">💡 Geser ke kiri-kanan untuk lihat semua kolom</div>
 </div>
 
 <!-- TAB 3: BACKUP -->
 <div id="backup" class="tab-content">
   <h2>💾 Backup & Restore Data</h2>
-  
+
   <div class="export-box">
     <h4>Export Data</h4>
     <p>Download semua data ke Excel atau PDF</p>
     <button class="btn-info" onclick="exportExcel()">📊 Export Excel</button>
     <button class="btn-danger" onclick="exportPDF()">📄 Export PDF</button>
   </div>
-  
+
   <div class="export-box">
     <h4>Import Data</h4>
-    <p>Upload file Excel .xlsx untuk restore data. Format harus sama dengan hasil export.</p>
+    <p>Upload file Excel.xlsx untuk restore data. Format harus sama dengan hasil export.</p>
     <input type="file" id="importFile" accept=".xlsx" onchange="importExcel()">
   </div>
-  
+
   <div class="export-box" style="background:#ffebee;">
     <h4>⚠️ Reset Data</h4>
     <p>Hapus semua data meja, menu, dan kategori. Aksi ini tidak bisa diurungkan!</p>
@@ -263,14 +291,14 @@
     {id: 6, nama: 'Soda', tipe: 'Beverage'}
   ]));
   let menuSort = { key: 'nama', order: 'asc' };
-  
+
   // Migrasi data lama
-  menuList = menuList.map(m => ({ 
-    ...m, 
+  menuList = menuList.map(m => ({
+   ...m,
     tipe: m.tipe || 'Food',
-    kategori: m.kategori || (m.tipe === 'Beverage' ? 'Coffee' : 'Makanan Berat')
+    kategori: m.kategori || (m.tipe === 'Beverage'? 'Coffee' : 'Makanan Berat')
   }));
-  
+
   // === Fungsi global ===
   window.setTheme = (themeName, btnElement) => {
     document.body.className = themeName;
@@ -278,7 +306,7 @@
     if(btnElement) btnElement.classList.add('active');
     localStorage.setItem('theme', themeName);
   };
-  
+
   window.openTab = (tabName, btnElement) => {
     document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
     document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
@@ -292,7 +320,7 @@
     const title = document.getElementById('modalMejaTitle');
     const idInput = document.getElementById('mejaId');
     const namaInput = document.getElementById('mejaNama');
-    
+
     if(id) {
       const meja = mejaList.find(m => m.id === id);
       title.textContent = 'Edit Meja';
@@ -306,29 +334,29 @@
     modal.classList.add('active');
     namaInput.focus();
   };
-  
+
   window.closeMejaModal = () => document.getElementById('modalMeja').classList.remove('active');
-  
+
   window.saveMeja = () => {
     const id = document.getElementById('mejaId').value;
     const nama = document.getElementById('mejaNama').value.trim();
     if(!nama) return alert('Nama meja wajib diisi!');
-    
+
     if(id) {
       const meja = mejaList.find(m => m.id == id);
       meja.nama = nama;
     } else {
       mejaList.push({ id: Date.now(), nama: nama });
     }
-    
+
     localStorage.setItem('mejaList', JSON.stringify(mejaList));
     renderMeja();
     closeMejaModal();
   };
-  
+
   window.hapusMeja = (id) => {
     if(confirm('Hapus meja ini?')) {
-      mejaList = mejaList.filter(m => m.id !== id);
+      mejaList = mejaList.filter(m => m.id!== id);
       localStorage.setItem('mejaList', JSON.stringify(mejaList));
       renderMeja();
     }
@@ -340,17 +368,17 @@
     updateKategoriFilter();
     updateKategoriSelect();
   }
-  
+
   window.openKategoriModal = () => {
     renderKategoriList();
     document.getElementById('modalKategori').classList.add('active');
   };
-  
+
   window.closeKategoriModal = () => {
     document.getElementById('modalKategori').classList.remove('active');
     document.getElementById('kategoriNama').value = '';
   };
-  
+
   function renderKategoriList() {
     const container = document.getElementById('daftarKategori');
     container.innerHTML = kategoriList.map(k => `
@@ -360,25 +388,25 @@
       </div>
     `).join('') || '<p>Belum ada kategori</p>';
   }
-  
+
   window.tambahKategori = () => {
     const nama = document.getElementById('kategoriNama').value.trim();
     const tipe = document.getElementById('kategoriTipe').value;
     if(!nama) return alert('Nama kategori wajib diisi!');
-    
+
     if(kategoriList.some(k => k.nama.toLowerCase() === nama.toLowerCase())) {
       return alert('Kategori sudah ada!');
     }
-    
+
     kategoriList.push({ id: Date.now(), nama, tipe });
     saveKategori();
     renderKategoriList();
     document.getElementById('kategoriNama').value = '';
   };
-  
+
   window.hapusKategori = (id) => {
     if(confirm('Hapus kategori ini? Menu dengan kategori ini akan jadi tanpa kategori.')) {
-      kategoriList = kategoriList.filter(k => k.id !== id);
+      kategoriList = kategoriList.filter(k => k.id!== id);
       menuList.forEach(m => {
         if(m.kategori === kategoriList.find(k => k.id === id)?.nama) {
           m.kategori = '';
@@ -390,21 +418,21 @@
       renderMenu();
     }
   };
-  
+
   function updateKategoriFilter() {
     const tipe = document.getElementById('filterTipe').value;
     const select = document.getElementById('filterKategori');
-    const filtered = tipe ? kategoriList.filter(k => k.tipe === tipe) : kategoriList;
-    
-    select.innerHTML = '<option value="">Semua Kategori</option>' + 
+    const filtered = tipe? kategoriList.filter(k => k.tipe === tipe) : kategoriList;
+
+    select.innerHTML = '<option value="">Semua Kategori</option>' +
       filtered.map(k => `<option value="${k.nama}">${k.nama}</option>`).join('');
   }
-  
+
   function updateKategoriSelect() {
     const tipe = document.getElementById('menuTipe').value;
     const select = document.getElementById('menuKategori');
     const filtered = kategoriList.filter(k => k.tipe === tipe);
-    
+
     select.innerHTML = filtered.map(k => `<option value="${k.nama}">${k.nama}</option>`).join('');
   }
 
@@ -418,7 +446,7 @@
     const tipeInput = document.getElementById('menuTipe');
     const kategoriInput = document.getElementById('menuKategori');
     const hargaInput = document.getElementById('menuHarga');
-    
+
     if(id) {
       const menu = menuList.find(m => m.id === id);
       title.textContent = 'Edit Menu';
@@ -439,20 +467,20 @@
     modal.classList.add('active');
     namaInput.focus();
   };
-  
+
   window.closeMenuModal = () => {
     document.getElementById('modalMenu').classList.remove('active');
   };
-  
+
   window.saveMenu = () => {
     const id = document.getElementById('menuId').value;
     const nama = document.getElementById('menuNama').value.trim();
     const tipe = document.getElementById('menuTipe').value;
     const kategori = document.getElementById('menuKategori').value;
     const harga = document.getElementById('menuHarga').value;
-    
-    if(!nama || !harga || isNaN(harga)) return alert('Lengkapi data dengan benar!');
-    
+
+    if(!nama ||!harga || isNaN(harga)) return alert('Lengkapi data dengan benar!');
+
     if(id) {
       const menu = menuList.find(m => m.id == id);
       menu.nama = nama;
@@ -462,15 +490,15 @@
     } else {
       menuList.push({ id: Date.now(), nama, tipe, kategori, harga: parseInt(harga) });
     }
-    
+
     localStorage.setItem('menuList', JSON.stringify(menuList));
     renderMenu();
     closeMenuModal();
   };
-  
+
   window.hapusMenu = (id) => {
     if(confirm('Hapus menu ini?')) {
-      menuList = menuList.filter(m => m.id !== id);
+      menuList = menuList.filter(m => m.id!== id);
       localStorage.setItem('menuList', JSON.stringify(menuList));
       renderMenu();
     }
@@ -479,14 +507,14 @@
   // === SORTING MENU ===
   window.sortMenu = (key) => {
     if(menuSort.key === key) {
-      menuSort.order = menuSort.order === 'asc' ? 'desc' : 'asc';
+      menuSort.order = menuSort.order === 'asc'? 'desc' : 'asc';
     } else {
       menuSort.key = key;
       menuSort.order = 'asc';
     }
     renderMenu();
   };
-  
+
   // === Render tabel ===
   function renderMeja() {
     const container = document.getElementById('daftar-meja');
@@ -495,135 +523,124 @@
       return;
     }
     container.innerHTML = `
-      <table>
-        <thead>
-          <tr><th>No</th><th>Nama Meja</th><th>Aksi</th></tr>
-        </thead>
-        <tbody>
-          ${mejaList.map((m, i) => `
-            <tr>
-              <td>${i + 1}</td>
-              <td>${m.nama}</td>
-              <td>
-                <button class="btn-warning" onclick="openMejaModal(${m.id})">Edit</button>
-                <button class="btn-danger" onclick="hapusMeja(${m.id})">Hapus</button>
-              </td>
-            </tr>
-          `).join('')}
-        </tbody>
-      </table>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr><th>No</th><th>Nama Meja</th><th>Aksi</th></tr>
+          </thead>
+          <tbody>
+            ${mejaList.map((m, i) => `
+              <tr>
+                <td>${i + 1}</td>
+                <td>${m.nama}</td>
+                <td>
+                  <button class="btn-warning" onclick="openMejaModal(${m.id})">Edit</button>
+                  <button class="btn-danger" onclick="hapusMeja(${m.id})">Hapus</button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
     `;
   }
-  
+
   function renderMenu() {
     const container = document.getElementById('daftar-menu');
     const search = document.getElementById('searchMenu').value.toLowerCase();
     const filterTipe = document.getElementById('filterTipe').value;
     const filterKategori = document.getElementById('filterKategori').value;
-    
+
     let filtered = menuList.filter(m => {
       const matchSearch = m.nama.toLowerCase().includes(search);
-      const matchTipe = filterTipe ? m.tipe === filterTipe : true;
-      const matchKategori = filterKategori ? m.kategori === filterKategori : true;
+      const matchTipe = filterTipe? m.tipe === filterTipe : true;
+      const matchKategori = filterKategori? m.kategori === filterKategori : true;
       return matchSearch && matchTipe && matchKategori;
     });
-    
+
     filtered.sort((a, b) => {
       let valA = a[menuSort.key];
       let valB = b[menuSort.key];
       if(typeof valA === 'string') valA = valA.toLowerCase();
       if(typeof valB === 'string') valB = valB.toLowerCase();
-      
-      if(valA < valB) return menuSort.order === 'asc' ? -1 : 1;
-      if(valA > valB) return menuSort.order === 'asc' ? 1 : -1;
+
+      if(valA < valB) return menuSort.order === 'asc'? -1 : 1;
+      if(valA > valB) return menuSort.order === 'asc'? 1 : -1;
       return 0;
     });
-    
+
     if(filtered.length === 0) {
       container.innerHTML = '<p>Menu tidak ditemukan</p>';
       return;
     }
-    
+
     container.innerHTML = `
-      <table>
-        <thead>
-          <tr>
-            <th>No</th>
-            <th onclick="sortMenu('nama')" class="${menuSort.key==='nama' ? 'sort-'+menuSort.order : ''}">Nama Menu</th>
-            <th onclick="sortMenu('tipe')" class="${menuSort.key==='tipe' ? 'sort-'+menuSort.order : ''}">Tipe</th>
-            <th onclick="sortMenu('kategori')" class="${menuSort.key==='kategori' ? 'sort-'+menuSort.order : ''}">Kategori</th>
-            <th onclick="sortMenu('harga')" class="${menuSort.key==='harga' ? 'sort-'+menuSort.order : ''}">Harga</th>
-            <th>Aksi</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${filtered.map((m, i) => `
+      <div class="table-wrapper">
+        <table>
+          <thead>
             <tr>
-              <td>${i + 1}</td>
-              <td>${m.nama}</td>
-              <td><span class="badge ${m.tipe === 'Food' ? 'badge-food' : 'badge-beverage'}">${m.tipe}</span></td>
-              <td><span class="badge badge-cat">${m.kategori}</span></td>
-              <td>Rp ${m.harga.toLocaleString('id-ID')}</td>
-              <td>
-                <button class="btn-warning" onclick="openMenuModal(${m.id})">Edit</button>
-                <button class="btn-danger" onclick="hapusMenu(${m.id})">Hapus</button>
-              </td>
+              <th onclick="sortMenu('nama')" class="${menuSort.key==='nama'? 'sort-'+menuSort.order : ''}">Nama Menu</th>
+              <th onclick="sortMenu('tipe')" class="${menuSort.key==='tipe'? 'sort-'+menuSort.order : ''}">Tipe</th>
+              <th onclick="sortMenu('kategori')" class="${menuSort.key==='kategori'? 'sort-'+menuSort.order : ''}">Kategori</th>
+              <th onclick="sortMenu('harga')" class="${menuSort.key==='harga'? 'sort-'+menuSort.order : ''}">Harga</th>
+              <th>Aksi</th>
             </tr>
-          `).join('')}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            ${filtered.map((m, i) => `
+              <tr>
+                <td>${m.nama}</td>
+                <td><span class="badge ${m.tipe === 'Food'? 'badge-food' : 'badge-beverage'}">${m.tipe}</span></td>
+                <td><span class="badge badge-cat">${m.kategori}</span></td>
+                <td>Rp ${m.harga.toLocaleString('id-ID')}</td>
+                <td>
+                  <button class="btn-warning" onclick="openMenuModal(${m.id})">Edit</button>
+                  <button class="btn-danger" onclick="hapusMenu(${m.id})">Hapus</button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
     `;
   }
-  
+
   // === EXPORT EXCEL ===
   window.exportExcel = () => {
     const wb = XLSX.utils.book_new();
-    
-    // Sheet Meja
-    const mejaData = mejaList.map((m, i) => ({
-      No: i + 1,
-      Nama_Meja: m.nama
-    }));
+
+    const mejaData = mejaList.map((m, i) => ({ No: i + 1, Nama_Meja: m.nama }));
     const wsMeja = XLSX.utils.json_to_sheet(mejaData);
     XLSX.utils.book_append_sheet(wb, wsMeja, "Meja");
-    
-    // Sheet Menu
+
     const menuData = menuList.map((m, i) => ({
-      No: i + 1,
-      Nama_Menu: m.nama,
-      Tipe: m.tipe,
-      Kategori: m.kategori,
-      Harga: m.harga
+      No: i + 1, Nama_Menu: m.nama, Tipe: m.tipe, Kategori: m.kategori, Harga: m.harga
     }));
     const wsMenu = XLSX.utils.json_to_sheet(menuData);
     XLSX.utils.book_append_sheet(wb, wsMenu, "Menu");
-    
-    // Sheet Kategori
+
     const kategoriData = kategoriList.map((k, i) => ({
-      No: i + 1,
-      Nama_Kategori: k.nama,
-      Tipe: k.tipe
+      No: i + 1, Nama_Kategori: k.nama, Tipe: k.tipe
     }));
     const wsKategori = XLSX.utils.json_to_sheet(kategoriData);
     XLSX.utils.book_append_sheet(wb, wsKategori, "Kategori");
-    
+
     XLSX.writeFile(wb, `backup_kasir_${new Date().toISOString().split('T')[0]}.xlsx`);
     alert('Export Excel berhasil!');
   };
-  
+
   // === EXPORT PDF ===
   window.exportPDF = () => {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
-    
+
     doc.setFontSize(16);
     doc.text('Backup Data Kasir Naotajun', 14, 15);
     doc.setFontSize(10);
     doc.text(`Tanggal: ${new Date().toLocaleDateString('id-ID')}`, 14, 22);
-    
+
     let y = 30;
-    
-    // Meja
+
     doc.setFontSize(12);
     doc.text('1. Data Meja', 14, y);
     y += 7;
@@ -633,8 +650,7 @@
       y += 5;
       if(y > 270) { doc.addPage(); y = 15; }
     });
-    
-    // Menu
+
     y += 5;
     doc.setFontSize(12);
     doc.text('2. Data Menu', 14, y);
@@ -646,23 +662,22 @@
       y += 5;
       if(y > 270) { doc.addPage(); y = 15; }
     });
-    
+
     doc.save(`backup_kasir_${new Date().toISOString().split('T')[0]}.pdf`);
     alert('Export PDF berhasil!');
   };
-  
+
   // === IMPORT EXCEL ===
   window.importExcel = (e) => {
     const file = e.target.files[0];
     if(!file) return;
-    
+
     const reader = new FileReader();
     reader.onload = (evt) => {
       const bstr = evt.target.result;
       const wb = XLSX.read(bstr, { type: 'binary' });
-      
+
       try {
-        // Import Meja
         if(wb.Sheets["Meja"]) {
           const mejaData = XLSX.utils.sheet_to_json(wb.Sheets["Meja"]);
           mejaList = mejaData.map((row, i) => ({
@@ -671,8 +686,7 @@
           }));
           localStorage.setItem('mejaList', JSON.stringify(mejaList));
         }
-        
-        // Import Menu
+
         if(wb.Sheets["Menu"]) {
           const menuData = XLSX.utils.sheet_to_json(wb.Sheets["Menu"]);
           menuList = menuData.map((row, i) => ({
@@ -684,8 +698,7 @@
           }));
           localStorage.setItem('menuList', JSON.stringify(menuList));
         }
-        
-        // Import Kategori
+
         if(wb.Sheets["Kategori"]) {
           const kategoriData = XLSX.utils.sheet_to_json(wb.Sheets["Kategori"]);
           kategoriList = kategoriData.map((row, i) => ({
@@ -695,10 +708,10 @@
           }));
           localStorage.setItem('kategoriList', JSON.stringify(kategoriList));
         }
-        
+
         alert('Import berhasil! Halaman akan di-refresh.');
         location.reload();
-        
+
       } catch(err) {
         alert('Format file salah! Gunakan file hasil export dari aplikasi ini.');
         console.error(err);
@@ -706,7 +719,7 @@
     };
     reader.readAsBinaryString(file);
   };
-  
+
   // === RESET DATA ===
   window.resetData = () => {
     if(confirm('Yakin hapus SEMUA data? Ini tidak bisa diurungkan!')) {
@@ -717,7 +730,7 @@
       location.reload();
     }
   };
-  
+
   // Tutup modal kalau klik luar
   window.addEventListener('click', (e) => {
     if(e.target.classList.contains('modal')) {
