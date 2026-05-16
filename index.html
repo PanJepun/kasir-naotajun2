@@ -17,8 +17,8 @@
  .theme-btn { margin: 0 5px; padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; }
  .theme-btn.active { outline: 2px solid #000; }
 
- .navbar { display: flex; background: #333; }
- .nav-btn { flex: 1; padding: 12px; border: none; background: #333; color: #fff; cursor: pointer; }
+ .navbar { display: flex; background: #333; overflow-x: auto; }
+ .nav-btn { flex: 1; min-width: 120px; padding: 12px; border: none; background: #333; color: #fff; cursor: pointer; white-space: nowrap; }
  .nav-btn.active { background: #555; }
 
  .tab-content { display: none; padding: 20px; }
@@ -61,7 +61,7 @@
     border-collapse: collapse;
     background: white;
     font-size: 13px;
-    min-width: 600px; /* biar scroll muncul kalau layar kecil */
+    min-width: 600px;
   }
 
   th, td {
@@ -88,10 +88,8 @@
   th.sort-desc::after { content: " ▼"; }
   tr:hover { background: #f5f5f5; }
 
-  td button {
-    padding: 4px 8px;
-    font-size: 11px;
-  }
+  td button { padding: 4px 8px; font-size: 11px; }
+  td input.qty { width: 50px; padding: 4px; text-align: center; }
 
  .badge {
     padding: 2px 6px;
@@ -133,15 +131,8 @@
     border-radius: 5px;
     box-sizing: border-box;
   }
- .modal-actions {
-    text-align: right;
-    margin-top: 15px;
-  }
- .cat-row {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-  }
+ .modal-actions { text-align: right; margin-top: 15px; }
+ .cat-row { display: flex; gap: 10px; align-items: center; }
  .cat-row select { flex: 1; }
 
  .export-box {
@@ -151,11 +142,51 @@
     margin-bottom: 15px;
   }
 
-  /* Scroll hint */
- .table-hint {
-    font-size: 12px;
-    color: #666;
-    margin-top: 5px;
+ .table-hint { font-size: 12px; color: #666; margin-top: 5px; }
+
+  /* Kasir layout */
+ .kasir-container {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+  }
+  @media(max-width: 768px) {
+   .kasir-container { grid-template-columns: 1fr; }
+  }
+ .kasir-menu {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    max-height: 600px;
+    overflow-y: auto;
+  }
+ .kasir-order {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+ .menu-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+  }
+ .menu-item:hover { background: #f5f5f5; }
+ .menu-info { flex: 1; }
+ .menu-name { font-weight: bold; }
+ .menu-price { color: #666; font-size: 12px; }
+ .total-box {
+    background: #4caf50;
+    color: white;
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+    margin-top: 15px;
+    font-size: 20px;
+    font-weight: bold;
   }
 </style>
 </head>
@@ -170,8 +201,10 @@
 </div>
 
 <div class="navbar">
-  <button class="nav-btn active" onclick="openTab('meja', this)">📋 Menu Meja</button>
+  <button class="nav-btn active" onclick="openTab('meja', this)">📋 Meja</button>
   <button class="nav-btn" onclick="openTab('foodbeverage', this)">🍽️ Food & Beverage</button>
+  <button class="nav-btn" onclick="openTab('kasir', this)">💰 Kasir</button>
+  <button class="nav-btn" onclick="openTab('laporan', this)">📊 Laporan</button>
   <button class="nav-btn" onclick="openTab('backup', this)">💾 Backup</button>
 </div>
 
@@ -202,26 +235,61 @@
   <div class="table-hint">💡 Geser ke kiri-kanan untuk lihat semua kolom</div>
 </div>
 
-<!-- TAB 3: BACKUP -->
+<!-- TAB 3: KASIR -->
+<div id="kasir" class="tab-content">
+  <h2>💰 Kasir</h2>
+  <div class="toolbar">
+    <select id="selectMeja" onchange="selectTable()">
+      <option value="">Pilih Meja</option>
+    </select>
+    <button class="btn-secondary" onclick="clearOrder()">Bersihkan Order</button>
+  </div>
+
+  <div class="kasir-container" id="kasirContainer" style="display:none;">
+    <div class="kasir-menu">
+      <h4>Pilih Menu</h4>
+      <div id="menuListKasir"></div>
+    </div>
+
+    <div class="kasir-order">
+      <h4>Order Meja <span id="namaMejaAktif"></span></h4>
+      <div id="orderList"></div>
+      <div class="total-box">
+        Total: Rp <span id="totalHarga">0</span>
+      </div>
+      <button class="btn-primary" style="width:100%; margin-top:10px;" onclick="simpanOrder()">Simpan Transaksi</button>
+    </div>
+  </div>
+
+  <div id="daftarOrderAktif" style="margin-top:30px;">
+    <h3>Order Aktif</h3>
+    <div id="listOrderAktif"></div>
+  </div>
+</div>
+
+<!-- TAB 4: LAPORAN -->
+<div id="laporan" class="tab-content">
+  <h2>📊 Laporan</h2>
+  <div id="laporan-content">Fitur laporan menyusul</div>
+</div>
+
+<!-- TAB 5: BACKUP -->
 <div id="backup" class="tab-content">
   <h2>💾 Backup & Restore Data</h2>
 
   <div class="export-box">
     <h4>Export Data</h4>
-    <p>Download semua data ke Excel atau PDF</p>
     <button class="btn-info" onclick="exportExcel()">📊 Export Excel</button>
     <button class="btn-danger" onclick="exportPDF()">📄 Export PDF</button>
   </div>
 
   <div class="export-box">
     <h4>Import Data</h4>
-    <p>Upload file Excel.xlsx untuk restore data. Format harus sama dengan hasil export.</p>
     <input type="file" id="importFile" accept=".xlsx" onchange="importExcel()">
   </div>
 
   <div class="export-box" style="background:#ffebee;">
     <h4>⚠️ Reset Data</h4>
-    <p>Hapus semua data meja, menu, dan kategori. Aksi ini tidak bisa diurungkan!</p>
     <button class="btn-danger" onclick="resetData()">Reset Semua Data</button>
   </div>
 </div>
@@ -290,9 +358,12 @@
     {id: 5, nama: 'Juice', tipe: 'Beverage'},
     {id: 6, nama: 'Soda', tipe: 'Beverage'}
   ]));
+  let orderAktif = JSON.parse(localStorage.getItem('orderAktif') || '[]');
+  let orderSelesai = JSON.parse(localStorage.getItem('orderSelesai') || '[]');
   let menuSort = { key: 'nama', order: 'asc' };
+  let mejaAktif = null;
+  let orderSementara = [];
 
-  // Migrasi data lama
   menuList = menuList.map(m => ({
    ...m,
     tipe: m.tipe || 'Food',
@@ -312,6 +383,11 @@
     document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
     document.getElementById(tabName).classList.add('active');
     if(btnElement) btnElement.classList.add('active');
+
+    if(tabName === 'kasir') {
+      loadMejaSelect();
+      renderOrderAktif();
+    }
   };
 
   // === MEJA ===
@@ -405,15 +481,9 @@
   };
 
   window.hapusKategori = (id) => {
-    if(confirm('Hapus kategori ini? Menu dengan kategori ini akan jadi tanpa kategori.')) {
+    if(confirm('Hapus kategori ini?')) {
       kategoriList = kategoriList.filter(k => k.id!== id);
-      menuList.forEach(m => {
-        if(m.kategori === kategoriList.find(k => k.id === id)?.nama) {
-          m.kategori = '';
-        }
-      });
       saveKategori();
-      localStorage.setItem('menuList', JSON.stringify(menuList));
       renderKategoriList();
       renderMenu();
     }
@@ -423,7 +493,6 @@
     const tipe = document.getElementById('filterTipe').value;
     const select = document.getElementById('filterKategori');
     const filtered = tipe? kategoriList.filter(k => k.tipe === tipe) : kategoriList;
-
     select.innerHTML = '<option value="">Semua Kategori</option>' +
       filtered.map(k => `<option value="${k.nama}">${k.nama}</option>`).join('');
   }
@@ -432,7 +501,6 @@
     const tipe = document.getElementById('menuTipe').value;
     const select = document.getElementById('menuKategori');
     const filtered = kategoriList.filter(k => k.tipe === tipe);
-
     select.innerHTML = filtered.map(k => `<option value="${k.nama}">${k.nama}</option>`).join('');
   }
 
@@ -504,7 +572,6 @@
     }
   };
 
-  // === SORTING MENU ===
   window.sortMenu = (key) => {
     if(menuSort.key === key) {
       menuSort.order = menuSort.order === 'asc'? 'desc' : 'asc';
@@ -515,7 +582,6 @@
     renderMenu();
   };
 
-  // === Render tabel ===
   function renderMeja() {
     const container = document.getElementById('daftar-meja');
     if(mejaList.length === 0) {
@@ -579,10 +645,10 @@
         <table>
           <thead>
             <tr>
-              <th onclick="sortMenu('nama')" class="${menuSort.key==='nama'? 'sort-'+menuSort.order : ''}">Nama Menu</th>
-              <th onclick="sortMenu('tipe')" class="${menuSort.key==='tipe'? 'sort-'+menuSort.order : ''}">Tipe</th>
-              <th onclick="sortMenu('kategori')" class="${menuSort.key==='kategori'? 'sort-'+menuSort.order : ''}">Kategori</th>
-              <th onclick="sortMenu('harga')" class="${menuSort.key==='harga'? 'sort-'+menuSort.order : ''}">Harga</th>
+              <th onclick="sortMenu('nama')">Nama Menu</th>
+              <th onclick="sortMenu('tipe')">Tipe</th>
+              <th onclick="sortMenu('kategori')">Kategori</th>
+              <th onclick="sortMenu('harga')">Harga</th>
               <th>Aksi</th>
             </tr>
           </thead>
@@ -605,7 +671,186 @@
     `;
   }
 
-  // === EXPORT EXCEL ===
+  // === KASIR ===
+  function loadMejaSelect() {
+    const select = document.getElementById('selectMeja');
+    select.innerHTML = '<option value="">Pilih Meja</option>' +
+      mejaList.map(m => `<option value="${m.id}">${m.nama}</option>`).join('');
+  }
+
+  window.selectTable = () => {
+    const mejaId = document.getElementById('selectMeja').value;
+    if(!mejaId) {
+      document.getElementById('kasirContainer').style.display = 'none';
+      return;
+    }
+
+    mejaAktif = mejaList.find(m => m.id == mejaId);
+    document.getElementById('namaMejaAktif').textContent = mejaAktif.nama;
+    document.getElementById('kasirContainer').style.display = 'grid';
+
+    const existingOrder = orderAktif.find(o => o.mejaId == mejaId);
+    orderSementara = existingOrder? existingOrder.items : [];
+
+    renderMenuKasir();
+    renderOrder();
+  };
+
+  function renderMenuKasir() {
+    const container = document.getElementById('menuListKasir');
+    container.innerHTML = menuList.map(m => `
+      <div class="menu-item">
+        <div class="menu-info">
+          <div class="menu-name">${m.nama}</div>
+          <div class="menu-price">Rp ${m.harga.toLocaleString('id-ID')} - ${m.kategori}</div>
+        </div>
+        <button class="btn-primary btn-small" onclick="tambahKeOrder(${m.id})">+ Tambah</button>
+      </div>
+    `).join('');
+  }
+
+  window.tambahKeOrder = (menuId) => {
+    const menu = menuList.find(m => m.id === menuId);
+    const existing = orderSementara.find(i => i.menuId === menuId);
+
+    if(existing) {
+      existing.qty += 1;
+    } else {
+      orderSementara.push({
+        menuId: menu.id,
+        nama: menu.nama,
+        harga: menu.harga,
+        qty: 1
+      });
+    }
+    renderOrder();
+  };
+
+  window.ubahQty = (index, qty) => {
+    qty = parseInt(qty);
+    if(qty <= 0) {
+      orderSementara.splice(index, 1);
+    } else {
+      orderSementara[index].qty = qty;
+    }
+    renderOrder();
+  };
+
+  window.hapusItemOrder = (index) => {
+    orderSementara.splice(index, 1);
+    renderOrder();
+  };
+
+  function renderOrder() {
+    const container = document.getElementById('orderList');
+    if(orderSementara.length === 0) {
+      container.innerHTML = '<p>Belum ada item</p>';
+      document.getElementById('totalHarga').textContent = '0';
+      return;
+    }
+
+    let total = 0;
+    container.innerHTML = orderSementara.map((item, i) => {
+      const subtotal = item.harga * item.qty;
+      total += subtotal;
+      return `
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #eee;">
+          <div style="flex:1;">
+            <div>${item.nama}</div>
+            <div style="font-size:12px; color:#666;">Rp ${item.harga.toLocaleString('id-ID')}</div>
+          </div>
+          <input type="number" class="qty" value="${item.qty}" min="0" onchange="ubahQty(${i}, this.value)">
+          <div style="width:80px; text-align:right;">Rp ${subtotal.toLocaleString('id-ID')}</div>
+          <button class="btn-danger btn-small" onclick="hapusItemOrder(${i})">x</button>
+        </div>
+      `;
+    }).join('');
+
+    document.getElementById('totalHarga').textContent = total.toLocaleString('id-ID');
+  }
+
+  window.clearOrder = () => {
+    if(confirm('Hapus semua item order?')) {
+      orderSementara = [];
+      renderOrder();
+    }
+  };
+
+  window.simpanOrder = () => {
+    if(!mejaAktif) return alert('Pilih meja dulu!');
+    if(orderSementara.length === 0) return alert('Order kosong!');
+
+    const total = orderSementara.reduce((sum, item) => sum + (item.harga * item.qty), 0);
+
+    const existingIndex = orderAktif.findIndex(o => o.mejaId == mejaAktif.id);
+
+    const orderData = {
+      id: existingIndex >= 0? orderAktif[existingIndex].id : Date.now(),
+      mejaId: mejaAktif.id,
+      namaMeja: mejaAktif.nama,
+      items: orderSementara,
+      total: total,
+      waktu: new Date().toLocaleString('id-ID'),
+      status: 'aktif'
+    };
+
+    if(existingIndex >= 0) {
+      orderAktif[existingIndex] = orderData;
+    } else {
+      orderAktif.push(orderData);
+    }
+
+    localStorage.setItem('orderAktif', JSON.stringify(orderAktif));
+    alert('Order berhasil disimpan!');
+    orderSementara = [];
+    renderOrder();
+    renderOrderAktif();
+  };
+
+  function renderOrderAktif() {
+    const container = document.getElementById('listOrderAktif');
+    if(orderAktif.length === 0) {
+      container.innerHTML = '<p>Tidak ada order aktif</p>';
+      return;
+    }
+
+    container.innerHTML = orderAktif.map(o => `
+      <div style="background:white; padding:15px; margin-bottom:10px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.1);">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <strong>${o.namaMeja}</strong> - ${o.waktu}
+            <div style="font-size:12px; color:#666;">${o.items.length} item | Total: Rp ${o.total.toLocaleString('id-ID')}</div>
+          </div>
+          <button class="btn-info btn-small" onclick="bayarOrder(${o.id})">Bayar</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  window.bayarOrder = (orderId) => {
+    const order = orderAktif.find(o => o.id === orderId);
+    if(!order) return;
+
+    if(confirm(`Konfirmasi pembayaran Rp ${order.total.toLocaleString('id-ID')} untuk ${order.namaMeja}?`)) {
+      order.status = 'selesai';
+      order.waktuSelesai = new Date().toLocaleString('id-ID');
+      orderSelesai.push(order);
+      orderAktif = orderAktif.filter(o => o.id!== orderId);
+
+      localStorage.setItem('orderAktif', JSON.stringify(orderAktif));
+      localStorage.setItem('orderSelesai', JSON.stringify(orderSelesai));
+
+      alert('Pembayaran berhasil!');
+      renderOrderAktif();
+
+      if(mejaAktif && mejaAktif.id == order.mejaId) {
+        orderSementara = [];
+        renderOrder();
+      }
+    }
+  };
+
+  // === EXPORT IMPORT ===
   window.exportExcel = () => {
     const wb = XLSX.utils.book_new();
 
@@ -619,134 +864,15 @@
     const wsMenu = XLSX.utils.json_to_sheet(menuData);
     XLSX.utils.book_append_sheet(wb, wsMenu, "Menu");
 
-    const kategoriData = kategoriList.map((k, i) => ({
-      No: i + 1, Nama_Kategori: k.nama, Tipe: k.tipe
+    const orderData = orderSelesai.map((o, i) => ({
+      No: i + 1,
+      Meja: o.namaMeja,
+      Waktu: o.waktu,
+      Total: o.total,
+      Status: o.status
     }));
-    const wsKategori = XLSX.utils.json_to_sheet(kategoriData);
-    XLSX.utils.book_append_sheet(wb, wsKategori, "Kategori");
+    const wsOrder = XLSX.utils.json_to_sheet(orderData);
+    XLSX.utils.book_append_sheet(wb, wsOrder, "Transaksi");
 
     XLSX.writeFile(wb, `backup_kasir_${new Date().toISOString().split('T')[0]}.xlsx`);
-    alert('Export Excel berhasil!');
-  };
-
-  // === EXPORT PDF ===
-  window.exportPDF = () => {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-
-    doc.setFontSize(16);
-    doc.text('Backup Data Kasir Naotajun', 14, 15);
-    doc.setFontSize(10);
-    doc.text(`Tanggal: ${new Date().toLocaleDateString('id-ID')}`, 14, 22);
-
-    let y = 30;
-
-    doc.setFontSize(12);
-    doc.text('1. Data Meja', 14, y);
-    y += 7;
-    doc.setFontSize(9);
-    mejaList.forEach((m, i) => {
-      doc.text(`${i+1}. ${m.nama}`, 14, y);
-      y += 5;
-      if(y > 270) { doc.addPage(); y = 15; }
-    });
-
-    y += 5;
-    doc.setFontSize(12);
-    doc.text('2. Data Menu', 14, y);
-    y += 7;
-    doc.setFontSize(9);
-    menuList.forEach((m, i) => {
-      const line = `${i+1}. ${m.nama} | ${m.tipe} | ${m.kategori} | Rp ${m.harga.toLocaleString('id-ID')}`;
-      doc.text(line, 14, y);
-      y += 5;
-      if(y > 270) { doc.addPage(); y = 15; }
-    });
-
-    doc.save(`backup_kasir_${new Date().toISOString().split('T')[0]}.pdf`);
-    alert('Export PDF berhasil!');
-  };
-
-  // === IMPORT EXCEL ===
-  window.importExcel = (e) => {
-    const file = e.target.files[0];
-    if(!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (evt) => {
-      const bstr = evt.target.result;
-      const wb = XLSX.read(bstr, { type: 'binary' });
-
-      try {
-        if(wb.Sheets["Meja"]) {
-          const mejaData = XLSX.utils.sheet_to_json(wb.Sheets["Meja"]);
-          mejaList = mejaData.map((row, i) => ({
-            id: Date.now() + i,
-            nama: row.Nama_Meja
-          }));
-          localStorage.setItem('mejaList', JSON.stringify(mejaList));
-        }
-
-        if(wb.Sheets["Menu"]) {
-          const menuData = XLSX.utils.sheet_to_json(wb.Sheets["Menu"]);
-          menuList = menuData.map((row, i) => ({
-            id: Date.now() + i,
-            nama: row.Nama_Menu,
-            tipe: row.Tipe,
-            kategori: row.Kategori,
-            harga: parseInt(row.Harga)
-          }));
-          localStorage.setItem('menuList', JSON.stringify(menuList));
-        }
-
-        if(wb.Sheets["Kategori"]) {
-          const kategoriData = XLSX.utils.sheet_to_json(wb.Sheets["Kategori"]);
-          kategoriList = kategoriData.map((row, i) => ({
-            id: Date.now() + i,
-            nama: row.Nama_Kategori,
-            tipe: row.Tipe
-          }));
-          localStorage.setItem('kategoriList', JSON.stringify(kategoriList));
-        }
-
-        alert('Import berhasil! Halaman akan di-refresh.');
-        location.reload();
-
-      } catch(err) {
-        alert('Format file salah! Gunakan file hasil export dari aplikasi ini.');
-        console.error(err);
-      }
-    };
-    reader.readAsBinaryString(file);
-  };
-
-  // === RESET DATA ===
-  window.resetData = () => {
-    if(confirm('Yakin hapus SEMUA data? Ini tidak bisa diurungkan!')) {
-      localStorage.removeItem('mejaList');
-      localStorage.removeItem('menuList');
-      localStorage.removeItem('kategoriList');
-      alert('Data berhasil direset!');
-      location.reload();
-    }
-  };
-
-  // Tutup modal kalau klik luar
-  window.addEventListener('click', (e) => {
-    if(e.target.classList.contains('modal')) {
-      e.target.classList.remove('active');
-    }
-  });
-
-  // Init saat load
-  window.addEventListener('DOMContentLoaded', () => {
-    const savedTheme = localStorage.getItem('theme') || 'green';
-    window.setTheme(savedTheme, document.querySelector(`[onclick*="${savedTheme}"]`));
-    updateKategoriFilter();
-    renderMeja();
-    renderMenu();
-  });
-</script>
-
-</body>
-</html>
+    alert('Export Excel
