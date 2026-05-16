@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kasir Naotajun</title>
 <style>
-  body { font-family: sans-serif; margin: 0; padding: 0; }
+  body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
   body.green { background: #e8f5e9; }
   body.pink { background: #fce4ec; }
   body.blue { background: #e3f2fd; }
@@ -26,12 +26,27 @@
   .btn-primary { background: #4caf50; color: white; }
   .btn-danger { background: #f44336; color: white; }
   
-  .meja-card { background: white; padding: 15px; margin: 10px 0; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-  
-  @media print {
-    body * { visibility: hidden; }
-    .bill, .bill * { visibility: visible; }
-    .bill { position: absolute; left: 0; top: 0; width: 100%; }
+  /* Tabel */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+  th, td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
+  th {
+    background: #333;
+    color: white;
+  }
+  tr:hover {
+    background: #f5f5f5;
   }
 </style>
 </head>
@@ -69,13 +84,13 @@
 <!-- TAB 3: KASIR -->
 <div id="kasir" class="tab-content">
   <h2>💰 Kasir</h2>
-  <div id="kasir-content"></div>
+  <div id="kasir-content">Fitur kasir belum dibuat</div>
 </div>
 
 <!-- TAB 4: LAPORAN -->
 <div id="laporan" class="tab-content">
   <h2>📊 Laporan</h2>
-  <div id="laporan-content"></div>
+  <div id="laporan-content">Fitur laporan belum dibuat</div>
 </div>
 
 <script type="module">
@@ -83,8 +98,7 @@
   let mejaList = JSON.parse(localStorage.getItem('mejaList') || '[]');
   let menuList = JSON.parse(localStorage.getItem('menuList') || '[]');
   
-  // === FIX: Semua function harus di-attach ke window ===
-  
+  // === Fungsi global untuk onclick ===
   window.setTheme = (themeName, btnElement) => {
     document.body.className = themeName;
     document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.remove('active'));
@@ -102,7 +116,7 @@
   window.tambahMeja = () => {
     const nama = prompt('Masukkan nama meja:');
     if(nama) {
-      mejaList.push({ id: Date.now(), nama: nama, pesanan: [] });
+      mejaList.push({ id: Date.now(), nama: nama });
       localStorage.setItem('mejaList', JSON.stringify(mejaList));
       renderMeja();
     }
@@ -119,34 +133,72 @@
   window.tambahMenu = () => {
     const nama = prompt('Nama menu:');
     const harga = prompt('Harga:');
-    if(nama && harga) {
+    if(nama && harga && !isNaN(harga)) {
       menuList.push({ id: Date.now(), nama: nama, harga: parseInt(harga) });
       localStorage.setItem('menuList', JSON.stringify(menuList));
       renderMenu();
     }
   };
   
+  window.hapusMenu = (id) => {
+    if(confirm('Hapus menu ini?')) {
+      menuList = menuList.filter(m => m.id !== id);
+      localStorage.setItem('menuList', JSON.stringify(menuList));
+      renderMenu();
+    }
+  };
+  
+  // === Render tabel ===
   function renderMeja() {
     const container = document.getElementById('daftar-meja');
-    container.innerHTML = mejaList.map(m => `
-      <div class="meja-card">
-        <h3>${m.nama}</h3>
-        <button class="btn-danger" onclick="hapusMeja(${m.id})">Hapus</button>
-      </div>
-    `).join('') || '<p>Belum ada meja</p>';
+    if(mejaList.length === 0) {
+      container.innerHTML = '<p>Belum ada meja</p>';
+      return;
+    }
+    container.innerHTML = `
+      <table>
+        <thead>
+          <tr><th>No</th><th>Nama Meja</th><th>Aksi</th></tr>
+        </thead>
+        <tbody>
+          ${mejaList.map((m, i) => `
+            <tr>
+              <td>${i + 1}</td>
+              <td>${m.nama}</td>
+              <td><button class="btn-danger" onclick="hapusMeja(${m.id})">Hapus</button></td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `;
   }
   
   function renderMenu() {
     const container = document.getElementById('daftar-menu');
-    container.innerHTML = menuList.map(m => `
-      <div class="meja-card">
-        <h3>${m.nama}</h3>
-        <p>Rp ${m.harga}</p>
-      </div>
-    `).join('') || '<p>Belum ada menu</p>';
+    if(menuList.length === 0) {
+      container.innerHTML = '<p>Belum ada menu</p>';
+      return;
+    }
+    container.innerHTML = `
+      <table>
+        <thead>
+          <tr><th>No</th><th>Nama Menu</th><th>Harga</th><th>Aksi</th></tr>
+        </thead>
+        <tbody>
+          ${menuList.map((m, i) => `
+            <tr>
+              <td>${i + 1}</td>
+              <td>${m.nama}</td>
+              <td>Rp ${m.harga.toLocaleString('id-ID')}</td>
+              <td><button class="btn-danger" onclick="hapusMenu(${m.id})">Hapus</button></td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `;
   }
   
-  // Init
+  // Init saat load
   window.addEventListener('DOMContentLoaded', () => {
     const savedTheme = localStorage.getItem('theme') || 'green';
     window.setTheme(savedTheme, document.querySelector(`[onclick*="${savedTheme}"]`));
