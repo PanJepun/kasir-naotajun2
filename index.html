@@ -4,194 +4,99 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kasir Naotajun</title>
+
+<!-- Library Excel & PDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 <style>
-  body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
-  body.green { background: #e8f5e9; }
-  body.pink { background: #fce4ec; }
-  body.blue { background: #e3f2fd; }
-  body.brown { background: #efebe9; }
+/* ===== COPY SEMUA CSS DARI FILE LAMA KE SINI ===== */
+body { 
+  font-family: Arial, sans-serif; 
+  margin: 0; 
+  padding: 0; 
+}
+body.green { background: #e8f5e9; }
+body.pink { background: #fce4ec; }
+body.blue { background: #e3f2fd; }
+body.brown { background: #efebe9; }
 
- .theme-bar { padding: 10px; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
- .theme-btn { margin: 0 5px; padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; }
- .theme-btn.active { outline: 2px solid #000; }
+.theme-bar { 
+  padding: 10px; 
+  background: #fff; 
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+}
+.theme-btn { 
+  margin: 0 5px; 
+  padding: 8px 15px; 
+  border: none; 
+  border-radius: 5px; 
+  cursor: pointer; 
+}
+.theme-btn.active { outline: 2px solid #000; }
 
- .navbar { display: flex; background: #333; overflow-x: auto; }
- .nav-btn { flex: 1; min-width: 120px; padding: 12px; border: none; background: #333; color: #fff; cursor: pointer; white-space: nowrap; }
- .nav-btn.active { background: #555; }
+.navbar { 
+  display: flex; 
+  background: #333; 
+  overflow-x: auto; 
+}
+.nav-btn { 
+  flex: 1; 
+  min-width: 120px; 
+  padding: 12px; 
+  border: none; 
+  background: #333; 
+  color: #fff; 
+  cursor: pointer; 
+  white-space: nowrap; 
+}
+.nav-btn.active { background: #555; }
 
- .tab-content { display: none; padding: 20px; }
- .tab-content.active { display: block; }
+.tab-content { 
+  display: none; 
+  padding: 20px; 
+}
+.tab-content.active { display: block; }
 
-  button { cursor: pointer; padding: 6px 12px; margin: 2px; border: none; border-radius: 5px; }
- .btn-primary { background: #4caf50; color: white; }
- .btn-warning { background: #ff9800; color: white; }
- .btn-danger { background: #f44336; color: white; }
- .btn-secondary { background: #9e9e9e; color: white; }
- .btn-info { background: #2196f3; color: white; }
- .btn-small { padding: 4px 8px; font-size: 11px; }
+button { 
+  cursor: pointer; 
+  padding: 6px 12px; 
+  margin: 2px; 
+  border: none; 
+  border-radius: 5px; 
+}
+.btn-primary { background: #4caf50; color: white; }
+.btn-warning { background: #ff9800; color: white; }
+.btn-danger { background: #f44336; color: white; }
+.btn-secondary { background: #9e9e9e; color: white; }
+.btn-info { background: #2196f3; color: white; }
 
-  /* Toolbar */
- .toolbar {
-    display: flex;
-    gap: 10px;
-    margin-top: 15px;
-    flex-wrap: wrap;
-    align-items: center;
-  }
- .toolbar input,.toolbar select {
-    padding: 8px 12px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-  }
- .toolbar input { flex: 1; min-width: 200px; }
-
-  /* Tabel compact + scroll */
- .table-wrapper {
-    width: 100%;
-    overflow-x: auto;
-    margin-top: 15px;
-    border-radius: 6px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    background: white;
-    font-size: 13px;
-    min-width: 600px;
-  }
-
-  th, td {
-    padding: 6px 10px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
-    white-space: nowrap;
-  }
-
-  th {
-    background: #333;
-    color: white;
-    cursor: pointer;
-    user-select: none;
-    font-size: 12px;
-    padding: 8px 10px;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-  }
-
-  th:hover { background: #444; }
-  th.sort-asc::after { content: " ▲"; }
-  th.sort-desc::after { content: " ▼"; }
-  tr:hover { background: #f5f5f5; }
-
-  td button { padding: 4px 8px; font-size: 11px; }
-  td input.qty { width: 50px; padding: 4px; text-align: center; }
-
- .badge {
-    padding: 2px 6px;
-    border-radius: 10px;
-    font-size: 11px;
-    color: white;
-    font-weight: bold;
-  }
- .badge-food { background: #ff9800; }
- .badge-beverage { background: #2196f3; }
- .badge-cat { background: #9c27b0; }
-
-  /* Modal */
- .modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    left: 0; top: 0;
-    width: 100%; height: 100%;
-    background: rgba(0,0,0,0.5);
-    justify-content: center;
-    align-items: center;
-  }
- .modal.active { display: flex; }
- .modal-content {
-    background: white;
-    padding: 25px;
-    border-radius: 10px;
-    width: 90%;
-    max-width: 450px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-  }
- .modal-content h3 { margin-top: 0; }
- .modal-content input,.modal-content select {
-    width: 100%;
-    padding: 10px;
-    margin: 10px 0;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    box-sizing: border-box;
-  }
- .modal-actions { text-align: right; margin-top: 15px; }
- .cat-row { display: flex; gap: 10px; align-items: center; }
- .cat-row select { flex: 1; }
-
- .export-box {
-    background: #f5f5f5;
-    padding: 15px;
-    border-radius: 8px;
-    margin-bottom: 15px;
-  }
-
- .table-hint { font-size: 12px; color: #666; margin-top: 5px; }
-
-  /* Kasir layout */
- .kasir-container {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 20px;
-  }
-  @media(max-width: 768px) {
-   .kasir-container { grid-template-columns: 1fr; }
-  }
- .kasir-menu {
-    background: white;
-    padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    max-height: 600px;
-    overflow-y: auto;
-  }
- .kasir-order {
-    background: white;
-    padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  }
- .menu-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px;
-    border-bottom: 1px solid #eee;
-  }
- .menu-item:hover { background: #f5f5f5; }
- .menu-info { flex: 1; }
- .menu-name { font-weight: bold; }
- .menu-price { color: #666; font-size: 12px; }
- .total-box {
-    background: #4caf50;
-    color: white;
-    padding: 15px;
-    border-radius: 8px;
-    text-align: center;
-    margin-top: 15px;
-    font-size: 20px;
-    font-weight: bold;
-  }
+.table-wrapper { 
+  width: 100%; 
+  overflow-x: auto; 
+  margin-top: 15px; 
+}
+table { 
+  width: 100%; 
+  border-collapse: collapse; 
+  background: white; 
+}
+th, td { 
+  padding: 8px 10px; 
+  text-align: left; 
+  border-bottom: 1px solid #ddd; 
+}
+th { 
+  background: #333; 
+  color: white; 
+  cursor: pointer; 
+}
+/* ===== SAMPAI SINI COPY CSS LAMA ===== */
 </style>
 </head>
 <body>
 
+<!-- BAR TEMA -->
 <div class="theme-bar">
   <span>Tema:</span>
   <button class="theme-btn" onclick="setTheme('green', this)">Hijau</button>
@@ -200,6 +105,7 @@
   <button class="theme-btn" onclick="setTheme('brown', this)">Brown</button>
 </div>
 
+<!-- NAVBAR -->
 <div class="navbar">
   <button class="nav-btn active" onclick="openTab('meja', this)">📋 Meja</button>
   <button class="nav-btn" onclick="openTab('foodbeverage', this)">🍽️ Food & Beverage</button>
@@ -208,671 +114,14 @@
   <button class="nav-btn" onclick="openTab('backup', this)">💾 Backup</button>
 </div>
 
-<!-- TAB 1: MENU MEJA -->
-<div id="meja" class="tab-content active">
-  <h2>📋 Kelola Meja</h2>
-  <button class="btn-primary" onclick="openMejaModal()">+ Tambah Meja</button>
-  <div id="daftar-meja"></div>
-</div>
-
-<!-- TAB 2: FOOD & BEVERAGE -->
-<div id="foodbeverage" class="tab-content">
-  <h2>🍽️ Food & Beverage</h2>
-  <div class="toolbar">
-    <input type="text" id="searchMenu" placeholder="Cari menu..." onkeyup="renderMenu()">
-    <select id="filterTipe" onchange="updateKategoriFilter(); renderMenu()">
-      <option value="">Semua Tipe</option>
-      <option value="Food">Food</option>
-      <option value="Beverage">Beverage</option>
-    </select>
-    <select id="filterKategori" onchange="renderMenu()">
-      <option value="">Semua Kategori</option>
-    </select>
-    <button class="btn-primary" onclick="openMenuModal()">+ Tambah Menu</button>
-    <button class="btn-secondary" onclick="openKategoriModal()">Kelola Kategori</button>
-  </div>
-  <div id="daftar-menu"></div>
-  <div class="table-hint">💡 Geser ke kiri-kanan untuk lihat semua kolom</div>
-</div>
-
-<!-- TAB 3: KASIR -->
-<div id="kasir" class="tab-content">
-  <h2>💰 Kasir</h2>
-  <div class="toolbar">
-    <select id="selectMeja" onchange="selectTable()">
-      <option value="">Pilih Meja</option>
-    </select>
-    <button class="btn-secondary" onclick="clearOrder()">Bersihkan Order</button>
-  </div>
-
-  <div class="kasir-container" id="kasirContainer" style="display:none;">
-    <div class="kasir-menu">
-      <h4>Pilih Menu</h4>
-      <div id="menuListKasir"></div>
-    </div>
-
-    <div class="kasir-order">
-      <h4>Order Meja <span id="namaMejaAktif"></span></h4>
-      <div id="orderList"></div>
-      <div class="total-box">
-        Total: Rp <span id="totalHarga">0</span>
-      </div>
-      <button class="btn-primary" style="width:100%; margin-top:10px;" onclick="simpanOrder()">Simpan Transaksi</button>
-    </div>
-  </div>
-
-  <div id="daftarOrderAktif" style="margin-top:30px;">
-    <h3>Order Aktif</h3>
-    <div id="listOrderAktif"></div>
-  </div>
-</div>
-
-<!-- TAB 4: LAPORAN -->
-<div id="laporan" class="tab-content">
-  <h2>📊 Laporan</h2>
-  <div id="laporan-content">Fitur laporan menyusul</div>
-</div>
-
-<!-- TAB 5: BACKUP -->
-<div id="backup" class="tab-content">
-  <h2>💾 Backup & Restore Data</h2>
-
-  <div class="export-box">
-    <h4>Export Data</h4>
-    <button class="btn-info" onclick="exportExcel()">📊 Export Excel</button>
-    <button class="btn-danger" onclick="exportPDF()">📄 Export PDF</button>
-  </div>
-
-  <div class="export-box">
-    <h4>Import Data</h4>
-    <input type="file" id="importFile" accept=".xlsx" onchange="importExcel()">
-  </div>
-
-  <div class="export-box" style="background:#ffebee;">
-    <h4>⚠️ Reset Data</h4>
-    <button class="btn-danger" onclick="resetData()">Reset Semua Data</button>
-  </div>
-</div>
-
-<!-- MODAL MEJA -->
-<div id="modalMeja" class="modal">
-  <div class="modal-content">
-    <h3 id="modalMejaTitle">Tambah Meja</h3>
-    <input type="hidden" id="mejaId">
-    <input type="text" id="mejaNama" placeholder="Nama meja">
-    <div class="modal-actions">
-      <button class="btn-secondary" onclick="closeMejaModal()">Batal</button>
-      <button class="btn-primary" onclick="saveMeja()">Simpan</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL MENU -->
-<div id="modalMenu" class="modal">
-  <div class="modal-content">
-    <h3 id="modalMenuTitle">Tambah Menu</h3>
-    <input type="hidden" id="menuId">
-    <input type="text" id="menuNama" placeholder="Nama menu">
-    <select id="menuTipe" onchange="updateKategoriSelect()">
-      <option value="Food">Food</option>
-      <option value="Beverage">Beverage</option>
-    </select>
-    <div class="cat-row">
-      <select id="menuKategori"></select>
-      <button class="btn-small btn-secondary" onclick="openKategoriModal()">+</button>
-    </div>
-    <input type="number" id="menuHarga" placeholder="Harga">
-    <div class="modal-actions">
-      <button class="btn-secondary" onclick="closeMenuModal()">Batal</button>
-      <button class="btn-primary" onclick="saveMenu()">Simpan</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL KATEGORI -->
-<div id="modalKategori" class="modal">
-  <div class="modal-content">
-    <h3>Kelola Kategori</h3>
-    <div id="daftarKategori"></div>
-    <input type="text" id="kategoriNama" placeholder="Nama kategori baru">
-    <select id="kategoriTipe">
-      <option value="Food">Food</option>
-      <option value="Beverage">Beverage</option>
-    </select>
-    <div class="modal-actions">
-      <button class="btn-secondary" onclick="closeKategoriModal()">Tutup</button>
-      <button class="btn-primary" onclick="tambahKategori()">Tambah</button>
-    </div>
-  </div>
-</div>
-
-<script type="module">
-  // Data
-  let mejaList = JSON.parse(localStorage.getItem('mejaList') || '[]');
-  let menuList = JSON.parse(localStorage.getItem('menuList') || '[]');
-  let kategoriList = JSON.parse(localStorage.getItem('kategoriList') || JSON.stringify([
-    {id: 1, nama: 'Makanan Berat', tipe: 'Food'},
-    {id: 2, nama: 'Snack', tipe: 'Food'},
-    {id: 3, nama: 'Dessert', tipe: 'Food'},
-    {id: 4, nama: 'Coffee', tipe: 'Beverage'},
-    {id: 5, nama: 'Juice', tipe: 'Beverage'},
-    {id: 6, nama: 'Soda', tipe: 'Beverage'}
-  ]));
-  let orderAktif = JSON.parse(localStorage.getItem('orderAktif') || '[]');
-  let orderSelesai = JSON.parse(localStorage.getItem('orderSelesai') || '[]');
-  let menuSort = { key: 'nama', order: 'asc' };
-  let mejaAktif = null;
-  let orderSementara = [];
-
-  menuList = menuList.map(m => ({
-   ...m,
-    tipe: m.tipe || 'Food',
-    kategori: m.kategori || (m.tipe === 'Beverage'? 'Coffee' : 'Makanan Berat')
-  }));
-
-  // === Fungsi global ===
-  window.setTheme = (themeName, btnElement) => {
-    document.body.className = themeName;
-    document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.remove('active'));
-    if(btnElement) btnElement.classList.add('active');
-    localStorage.setItem('theme', themeName);
-  };
-
-  window.openTab = (tabName, btnElement) => {
-    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-    document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-    document.getElementById(tabName).classList.add('active');
-    if(btnElement) btnElement.classList.add('active');
-
-    if(tabName === 'kasir') {
-      loadMejaSelect();
-      renderOrderAktif();
-    }
-  };
-
-  // === MEJA ===
-  window.openMejaModal = (id = null) => {
-    const modal = document.getElementById('modalMeja');
-    const title = document.getElementById('modalMejaTitle');
-    const idInput = document.getElementById('mejaId');
-    const namaInput = document.getElementById('mejaNama');
-
-    if(id) {
-      const meja = mejaList.find(m => m.id === id);
-      title.textContent = 'Edit Meja';
-      idInput.value = meja.id;
-      namaInput.value = meja.nama;
-    } else {
-      title.textContent = 'Tambah Meja';
-      idInput.value = '';
-      namaInput.value = '';
-    }
-    modal.classList.add('active');
-    namaInput.focus();
-  };
-
-  window.closeMejaModal = () => document.getElementById('modalMeja').classList.remove('active');
-
-  window.saveMeja = () => {
-    const id = document.getElementById('mejaId').value;
-    const nama = document.getElementById('mejaNama').value.trim();
-    if(!nama) return alert('Nama meja wajib diisi!');
-
-    if(id) {
-      const meja = mejaList.find(m => m.id == id);
-      meja.nama = nama;
-    } else {
-      mejaList.push({ id: Date.now(), nama: nama });
-    }
-
-    localStorage.setItem('mejaList', JSON.stringify(mejaList));
-    renderMeja();
-    closeMejaModal();
-  };
-
-  window.hapusMeja = (id) => {
-    if(confirm('Hapus meja ini?')) {
-      mejaList = mejaList.filter(m => m.id!== id);
-      localStorage.setItem('mejaList', JSON.stringify(mejaList));
-      renderMeja();
-    }
-  };
-
-  // === KATEGORI ===
-  function saveKategori() {
-    localStorage.setItem('kategoriList', JSON.stringify(kategoriList));
-    updateKategoriFilter();
-    updateKategoriSelect();
-  }
-
-  window.openKategoriModal = () => {
-    renderKategoriList();
-    document.getElementById('modalKategori').classList.add('active');
-  };
-
-  window.closeKategoriModal = () => {
-    document.getElementById('modalKategori').classList.remove('active');
-    document.getElementById('kategoriNama').value = '';
-  };
-
-  function renderKategoriList() {
-    const container = document.getElementById('daftarKategori');
-    container.innerHTML = kategoriList.map(k => `
-      <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee;">
-        <span>${k.nama} <small style="color:#666">(${k.tipe})</small></span>
-        <button class="btn-danger btn-small" onclick="hapusKategori(${k.id})">Hapus</button>
-      </div>
-    `).join('') || '<p>Belum ada kategori</p>';
-  }
-
-  window.tambahKategori = () => {
-    const nama = document.getElementById('kategoriNama').value.trim();
-    const tipe = document.getElementById('kategoriTipe').value;
-    if(!nama) return alert('Nama kategori wajib diisi!');
-
-    if(kategoriList.some(k => k.nama.toLowerCase() === nama.toLowerCase())) {
-      return alert('Kategori sudah ada!');
-    }
-
-    kategoriList.push({ id: Date.now(), nama, tipe });
-    saveKategori();
-    renderKategoriList();
-    document.getElementById('kategoriNama').value = '';
-  };
-
-  window.hapusKategori = (id) => {
-    if(confirm('Hapus kategori ini?')) {
-      kategoriList = kategoriList.filter(k => k.id!== id);
-      saveKategori();
-      renderKategoriList();
-      renderMenu();
-    }
-  };
-
-  function updateKategoriFilter() {
-    const tipe = document.getElementById('filterTipe').value;
-    const select = document.getElementById('filterKategori');
-    const filtered = tipe? kategoriList.filter(k => k.tipe === tipe) : kategoriList;
-    select.innerHTML = '<option value="">Semua Kategori</option>' +
-      filtered.map(k => `<option value="${k.nama}">${k.nama}</option>`).join('');
-  }
-
-  function updateKategoriSelect() {
-    const tipe = document.getElementById('menuTipe').value;
-    const select = document.getElementById('menuKategori');
-    const filtered = kategoriList.filter(k => k.tipe === tipe);
-    select.innerHTML = filtered.map(k => `<option value="${k.nama}">${k.nama}</option>`).join('');
-  }
-
-  // === MENU ===
-  window.openMenuModal = (id = null) => {
-    updateKategoriSelect();
-    const modal = document.getElementById('modalMenu');
-    const title = document.getElementById('modalMenuTitle');
-    const idInput = document.getElementById('menuId');
-    const namaInput = document.getElementById('menuNama');
-    const tipeInput = document.getElementById('menuTipe');
-    const kategoriInput = document.getElementById('menuKategori');
-    const hargaInput = document.getElementById('menuHarga');
-
-    if(id) {
-      const menu = menuList.find(m => m.id === id);
-      title.textContent = 'Edit Menu';
-      idInput.value = menu.id;
-      namaInput.value = menu.nama;
-      tipeInput.value = menu.tipe;
-      updateKategoriSelect();
-      kategoriInput.value = menu.kategori;
-      hargaInput.value = menu.harga;
-    } else {
-      title.textContent = 'Tambah Menu';
-      idInput.value = '';
-      namaInput.value = '';
-      tipeInput.value = 'Food';
-      updateKategoriSelect();
-      hargaInput.value = '';
-    }
-    modal.classList.add('active');
-    namaInput.focus();
-  };
-
-  window.closeMenuModal = () => {
-    document.getElementById('modalMenu').classList.remove('active');
-  };
-
-  window.saveMenu = () => {
-    const id = document.getElementById('menuId').value;
-    const nama = document.getElementById('menuNama').value.trim();
-    const tipe = document.getElementById('menuTipe').value;
-    const kategori = document.getElementById('menuKategori').value;
-    const harga = document.getElementById('menuHarga').value;
-
-    if(!nama ||!harga || isNaN(harga)) return alert('Lengkapi data dengan benar!');
-
-    if(id) {
-      const menu = menuList.find(m => m.id == id);
-      menu.nama = nama;
-      menu.tipe = tipe;
-      menu.kategori = kategori;
-      menu.harga = parseInt(harga);
-    } else {
-      menuList.push({ id: Date.now(), nama, tipe, kategori, harga: parseInt(harga) });
-    }
-
-    localStorage.setItem('menuList', JSON.stringify(menuList));
-    renderMenu();
-    closeMenuModal();
-  };
-
-  window.hapusMenu = (id) => {
-    if(confirm('Hapus menu ini?')) {
-      menuList = menuList.filter(m => m.id!== id);
-      localStorage.setItem('menuList', JSON.stringify(menuList));
-      renderMenu();
-    }
-  };
-
-  window.sortMenu = (key) => {
-    if(menuSort.key === key) {
-      menuSort.order = menuSort.order === 'asc'? 'desc' : 'asc';
-    } else {
-      menuSort.key = key;
-      menuSort.order = 'asc';
-    }
-    renderMenu();
-  };
-
-  function renderMeja() {
-    const container = document.getElementById('daftar-meja');
-    if(mejaList.length === 0) {
-      container.innerHTML = '<p>Belum ada meja</p>';
-      return;
-    }
-    container.innerHTML = `
-      <div class="table-wrapper">
-        <table>
-          <thead>
-            <tr><th>No</th><th>Nama Meja</th><th>Aksi</th></tr>
-          </thead>
-          <tbody>
-            ${mejaList.map((m, i) => `
-              <tr>
-                <td>${i + 1}</td>
-                <td>${m.nama}</td>
-                <td>
-                  <button class="btn-warning" onclick="openMejaModal(${m.id})">Edit</button>
-                  <button class="btn-danger" onclick="hapusMeja(${m.id})">Hapus</button>
-                </td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-      </div>
-    `;
-  }
-
-  function renderMenu() {
-    const container = document.getElementById('daftar-menu');
-    const search = document.getElementById('searchMenu').value.toLowerCase();
-    const filterTipe = document.getElementById('filterTipe').value;
-    const filterKategori = document.getElementById('filterKategori').value;
-
-    let filtered = menuList.filter(m => {
-      const matchSearch = m.nama.toLowerCase().includes(search);
-      const matchTipe = filterTipe? m.tipe === filterTipe : true;
-      const matchKategori = filterKategori? m.kategori === filterKategori : true;
-      return matchSearch && matchTipe && matchKategori;
-    });
-
-    filtered.sort((a, b) => {
-      let valA = a[menuSort.key];
-      let valB = b[menuSort.key];
-      if(typeof valA === 'string') valA = valA.toLowerCase();
-      if(typeof valB === 'string') valB = valB.toLowerCase();
-
-      if(valA < valB) return menuSort.order === 'asc'? -1 : 1;
-      if(valA > valB) return menuSort.order === 'asc'? 1 : -1;
-      return 0;
-    });
-
-    if(filtered.length === 0) {
-      container.innerHTML = '<p>Menu tidak ditemukan</p>';
-      return;
-    }
-
-    container.innerHTML = `
-      <div class="table-wrapper">
-        <table>
-          <thead>
-            <tr>
-              <th onclick="sortMenu('nama')">Nama Menu</th>
-              <th onclick="sortMenu('tipe')">Tipe</th>
-              <th onclick="sortMenu('kategori')">Kategori</th>
-              <th onclick="sortMenu('harga')">Harga</th>
-              <th>Aksi</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${filtered.map((m, i) => `
-              <tr>
-                <td>${m.nama}</td>
-                <td><span class="badge ${m.tipe === 'Food'? 'badge-food' : 'badge-beverage'}">${m.tipe}</span></td>
-                <td><span class="badge badge-cat">${m.kategori}</span></td>
-                <td>Rp ${m.harga.toLocaleString('id-ID')}</td>
-                <td>
-                  <button class="btn-warning" onclick="openMenuModal(${m.id})">Edit</button>
-                  <button class="btn-danger" onclick="hapusMenu(${m.id})">Hapus</button>
-                </td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-      </div>
-    `;
-  }
-
-  // === KASIR ===
-  function loadMejaSelect() {
-    const select = document.getElementById('selectMeja');
-    select.innerHTML = '<option value="">Pilih Meja</option>' +
-      mejaList.map(m => `<option value="${m.id}">${m.nama}</option>`).join('');
-  }
-
-  window.selectTable = () => {
-    const mejaId = document.getElementById('selectMeja').value;
-    if(!mejaId) {
-      document.getElementById('kasirContainer').style.display = 'none';
-      return;
-    }
-
-    mejaAktif = mejaList.find(m => m.id == mejaId);
-    document.getElementById('namaMejaAktif').textContent = mejaAktif.nama;
-    document.getElementById('kasirContainer').style.display = 'grid';
-
-    const existingOrder = orderAktif.find(o => o.mejaId == mejaId);
-    orderSementara = existingOrder? existingOrder.items : [];
-
-    renderMenuKasir();
-    renderOrder();
-  };
-
-  function renderMenuKasir() {
-    const container = document.getElementById('menuListKasir');
-    container.innerHTML = menuList.map(m => `
-      <div class="menu-item">
-        <div class="menu-info">
-          <div class="menu-name">${m.nama}</div>
-          <div class="menu-price">Rp ${m.harga.toLocaleString('id-ID')} - ${m.kategori}</div>
-        </div>
-        <button class="btn-primary btn-small" onclick="tambahKeOrder(${m.id})">+ Tambah</button>
-      </div>
-    `).join('');
-  }
-
-  window.tambahKeOrder = (menuId) => {
-    const menu = menuList.find(m => m.id === menuId);
-    const existing = orderSementara.find(i => i.menuId === menuId);
-
-    if(existing) {
-      existing.qty += 1;
-    } else {
-      orderSementara.push({
-        menuId: menu.id,
-        nama: menu.nama,
-        harga: menu.harga,
-        qty: 1
-      });
-    }
-    renderOrder();
-  };
-
-  window.ubahQty = (index, qty) => {
-    qty = parseInt(qty);
-    if(qty <= 0) {
-      orderSementara.splice(index, 1);
-    } else {
-      orderSementara[index].qty = qty;
-    }
-    renderOrder();
-  };
-
-  window.hapusItemOrder = (index) => {
-    orderSementara.splice(index, 1);
-    renderOrder();
-  };
-
-  function renderOrder() {
-    const container = document.getElementById('orderList');
-    if(orderSementara.length === 0) {
-      container.innerHTML = '<p>Belum ada item</p>';
-      document.getElementById('totalHarga').textContent = '0';
-      return;
-    }
-
-    let total = 0;
-    container.innerHTML = orderSementara.map((item, i) => {
-      const subtotal = item.harga * item.qty;
-      total += subtotal;
-      return `
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #eee;">
-          <div style="flex:1;">
-            <div>${item.nama}</div>
-            <div style="font-size:12px; color:#666;">Rp ${item.harga.toLocaleString('id-ID')}</div>
-          </div>
-          <input type="number" class="qty" value="${item.qty}" min="0" onchange="ubahQty(${i}, this.value)">
-          <div style="width:80px; text-align:right;">Rp ${subtotal.toLocaleString('id-ID')}</div>
-          <button class="btn-danger btn-small" onclick="hapusItemOrder(${i})">x</button>
-        </div>
-      `;
-    }).join('');
-
-    document.getElementById('totalHarga').textContent = total.toLocaleString('id-ID');
-  }
-
-  window.clearOrder = () => {
-    if(confirm('Hapus semua item order?')) {
-      orderSementara = [];
-      renderOrder();
-    }
-  };
-
-  window.simpanOrder = () => {
-    if(!mejaAktif) return alert('Pilih meja dulu!');
-    if(orderSementara.length === 0) return alert('Order kosong!');
-
-    const total = orderSementara.reduce((sum, item) => sum + (item.harga * item.qty), 0);
-
-    const existingIndex = orderAktif.findIndex(o => o.mejaId == mejaAktif.id);
-
-    const orderData = {
-      id: existingIndex >= 0? orderAktif[existingIndex].id : Date.now(),
-      mejaId: mejaAktif.id,
-      namaMeja: mejaAktif.nama,
-      items: orderSementara,
-      total: total,
-      waktu: new Date().toLocaleString('id-ID'),
-      status: 'aktif'
-    };
-
-    if(existingIndex >= 0) {
-      orderAktif[existingIndex] = orderData;
-    } else {
-      orderAktif.push(orderData);
-    }
-
-    localStorage.setItem('orderAktif', JSON.stringify(orderAktif));
-    alert('Order berhasil disimpan!');
-    orderSementara = [];
-    renderOrder();
-    renderOrderAktif();
-  };
-
-  function renderOrderAktif() {
-    const container = document.getElementById('listOrderAktif');
-    if(orderAktif.length === 0) {
-      container.innerHTML = '<p>Tidak ada order aktif</p>';
-      return;
-    }
-
-    container.innerHTML = orderAktif.map(o => `
-      <div style="background:white; padding:15px; margin-bottom:10px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.1);">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <div>
-            <strong>${o.namaMeja}</strong> - ${o.waktu}
-            <div style="font-size:12px; color:#666;">${o.items.length} item | Total: Rp ${o.total.toLocaleString('id-ID')}</div>
-          </div>
-          <button class="btn-info btn-small" onclick="bayarOrder(${o.id})">Bayar</button>
-        </div>
-      </div>
-    `).join('');
-  }
-
-  window.bayarOrder = (orderId) => {
-    const order = orderAktif.find(o => o.id === orderId);
-    if(!order) return;
-
-    if(confirm(`Konfirmasi pembayaran Rp ${order.total.toLocaleString('id-ID')} untuk ${order.namaMeja}?`)) {
-      order.status = 'selesai';
-      order.waktuSelesai = new Date().toLocaleString('id-ID');
-      orderSelesai.push(order);
-      orderAktif = orderAktif.filter(o => o.id!== orderId);
-
-      localStorage.setItem('orderAktif', JSON.stringify(orderAktif));
-      localStorage.setItem('orderSelesai', JSON.stringify(orderSelesai));
-
-      alert('Pembayaran berhasil!');
-      renderOrderAktif();
-
-      if(mejaAktif && mejaAktif.id == order.mejaId) {
-        orderSementara = [];
-        renderOrder();
-      }
-    }
-  };
-
-  // === EXPORT IMPORT ===
-  window.exportExcel = () => {
-    const wb = XLSX.utils.book_new();
-
-    const mejaData = mejaList.map((m, i) => ({ No: i + 1, Nama_Meja: m.nama }));
-    const wsMeja = XLSX.utils.json_to_sheet(mejaData);
-    XLSX.utils.book_append_sheet(wb, wsMeja, "Meja");
-
-    const menuData = menuList.map((m, i) => ({
-      No: i + 1, Nama_Menu: m.nama, Tipe: m.tipe, Kategori: m.kategori, Harga: m.harga
-    }));
-    const wsMenu = XLSX.utils.json_to_sheet(menuData);
-    XLSX.utils.book_append_sheet(wb, wsMenu, "Menu");
-
-    const orderData = orderSelesai.map((o, i) => ({
-      No: i + 1,
-      Meja: o.namaMeja,
-      Waktu: o.waktu,
-      Total: o.total,
-      Status: o.status
-    }));
-    const wsOrder = XLSX.utils.json_to_sheet(orderData);
-    XLSX.utils.book_append_sheet(wb, wsOrder, "Transaksi");
-
-    XLSX.writeFile(wb, `backup_kasir_${new Date().toISOString().split('T')[0]}.xlsx`);
-    alert('Export Excel
+<!-- CONTAINER TAB - KOSONG, NANTI DIISI JS -->
+<div id="meja" class="tab-content active"></div>
+<div id="foodbeverage" class="tab-content"></div>
+<div id="kasir" class="tab-content"></div>
+<div id="laporan" class="tab-content"></div>
+<div id="backup" class="tab-content"></div>
+
+<!-- PANGGIL APP.JS SEBAGAI MODULE -->
+<script type="module" src="app.js"></script>
+</body>
+</html>
