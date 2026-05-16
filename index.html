@@ -26,6 +26,7 @@
   .btn-primary { background: #4caf50; color: white; }
   .btn-warning { background: #ff9800; color: white; }
   .btn-danger { background: #f44336; color: white; }
+  .btn-secondary { background: #9e9e9e; color: white; }
   
   /* Tabel */
   table {
@@ -49,6 +50,40 @@
   tr:hover {
     background: #f5f5f5;
   }
+
+  /* Modal */
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5);
+    justify-content: center;
+    align-items: center;
+  }
+  .modal.active { display: flex; }
+  .modal-content {
+    background: white;
+    padding: 25px;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+  }
+  .modal-content h3 { margin-top: 0; }
+  .modal-content input {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-sizing: border-box;
+  }
+  .modal-actions {
+    text-align: right;
+    margin-top: 15px;
+  }
 </style>
 </head>
 <body>
@@ -71,14 +106,14 @@
 <!-- TAB 1: MENU MEJA -->
 <div id="meja" class="tab-content active">
   <h2>📋 Kelola Meja</h2>
-  <button class="btn-primary" onclick="tambahMeja()">+ Tambah Meja</button>
+  <button class="btn-primary" onclick="openMejaModal()">+ Tambah Meja</button>
   <div id="daftar-meja"></div>
 </div>
 
 <!-- TAB 2: MENU MAKAN -->
 <div id="menu" class="tab-content">
   <h2>🍽️ Menu Makanan</h2>
-  <button class="btn-primary" onclick="tambahMenu()">+ Tambah Menu</button>
+  <button class="btn-primary" onclick="openMenuModal()">+ Tambah Menu</button>
   <div id="daftar-menu"></div>
 </div>
 
@@ -94,12 +129,39 @@
   <div id="laporan-content">Fitur laporan belum dibuat</div>
 </div>
 
+<!-- MODAL MEJA -->
+<div id="modalMeja" class="modal">
+  <div class="modal-content">
+    <h3 id="modalMejaTitle">Tambah Meja</h3>
+    <input type="hidden" id="mejaId">
+    <input type="text" id="mejaNama" placeholder="Nama meja">
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeMejaModal()">Batal</button>
+      <button class="btn-primary" onclick="saveMeja()">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL MENU -->
+<div id="modalMenu" class="modal">
+  <div class="modal-content">
+    <h3 id="modalMenuTitle">Tambah Menu</h3>
+    <input type="hidden" id="menuId">
+    <input type="text" id="menuNama" placeholder="Nama menu">
+    <input type="number" id="menuHarga" placeholder="Harga">
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeMenuModal()">Batal</button>
+      <button class="btn-primary" onclick="saveMenu()">Simpan</button>
+    </div>
+  </div>
+</div>
+
 <script type="module">
   // Data
   let mejaList = JSON.parse(localStorage.getItem('mejaList') || '[]');
   let menuList = JSON.parse(localStorage.getItem('menuList') || '[]');
   
-  // === Fungsi global untuk onclick ===
+  // === Fungsi global ===
   window.setTheme = (themeName, btnElement) => {
     document.body.className = themeName;
     document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.remove('active'));
@@ -113,25 +175,47 @@
     document.getElementById(tabName).classList.add('active');
     if(btnElement) btnElement.classList.add('active');
   };
-  
-  // === MEJA ===
-  window.tambahMeja = () => {
-    const nama = prompt('Masukkan nama meja:');
-    if(nama) {
-      mejaList.push({ id: Date.now(), nama: nama });
-      localStorage.setItem('mejaList', JSON.stringify(mejaList));
-      renderMeja();
+
+  // === MODAL MEJA ===
+  window.openMejaModal = (id = null) => {
+    const modal = document.getElementById('modalMeja');
+    const title = document.getElementById('modalMejaTitle');
+    const idInput = document.getElementById('mejaId');
+    const namaInput = document.getElementById('mejaNama');
+    
+    if(id) {
+      const meja = mejaList.find(m => m.id === id);
+      title.textContent = 'Edit Meja';
+      idInput.value = meja.id;
+      namaInput.value = meja.nama;
+    } else {
+      title.textContent = 'Tambah Meja';
+      idInput.value = '';
+      namaInput.value = '';
     }
+    modal.classList.add('active');
+    namaInput.focus();
   };
   
-  window.editMeja = (id) => {
-    const meja = mejaList.find(m => m.id === id);
-    const namaBaru = prompt('Edit nama meja:', meja.nama);
-    if(namaBaru && namaBaru.trim() !== '') {
-      meja.nama = namaBaru.trim();
-      localStorage.setItem('mejaList', JSON.stringify(mejaList));
-      renderMeja();
+  window.closeMejaModal = () => {
+    document.getElementById('modalMeja').classList.remove('active');
+  };
+  
+  window.saveMeja = () => {
+    const id = document.getElementById('mejaId').value;
+    const nama = document.getElementById('mejaNama').value.trim();
+    if(!nama) return alert('Nama meja wajib diisi!');
+    
+    if(id) {
+      const meja = mejaList.find(m => m.id == id);
+      meja.nama = nama;
+    } else {
+      mejaList.push({ id: Date.now(), nama: nama });
     }
+    
+    localStorage.setItem('mejaList', JSON.stringify(mejaList));
+    renderMeja();
+    closeMejaModal();
   };
   
   window.hapusMeja = (id) => {
@@ -141,28 +225,53 @@
       renderMeja();
     }
   };
-  
-  // === MENU ===
-  window.tambahMenu = () => {
-    const nama = prompt('Nama menu:');
-    const harga = prompt('Harga:');
-    if(nama && harga && !isNaN(harga)) {
-      menuList.push({ id: Date.now(), nama: nama, harga: parseInt(harga) });
-      localStorage.setItem('menuList', JSON.stringify(menuList));
-      renderMenu();
+
+  // === MODAL MENU ===
+  window.openMenuModal = (id = null) => {
+    const modal = document.getElementById('modalMenu');
+    const title = document.getElementById('modalMenuTitle');
+    const idInput = document.getElementById('menuId');
+    const namaInput = document.getElementById('menuNama');
+    const hargaInput = document.getElementById('menuHarga');
+    
+    if(id) {
+      const menu = menuList.find(m => m.id === id);
+      title.textContent = 'Edit Menu';
+      idInput.value = menu.id;
+      namaInput.value = menu.nama;
+      hargaInput.value = menu.harga;
+    } else {
+      title.textContent = 'Tambah Menu';
+      idInput.value = '';
+      namaInput.value = '';
+      hargaInput.value = '';
     }
+    modal.classList.add('active');
+    namaInput.focus();
   };
   
-  window.editMenu = (id) => {
-    const menu = menuList.find(m => m.id === id);
-    const namaBaru = prompt('Edit nama menu:', menu.nama);
-    const hargaBaru = prompt('Edit harga:', menu.harga);
-    if(namaBaru && hargaBaru && !isNaN(hargaBaru)) {
-      menu.nama = namaBaru.trim();
-      menu.harga = parseInt(hargaBaru);
-      localStorage.setItem('menuList', JSON.stringify(menuList));
-      renderMenu();
+  window.closeMenuModal = () => {
+    document.getElementById('modalMenu').classList.remove('active');
+  };
+  
+  window.saveMenu = () => {
+    const id = document.getElementById('menuId').value;
+    const nama = document.getElementById('menuNama').value.trim();
+    const harga = document.getElementById('menuHarga').value;
+    
+    if(!nama || !harga || isNaN(harga)) return alert('Nama dan harga wajib diisi dengan benar!');
+    
+    if(id) {
+      const menu = menuList.find(m => m.id == id);
+      menu.nama = nama;
+      menu.harga = parseInt(harga);
+    } else {
+      menuList.push({ id: Date.now(), nama: nama, harga: parseInt(harga) });
     }
+    
+    localStorage.setItem('menuList', JSON.stringify(menuList));
+    renderMenu();
+    closeMenuModal();
   };
   
   window.hapusMenu = (id) => {
@@ -191,7 +300,7 @@
               <td>${i + 1}</td>
               <td>${m.nama}</td>
               <td>
-                <button class="btn-warning" onclick="editMeja(${m.id})">Edit</button>
+                <button class="btn-warning" onclick="openMejaModal(${m.id})">Edit</button>
                 <button class="btn-danger" onclick="hapusMeja(${m.id})">Hapus</button>
               </td>
             </tr>
@@ -219,7 +328,7 @@
               <td>${m.nama}</td>
               <td>Rp ${m.harga.toLocaleString('id-ID')}</td>
               <td>
-                <button class="btn-warning" onclick="editMenu(${m.id})">Edit</button>
+                <button class="btn-warning" onclick="openMenuModal(${m.id})">Edit</button>
                 <button class="btn-danger" onclick="hapusMenu(${m.id})">Hapus</button>
               </td>
             </tr>
@@ -229,6 +338,13 @@
     `;
   }
   
+  // Tutup modal kalau klik luar
+  window.addEventListener('click', (e) => {
+    if(e.target.classList.contains('modal')) {
+      e.target.classList.remove('active');
+    }
+  });
+
   // Init saat load
   window.addEventListener('DOMContentLoaded', () => {
     const savedTheme = localStorage.getItem('theme') || 'green';
