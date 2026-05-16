@@ -35,13 +35,12 @@
     margin-top: 15px;
     flex-wrap: wrap;
   }
-  .toolbar input {
-    flex: 1;
-    min-width: 200px;
+  .toolbar input, .toolbar select {
     padding: 8px 12px;
     border: 1px solid #ddd;
     border-radius: 5px;
   }
+  .toolbar input { flex: 1; min-width: 200px; }
   
   /* Tabel */
   table {
@@ -68,6 +67,16 @@
   th.sort-asc::after { content: " ▲"; }
   th.sort-desc::after { content: " ▼"; }
   tr:hover { background: #f5f5f5; }
+  
+  .badge {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    color: white;
+    font-weight: bold;
+  }
+  .badge-food { background: #ff9800; }
+  .badge-beverage { background: #2196f3; }
 
   /* Modal */
   .modal {
@@ -90,7 +99,7 @@
     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
   }
   .modal-content h3 { margin-top: 0; }
-  .modal-content input {
+  .modal-content input, .modal-content select {
     width: 100%;
     padding: 10px;
     margin: 10px 0;
@@ -133,6 +142,11 @@
   <h2>🍽️ Food & Beverage</h2>
   <div class="toolbar">
     <input type="text" id="searchMenu" placeholder="Cari menu..." onkeyup="renderMenu()">
+    <select id="filterTipe" onchange="renderMenu()">
+      <option value="">Semua Tipe</option>
+      <option value="Food">Food</option>
+      <option value="Beverage">Beverage</option>
+    </select>
     <button class="btn-primary" onclick="openMenuModal()">+ Tambah Menu</button>
   </div>
   <div id="daftar-menu"></div>
@@ -169,6 +183,10 @@
     <h3 id="modalMenuTitle">Tambah Menu</h3>
     <input type="hidden" id="menuId">
     <input type="text" id="menuNama" placeholder="Nama menu">
+    <select id="menuTipe">
+      <option value="Food">Food</option>
+      <option value="Beverage">Beverage</option>
+    </select>
     <input type="number" id="menuHarga" placeholder="Harga">
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeMenuModal()">Batal</button>
@@ -182,6 +200,9 @@
   let mejaList = JSON.parse(localStorage.getItem('mejaList') || '[]');
   let menuList = JSON.parse(localStorage.getItem('menuList') || '[]');
   let menuSort = { key: 'nama', order: 'asc' };
+  
+  // Migrasi data lama biar punya tipe default Food
+  menuList = menuList.map(m => ({ ...m, tipe: m.tipe || 'Food' }));
   
   // === Fungsi global ===
   window.setTheme = (themeName, btnElement) => {
@@ -254,6 +275,7 @@
     const title = document.getElementById('modalMenuTitle');
     const idInput = document.getElementById('menuId');
     const namaInput = document.getElementById('menuNama');
+    const tipeInput = document.getElementById('menuTipe');
     const hargaInput = document.getElementById('menuHarga');
     
     if(id) {
@@ -261,11 +283,13 @@
       title.textContent = 'Edit Menu';
       idInput.value = menu.id;
       namaInput.value = menu.nama;
+      tipeInput.value = menu.tipe;
       hargaInput.value = menu.harga;
     } else {
       title.textContent = 'Tambah Menu';
       idInput.value = '';
       namaInput.value = '';
+      tipeInput.value = 'Food';
       hargaInput.value = '';
     }
     modal.classList.add('active');
@@ -279,16 +303,18 @@
   window.saveMenu = () => {
     const id = document.getElementById('menuId').value;
     const nama = document.getElementById('menuNama').value.trim();
+    const tipe = document.getElementById('menuTipe').value;
     const harga = document.getElementById('menuHarga').value;
     
-    if(!nama || !harga || isNaN(harga)) return alert('Nama dan harga wajib diisi dengan benar!');
+    if(!nama || !harga || isNaN(harga)) return alert('Lengkapi data dengan benar!');
     
     if(id) {
       const menu = menuList.find(m => m.id == id);
       menu.nama = nama;
+      menu.tipe = tipe;
       menu.harga = parseInt(harga);
     } else {
-      menuList.push({ id: Date.now(), nama: nama, harga: parseInt(harga) });
+      menuList.push({ id: Date.now(), nama: nama, tipe: tipe, harga: parseInt(harga) });
     }
     
     localStorage.setItem('menuList', JSON.stringify(menuList));
@@ -346,10 +372,13 @@
   function renderMenu() {
     const container = document.getElementById('daftar-menu');
     const search = document.getElementById('searchMenu').value.toLowerCase();
+    const filterTipe = document.getElementById('filterTipe').value;
     
-    let filtered = menuList.filter(m => 
-      m.nama.toLowerCase().includes(search)
-    );
+    let filtered = menuList.filter(m => {
+      const matchSearch = m.nama.toLowerCase().includes(search);
+      const matchTipe = filterTipe ? m.tipe === filterTipe : true;
+      return matchSearch && matchTipe;
+    });
     
     filtered.sort((a, b) => {
       let valA = a[menuSort.key];
@@ -373,6 +402,7 @@
           <tr>
             <th>No</th>
             <th onclick="sortMenu('nama')" class="${menuSort.key==='nama' ? 'sort-'+menuSort.order : ''}">Nama Menu</th>
+            <th onclick="sortMenu('tipe')" class="${menuSort.key==='tipe' ? 'sort-'+menuSort.order : ''}">Tipe</th>
             <th onclick="sortMenu('harga')" class="${menuSort.key==='harga' ? 'sort-'+menuSort.order : ''}">Harga</th>
             <th>Aksi</th>
           </tr>
@@ -382,6 +412,7 @@
             <tr>
               <td>${i + 1}</td>
               <td>${m.nama}</td>
+              <td><span class="badge ${m.tipe === 'Food' ? 'badge-food' : 'badge-beverage'}">${m.tipe}</span></td>
               <td>Rp ${m.harga.toLocaleString('id-ID')}</td>
               <td>
                 <button class="btn-warning" onclick="openMenuModal(${m.id})">Edit</button>
