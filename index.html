@@ -28,6 +28,21 @@
   .btn-danger { background: #f44336; color: white; }
   .btn-secondary { background: #9e9e9e; color: white; }
   
+  /* Toolbar */
+  .toolbar {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    flex-wrap: wrap;
+  }
+  .toolbar input {
+    flex: 1;
+    min-width: 200px;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+  }
+  
   /* Tabel */
   table {
     width: 100%;
@@ -46,7 +61,14 @@
   th {
     background: #333;
     color: white;
+    cursor: pointer;
+    user-select: none;
   }
+  th:hover {
+    background: #444;
+  }
+  th.sort-asc::after { content: " ▲"; }
+  th.sort-desc::after { content: " ▼"; }
   tr:hover {
     background: #f5f5f5;
   }
@@ -98,7 +120,7 @@
 
 <div class="navbar">
   <button class="nav-btn active" onclick="openTab('meja', this)">📋 Menu Meja</button>
-  <button class="nav-btn" onclick="openTab('menu', this)">🍽️ Menu Makanan</button>
+  <button class="nav-btn" onclick="openTab('menu', this)">🍽️ Food & Beverage</button>
   <button class="nav-btn" onclick="openTab('kasir', this)">💰 Menu Kasir</button>
   <button class="nav-btn" onclick="openTab('laporan', this)">📊 Laporan</button>
 </div>
@@ -110,10 +132,13 @@
   <div id="daftar-meja"></div>
 </div>
 
-<!-- TAB 2: MENU MAKAN -->
+<!-- TAB 2: FOOD & BEVERAGE -->
 <div id="menu" class="tab-content">
-  <h2>🍽️ Menu Makanan</h2>
-  <button class="btn-primary" onclick="openMenuModal()">+ Tambah Menu</button>
+  <h2>🍽️ Food & Beverage</h2>
+  <div class="toolbar">
+    <input type="text" id="searchMenu" placeholder="Cari menu..." onkeyup="renderMenu()">
+    <button class="btn-primary" onclick="openMenuModal()">+ Tambah Menu</button>
+  </div>
   <div id="daftar-menu"></div>
 </div>
 
@@ -160,6 +185,7 @@
   // Data
   let mejaList = JSON.parse(localStorage.getItem('mejaList') || '[]');
   let menuList = JSON.parse(localStorage.getItem('menuList') || '[]');
+  let menuSort = { key: 'nama', order: 'asc' };
   
   // === Fungsi global ===
   window.setTheme = (themeName, btnElement) => {
@@ -281,6 +307,17 @@
       renderMenu();
     }
   };
+
+  // === SORTING MENU ===
+  window.sortMenu = (key) => {
+    if(menuSort.key === key) {
+      menuSort.order = menuSort.order === 'asc' ? 'desc' : 'asc';
+    } else {
+      menuSort.key = key;
+      menuSort.order = 'asc';
+    }
+    renderMenu();
+  };
   
   // === Render tabel ===
   function renderMeja() {
@@ -312,17 +349,40 @@
   
   function renderMenu() {
     const container = document.getElementById('daftar-menu');
-    if(menuList.length === 0) {
-      container.innerHTML = '<p>Belum ada menu</p>';
+    const search = document.getElementById('searchMenu').value.toLowerCase();
+    
+    let filtered = menuList.filter(m => 
+      m.nama.toLowerCase().includes(search)
+    );
+    
+    filtered.sort((a, b) => {
+      let valA = a[menuSort.key];
+      let valB = b[menuSort.key];
+      if(typeof valA === 'string') valA = valA.toLowerCase();
+      if(typeof valB === 'string') valB = valB.toLowerCase();
+      
+      if(valA < valB) return menuSort.order === 'asc' ? -1 : 1;
+      if(valA > valB) return menuSort.order === 'asc' ? 1 : -1;
+      return 0;
+    });
+    
+    if(filtered.length === 0) {
+      container.innerHTML = '<p>Menu tidak ditemukan</p>';
       return;
     }
+    
     container.innerHTML = `
       <table>
         <thead>
-          <tr><th>No</th><th>Nama Menu</th><th>Harga</th><th>Aksi</th></tr>
+          <tr>
+            <th>No</th>
+            <th onclick="sortMenu('nama')" class="${menuSort.key==='nama' ? 'sort-'+menuSort.order : ''}">Nama Menu</th>
+            <th onclick="sortMenu('harga')" class="${menuSort.key==='harga' ? 'sort-'+menuSort.order : ''}">Harga</th>
+            <th>Aksi</th>
+          </tr>
         </thead>
         <tbody>
-          ${menuList.map((m, i) => `
+          ${filtered.map((m, i) => `
             <tr>
               <td>${i + 1}</td>
               <td>${m.nama}</td>
