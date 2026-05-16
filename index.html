@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kasir Naotajun</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
   body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
   body.green { background: #e8f5e9; }
@@ -27,6 +29,7 @@
   .btn-warning { background: #ff9800; color: white; }
   .btn-danger { background: #f44336; color: white; }
   .btn-secondary { background: #9e9e9e; color: white; }
+  .btn-info { background: #2196f3; color: white; }
   .btn-small { padding: 4px 8px; font-size: 12px; }
   
   /* Toolbar */
@@ -120,6 +123,13 @@
     align-items: center;
   }
   .cat-row select { flex: 1; }
+  
+  .export-box {
+    background: #f5f5f5;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+  }
 </style>
 </head>
 <body>
@@ -135,8 +145,7 @@
 <div class="navbar">
   <button class="nav-btn active" onclick="openTab('meja', this)">📋 Menu Meja</button>
   <button class="nav-btn" onclick="openTab('foodbeverage', this)">🍽️ Food & Beverage</button>
-  <button class="nav-btn" onclick="openTab('kasir', this)">💰 Menu Kasir</button>
-  <button class="nav-btn" onclick="openTab('laporan', this)">📊 Laporan</button>
+  <button class="nav-btn" onclick="openTab('backup', this)">💾 Backup</button>
 </div>
 
 <!-- TAB 1: MENU MEJA -->
@@ -165,16 +174,28 @@
   <div id="daftar-menu"></div>
 </div>
 
-<!-- TAB 3: KASIR -->
-<div id="kasir" class="tab-content">
-  <h2>💰 Kasir</h2>
-  <div id="kasir-content">Fitur kasir belum dibuat</div>
-</div>
-
-<!-- TAB 4: LAPORAN -->
-<div id="laporan" class="tab-content">
-  <h2>📊 Laporan</h2>
-  <div id="laporan-content">Fitur laporan belum dibuat</div>
+<!-- TAB 3: BACKUP -->
+<div id="backup" class="tab-content">
+  <h2>💾 Backup & Restore Data</h2>
+  
+  <div class="export-box">
+    <h4>Export Data</h4>
+    <p>Download semua data ke Excel atau PDF</p>
+    <button class="btn-info" onclick="exportExcel()">📊 Export Excel</button>
+    <button class="btn-danger" onclick="exportPDF()">📄 Export PDF</button>
+  </div>
+  
+  <div class="export-box">
+    <h4>Import Data</h4>
+    <p>Upload file Excel .xlsx untuk restore data. Format harus sama dengan hasil export.</p>
+    <input type="file" id="importFile" accept=".xlsx" onchange="importExcel()">
+  </div>
+  
+  <div class="export-box" style="background:#ffebee;">
+    <h4>⚠️ Reset Data</h4>
+    <p>Hapus semua data meja, menu, dan kategori. Aksi ini tidak bisa diurungkan!</p>
+    <button class="btn-danger" onclick="resetData()">Reset Semua Data</button>
+  </div>
 </div>
 
 <!-- MODAL MEJA -->
@@ -553,6 +574,149 @@
       </table>
     `;
   }
+  
+  // === EXPORT EXCEL ===
+  window.exportExcel = () => {
+    const wb = XLSX.utils.book_new();
+    
+    // Sheet Meja
+    const mejaData = mejaList.map((m, i) => ({
+      No: i + 1,
+      Nama_Meja: m.nama
+    }));
+    const wsMeja = XLSX.utils.json_to_sheet(mejaData);
+    XLSX.utils.book_append_sheet(wb, wsMeja, "Meja");
+    
+    // Sheet Menu
+    const menuData = menuList.map((m, i) => ({
+      No: i + 1,
+      Nama_Menu: m.nama,
+      Tipe: m.tipe,
+      Kategori: m.kategori,
+      Harga: m.harga
+    }));
+    const wsMenu = XLSX.utils.json_to_sheet(menuData);
+    XLSX.utils.book_append_sheet(wb, wsMenu, "Menu");
+    
+    // Sheet Kategori
+    const kategoriData = kategoriList.map((k, i) => ({
+      No: i + 1,
+      Nama_Kategori: k.nama,
+      Tipe: k.tipe
+    }));
+    const wsKategori = XLSX.utils.json_to_sheet(kategoriData);
+    XLSX.utils.book_append_sheet(wb, wsKategori, "Kategori");
+    
+    XLSX.writeFile(wb, `backup_kasir_${new Date().toISOString().split('T')[0]}.xlsx`);
+    alert('Export Excel berhasil!');
+  };
+  
+  // === EXPORT PDF ===
+  window.exportPDF = () => {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    doc.setFontSize(16);
+    doc.text('Backup Data Kasir Naotajun', 14, 15);
+    doc.setFontSize(10);
+    doc.text(`Tanggal: ${new Date().toLocaleDateString('id-ID')}`, 14, 22);
+    
+    let y = 30;
+    
+    // Meja
+    doc.setFontSize(12);
+    doc.text('1. Data Meja', 14, y);
+    y += 7;
+    doc.setFontSize(9);
+    mejaList.forEach((m, i) => {
+      doc.text(`${i+1}. ${m.nama}`, 14, y);
+      y += 5;
+      if(y > 270) { doc.addPage(); y = 15; }
+    });
+    
+    // Menu
+    y += 5;
+    doc.setFontSize(12);
+    doc.text('2. Data Menu', 14, y);
+    y += 7;
+    doc.setFontSize(9);
+    menuList.forEach((m, i) => {
+      const line = `${i+1}. ${m.nama} | ${m.tipe} | ${m.kategori} | Rp ${m.harga.toLocaleString('id-ID')}`;
+      doc.text(line, 14, y);
+      y += 5;
+      if(y > 270) { doc.addPage(); y = 15; }
+    });
+    
+    doc.save(`backup_kasir_${new Date().toISOString().split('T')[0]}.pdf`);
+    alert('Export PDF berhasil!');
+  };
+  
+  // === IMPORT EXCEL ===
+  window.importExcel = (e) => {
+    const file = e.target.files[0];
+    if(!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      const bstr = evt.target.result;
+      const wb = XLSX.read(bstr, { type: 'binary' });
+      
+      try {
+        // Import Meja
+        if(wb.Sheets["Meja"]) {
+          const mejaData = XLSX.utils.sheet_to_json(wb.Sheets["Meja"]);
+          mejaList = mejaData.map((row, i) => ({
+            id: Date.now() + i,
+            nama: row.Nama_Meja
+          }));
+          localStorage.setItem('mejaList', JSON.stringify(mejaList));
+        }
+        
+        // Import Menu
+        if(wb.Sheets["Menu"]) {
+          const menuData = XLSX.utils.sheet_to_json(wb.Sheets["Menu"]);
+          menuList = menuData.map((row, i) => ({
+            id: Date.now() + i,
+            nama: row.Nama_Menu,
+            tipe: row.Tipe,
+            kategori: row.Kategori,
+            harga: parseInt(row.Harga)
+          }));
+          localStorage.setItem('menuList', JSON.stringify(menuList));
+        }
+        
+        // Import Kategori
+        if(wb.Sheets["Kategori"]) {
+          const kategoriData = XLSX.utils.sheet_to_json(wb.Sheets["Kategori"]);
+          kategoriList = kategoriData.map((row, i) => ({
+            id: Date.now() + i,
+            nama: row.Nama_Kategori,
+            tipe: row.Tipe
+          }));
+          localStorage.setItem('kategoriList', JSON.stringify(kategoriList));
+        }
+        
+        alert('Import berhasil! Halaman akan di-refresh.');
+        location.reload();
+        
+      } catch(err) {
+        alert('Format file salah! Gunakan file hasil export dari aplikasi ini.');
+        console.error(err);
+      }
+    };
+    reader.readAsBinaryString(file);
+  };
+  
+  // === RESET DATA ===
+  window.resetData = () => {
+    if(confirm('Yakin hapus SEMUA data? Ini tidak bisa diurungkan!')) {
+      localStorage.removeItem('mejaList');
+      localStorage.removeItem('menuList');
+      localStorage.removeItem('kategoriList');
+      alert('Data berhasil direset!');
+      location.reload();
+    }
+  };
   
   // Tutup modal kalau klik luar
   window.addEventListener('click', (e) => {
