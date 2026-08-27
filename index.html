@@ -1,127 +1,179 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kasir Naotajun</title>
+  <meta charset="UTF-8">
+  <title>DASHBOARD PERUSAHAAN</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; background: #bbcc7c; }
 
-<!-- Library Excel & PDF -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    /* NAVBAR KAPSUL WARNA */
+ .navbar { background-color: #131516; display: flex; gap: 12px; padding: 12px 20px; border-radius: 0 0 15px 15px; flex-wrap: wrap; }
+ .navbar a { color: rgb(184, 209, 115); padding: 10px 22px; text-decoration:
+  none; font-weight: bold; border-radius: 50px; transition: 0.3s; font-size: 14px; opacity: 0.7; cursor: pointer; }
+ .navbar a:hover { transform: translateY(-2px); opacity: 1; }
+ .nav-dashboard { background: #e67e22; }
+ .nav-resto { background: #27ae60; }
+ .nav-inventory { background: #2980b9; }
+ .nav-selesai { background: #8e44ad; }
+ .nav-kontakme { background: #ec5fbd; }
+ .navbar a.active { opacity: 1; box-shadow: 0 4px 12px rgba(0,0,0,0.3); transform: scale(1.05); }
 
-<style>
-/* ===== COPY SEMUA CSS DARI FILE LAMA KE SINI ===== */
-body { 
-  font-family: Arial, sans-serif; 
-  margin: 0; 
-  padding: 0; 
-}
-body.green { background: #e8f5e9; }
-body.pink { background: #fce4ec; }
-body.blue { background: #e3f2fd; }
-body.brown { background: #efebe9; }
+ .content { padding: 40px; }
 
-.theme-bar { 
-  padding: 10px; 
-  background: #fff; 
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
-}
-.theme-btn { 
-  margin: 0 5px; 
-  padding: 8px 15px; 
-  border: none; 
-  border-radius: 5px; 
-  cursor: pointer; 
-}
-.theme-btn.active { outline: 2px solid #000; }
+   /* TULISAN BERJALAN */
+ .marquee {
+      background: #e67e22;
+      color: white;
+      padding: 12px 0;
+      font-weight: bold;
+      font-size: 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      overflow: hidden;
+      white-space: nowrap;
+   }
+ .marquee span {
+      display: inline-block;
+      padding-left: 100%;
+      animation: marquee 15s linear infinite;
+   }
+   @keyframes marquee {
+      0% { transform: translate(0, 0); }
+      100% { transform: translate(-100%, 0); }
+   }
 
-.navbar { 
-  display: flex; 
-  background: #333; 
-  overflow-x: auto; 
-}
-.nav-btn { 
-  flex: 1; 
-  min-width: 120px; 
-  padding: 12px; 
-  border: none; 
-  background: #333; 
-  color: #fff; 
-  cursor: pointer; 
-  white-space: nowrap; 
-}
-.nav-btn.active { background: #555; }
+    /* SLIDER */
+ .slider { position: relative; width: 100%; height: 350px; border-radius: 12px; overflow: hidden; margin-bottom: 20px; background: #000; }
+ .slide { position: absolute; width: 100%; height: 100%; opacity: 0; transition: opacity 1s ease-in-out; }
+ .slide.active { opacity: 1; }
+ .slide img,.slide video { width: 100%; height: 100%; object-fit: cover; }
 
-.tab-content { 
-  display: none; 
-  padding: 20px; 
-}
-.tab-content.active { display: block; }
+ .card { background: rgba(243, 242, 237, 0.753); padding: 20px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+ .card h3 { margin-top: 0; color: #2c3e50; }
+ .card p { font-size: 24px; font-weight: bold; color: #e67e22; margin: 10px 0 0 0; }
 
-button { 
-  cursor: pointer; 
-  padding: 6px 12px; 
-  margin: 2px; 
-  border: none; 
-  border-radius: 5px; 
-}
-.btn-primary { background: #4caf50; color: white; }
-.btn-warning { background: #ff9800; color: white; }
-.btn-danger { background: #f44336; color: white; }
-.btn-secondary { background: #9e9e9e; color: white; }
-.btn-info { background: #2196f3; color: white; }
+  /* NAVBAR TOMBOL */
+ .navbar a {
+    color: #FFFFFF!important; /* Tulisan putih biar ncerah */
+    font-weight: bold;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.6); /* Biar nimbul */
+    text-decoration: none; /* Hilangin garis bawah */
+    padding: 10px 18px;
+    border-radius: 20px;
+    display: inline-block;
+    margin: 5px;
+  }
+ .nav-dashboard { background: #FF8C00; } /* orange */
+ .nav-resto { background: #228B22; } /* hijau */
+ .nav-inventory { background: #1E5A96; } /* biru */
+ .nav-general { background: #d30707; } /* merah */
+ .nav-selesai { background: #6A0DAD; } /* ungu */
+ .nav-kontakme { background: #C71585; } /* pink */
 
-.table-wrapper { 
-  width: 100%; 
-  overflow-x: auto; 
-  margin-top: 15px; 
-}
-table { 
-  width: 100%; 
-  border-collapse: collapse; 
-  background: white; 
-}
-th, td { 
-  padding: 8px 10px; 
-  text-align: left; 
-  border-bottom: 1px solid #ddd; 
-}
-th { 
-  background: #333; 
-  color: white; 
-  cursor: pointer; 
-}
-/* ===== SAMPAI SINI COPY CSS LAMA ===== */
-</style>
+  /* MODAL WARNING */
+ .modal-warning { display:none; position:fixed; z-index:999; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.7); backdrop-filter:blur(3px); }
+ .modal-box { background:#fff; margin:15% auto; padding:30px; border-radius:15px; width:90%; max-width:420px; text-align:center; border-top:6px solid #d30707; animation:pop 0.3s; }
+  @keyframes pop { from{transform:scale(0.8);} to{transform:scale(1);} }
+ .modal-box i { font-size:50px; color:#d30707; }
+ .modal-box h3 { margin:15px 0 10px 0; color:#1e293b; }
+ .modal-box p { color:#64748b; font-size:14px; line-height:1.6; }
+ .btn-tutup { margin-top:15px; background:#d30707; color:#fff; border:none; padding:12px 25px; border-radius:8px; cursor:pointer; font-weight:600; }
+ .btn-wa { margin-top:10px; background:#25D366; color:#fff; border:none; padding:12px 25px; border-radius:8px; cursor:pointer; font-weight:600; margin-left:10px; }
+  </style>
 </head>
 <body>
 
-<!-- BAR TEMA -->
-<div class="theme-bar">
-  <span>Tema:</span>
-  <button class="theme-btn" onclick="setTheme('green', this)">Hijau</button>
-  <button class="theme-btn" onclick="setTheme('pink', this)">Pink</button>
-  <button class="theme-btn" onclick="setTheme('blue', this)">Biru</button>
-  <button class="theme-btn" onclick="setTheme('brown', this)">Brown</button>
-</div>
+  <div class="navbar">
+    <a href="dashboard.html" class="nav-dashboard active">DASHBOARD TENTANG PERUSAHAAN</a>
+    <a href="menuutama.html" class="nav-resto">RESTO</a>
+    <a href="#" onclick="showWarning('Inventory')" class="nav-inventory">INVENTORY</a>
+    <a href="#" onclick="showWarning('General Ledger')" class="nav-general">GENERAL LEDGER</a>
+    <a href="selesai.html" class="nav-selesai">SELESAI</a>
+    <a href="https://wa.me/6282340152478" target="_blank" class="nav-kontakme">Contact US : Ivan Made Diarsa 082340152478</a>
+  </div>
 
-<!-- NAVBAR -->
-<div class="navbar">
-  <button class="nav-btn active" onclick="openTab('meja', this)">📋 Meja</button>
-  <button class="nav-btn" onclick="openTab('foodbeverage', this)">🍽️ Food & Beverage</button>
-  <button class="nav-btn" onclick="openTab('kasir', this)">💰 Kasir</button>
-  <button class="nav-btn" onclick="openTab('laporan', this)">📊 Laporan</button>
-  <button class="nav-btn" onclick="openTab('backup', this)">💾 Backup</button>
-</div>
+  <div class="content">
+    <h1>DASHBOARD PERUSAHAAN</h1>
 
-<!-- CONTAINER TAB - KOSONG, NANTI DIISI JS -->
-<div id="meja" class="tab-content active"></div>
-<div id="foodbeverage" class="tab-content"></div>
-<div id="kasir" class="tab-content"></div>
-<div id="laporan" class="tab-content"></div>
-<div id="backup" class="tab-content"></div>
+    <!-- TULISAN BERJALAN -->
+    <div class="marquee">
+      <span>🔥 PROMO HARI INI: MENU BARU->> KAMBING LARI TERPELESET Hanya 999K! | Gratis Es Teh untuk 20 Pembeli Pertama! | Buka Setiap Hari 10:00 - 22:00 🔥
+      🔥 PROMO HARI INI: MENU BARU->> BEBEK TENGGELAM Hanya 999K! | Gratis Es Teh untuk 20 Pembeli Pertama! | Buka Setiap Hari 10:00 - 22:00 🔥</span>
+   </div>
 
-<!-- PANGGIL APP.JS SEBAGAI MODULE -->
-<script type="module" src="app.js"></script>
+    <!-- SLIDER -->
+    <div class="slider">
+      <div class="slide active">
+        <img src="https://images.pexels.com/photos/260922/pexels-photo-260922.jpeg" alt="Interior Resto">
+      </div>
+
+      <div class="slide">
+        <video autoplay muted loop playsinline>
+          <source src="https://videos.pexels.com/video-files/1646753/1646753-hd_1920_1080_25fps.mp4" type="video/mp4">
+        </video>
+      </div>
+
+      <div class="slide">
+        <img src="https://images.pexels.com/photos/70497/pexels-photo-70497.jpeg" alt="Menu Makanan">
+      </div>
+
+      <div class="slide">
+        <img src="https://images.pexels.com/photos/262978/pexels-photo-262978.jpeg" alt="Chef">
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Total Penjualan Hari Ini</h3>
+      <p>Rp 0</p>
+    </div>
+    <div class="card">
+      <h3>Total Biaya Inventory</h3>
+      <p>Rp 0</p>
+    </div>
+    <div class="card">
+      <h3>Laba Bersih</h3>
+      <p>Rp 0</p>
+    </div>
+  </div>
+
+  <!-- MODAL WARNING -->
+  <div id="modalWarning" class="modal-warning">
+    <div class="modal-box">
+      <i class="fa-solid fa-triangle-exclamation"></i>
+      <h3 id="judulWarning">Modul Belum Aktif</h3>
+      <p id="pesanWarning"></p>
+      <button class="btn-tutup" onclick="closeWarning()">Tutup</button>
+      <button class="btn-wa" onclick="window.open('https://wa.me/6282340152478', '_blank')">Hubungi Admin</button>
+    </div>
+  </div>
+
+  <script>
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+    function nextSlide() {
+      slides[currentSlide].classList.remove('active');
+      currentSlide = (currentSlide + 1) % slides.length;
+      slides[currentSlide].classList.add('active');
+    }
+    setInterval(nextSlide, 4000);
+
+    // FUNGSI WARNING MODUL
+    function showWarning(namaModul) {
+        document.getElementById('judulWarning').innerText = `⚠️ MODUL ${namaModul.toUpperCase()} BELUM AKTIF`;
+        document.getElementById('pesanWarning').innerText = `Modul ${namaModul} masih dalam tahap pengembangan. Silahkan hubungi Admin untuk informasi lebih lanjut.`;
+        document.getElementById('modalWarning').style.display = 'block';
+    }
+    function closeWarning() {
+        document.getElementById('modalWarning').style.display = 'none';
+    }
+    // klik luar modal untuk tutup
+    window.onclick = function(event) {
+        if (event.target == document.getElementById('modalWarning')) {
+            closeWarning();
+        }
+    }
+  </script>
+
 </body>
 </html>

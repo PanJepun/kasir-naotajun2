@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Kasir - Order Masuk</title>
+  <style>
+    body{font-family:Arial; background:#222; color:white; padding:10px}
+.card{background:#333; padding:15px; margin:10px 0; border-radius:10px; border-left:5px solid #ff6600}
+    button{padding:8px 15px; margin:5px; border:none; border-radius:5px; color:white; cursor:pointer; font-weight:bold}
+  </style>
+</head>
+<body>
+<h2>🔔 ORDER MASUK - SELF ORDER</h2>
+<div id="orderList">Menunggu order...</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, onValue, set, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyD6r1mm0Fm0gIioG2UcWQZt0XJtHQj15iI",
+    authDomain: "restopro2026-60038.firebaseapp.com",
+    databaseURL: "https://restopro2026-60038-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "restopro2026-60038",
+    storageBucket: "restopro2026-60038.firebasestorage.app",
+    messagingSenderId: "336434967293",
+    appId: "1:336434967293:web:ba55b927cd01aa0229c494"
+};
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+let orders = {};
+
+onValue(ref(db, 'orders'), (snapshot)=>{
+  orders = snapshot.val() || {};
+  renderOrders();
+});
+
+function renderOrders(){
+  let html = "";
+  let ada = false;
+  for(let id in orders){
+    let o = orders[id];
+    if(o.status!== "BARU") continue; // cuma tampilkan yg baru
+
+    ada = true;
+    let itemsHtml = "";
+    o.items.forEach(it=>{
+      itemsHtml += `<div>${it.nama} x${it.qty} - Rp ${(it.harga * it.qty).toLocaleString('id-ID')}</div>`
+    })
+
+    html += `<div class="card">
+      <b>Meja: ${o.meja}</b> | ${o.waktu}<br>
+      ${itemsHtml}
+      <b>Total: Rp ${o.total.toLocaleString('id-ID')}</b><br>
+      <button style="background:#007bff" onclick="prosesOrder('${id}')">PROSES</button>
+      <button style="background:#dc3545" onclick="hapusOrder('${id}')">TOLAK</button>
+    </div>`;
+  }
+  document.getElementById('orderList').innerHTML = ada?html:"<p>Tidak ada order baru</p>";
+}
+
+// KLIK PROSES = PINDAH + HAPUS
+window.prosesOrder = function(id){
+  const order = orders[id];
+  
+  // 1. PINDAH KE MEJA TERTAHAN
+  const dataMeja = {
+    meja: order.meja,
+    items: order.items,
+    total: order.total,
+    waktuMulai: order.waktu,
+    orderId: id
+  };
+  set(ref(db, 'mejaTertahan/' + order.meja), dataMeja);
+
+  // 2. HAPUS DARI ORDER MASUK
+  remove(ref(db, 'orders/' + id)); 
+
+  alert("Order Meja " + order.meja + " dipindah ke Meja Tertahan");
+}
+
+window.hapusOrder = function(id){
+  if(confirm("Yakin tolak order ini?")){
+    remove(ref(db, 'orders/' + id));
+  }
+}
+</script>
+</body>
+</html>

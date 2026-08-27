@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Self Order - Resto</title>
+  <style>
+    body{font-family:Arial; background:#f5f5f5; padding:10px; padding-bottom:220px}
+.menu{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px}
+.card{background:white; padding:10px; border-radius:10px; box-shadow:0 2px 5px #ccc}
+.card img{width:100%; height:100px; object-fit:cover; border-radius:8px}
+.keranjang{position:fixed; bottom:0; left:0; right:0; background:white; padding:15px; box-shadow:0 -2px 10px #ccc; max-height:200px; overflow-y:auto}
+.item-keranjang{display:flex; justify-content:space-between; font-size:14px; margin:5px 0}
+.btn-qty{background:#ddd; color:#000; width:25px; padding:2px; margin:0 5px}
+    button{background:#ff6600; color:white; border:none; padding:10px; border-radius:8px; width:100%; cursor:pointer}
+  </style>
+</head>
+<body>
+<h2>Menu Meja: <span id="kodeMeja"></span></h2>
+<div class="menu" id="menuList">Loading menu...</div>
+
+<div class="keranjang">
+  <b>Pesanan Kamu</b>
+  <div id="listKeranjang">Belum ada pesanan</div>
+  <hr>
+  <b>Total: <span id="totalItem">0</span> item | Rp <span id="totalHarga">0</span></b><br>
+  <button onclick="kirimPesanan()">Kirim Pesanan</button>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyD6r1mm0Fm0gIioG2UcWQZt0XJtHQj15iI",
+    authDomain: "restopro2026-60038.firebaseapp.com",
+    databaseURL: "https://restopro2026-60038-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "restopro2026-60038",
+    storageBucket: "restopro2026-60038.firebasestorage.app",
+    messagingSenderId: "336434967293",
+    appId: "1:336434967293:web:ba55b927cd01aa0229c494"
+};
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const urlParams = new URLSearchParams(window.location.search);
+const kodeMeja = urlParams.get('kode') || 'Tamu';
+document.getElementById('kodeMeja').innerText = kodeMeja;
+
+let menu = [];
+let keranjang = [];
+
+onValue(ref(db, 'menu'), (snapshot)=>{
+  menu = [];
+  snapshot.forEach(child=>{
+    menu.push({id: child.key,...child.val()});
+  });
+  renderMenu();
+});
+
+function renderMenu(){
+  let html = "";
+  menu.forEach((m,i)=>{
+    html += `<div class="card">
+      <img src="${m.gambar || 'https://via.placeholder.com/100'}">
+      <b>${m.nama}</b><br>Rp ${m.harga.toLocaleString('id-ID')}<br>
+      <button onclick="tambah(${i})">+ Pesan</button>
+    </div>`;
+  });
+  document.getElementById('menuList').innerHTML = html;
+}
+
+window.tambah = function(i){
+  let item = {...menu[i]};
+  let found = keranjang.find(x=>x.id == item.id);
+  if(found) found.qty++;
+  else keranjang.push({...item, qty: 1});
+  updateKeranjang();
+}
+
+window.kurang = function(i){
+  keranjang[i].qty--;
+  if(keranjang[i].qty <= 0) keranjang.splice(i,1);
+  updateKeranjang();
+}
+
+function updateKeranjang(){
+  let html = "";
+  if(keranjang.length == 0){
+    html = "Belum ada pesanan";
+  } else {
+    keranjang.forEach((it,i)=>{
+      html += `<div class="item-keranjang">
+        <span>${it.nama}</span>
+        <span>
+          <button class="btn-qty" onclick="kurang(${i})">-</button>
+          ${it.qty}
+          <button class="btn-qty" onclick="tambah(menu.findIndex(m=>m.id==it.id))">+</button>
+        </span>
+      </div>`;
+    })
+  }
+
+  let total = keranjang.reduce((a,b)=>a+b.harga*b.qty,0);
+  let totalItem = keranjang.reduce((a,b)=>a+b.qty,0);
+
+  document.getElementById('listKeranjang').innerHTML = html;
+  document.getElementById('totalItem').innerText = totalItem;
+  document.getElementById('totalHarga').innerText = total.toLocaleString('id-ID');
+}
+
+window.kirimPesanan = function(){
+  if(keranjang.length==0) return alert("Keranjang kosong");
+
+  const orderBaru = {
+    meja: kodeMeja,
+    items: keranjang,
+    total: keranjang.reduce((a,b)=>a+b.harga*b.qty,0),
+    status: "BARU",
+    waktu: new Date().toLocaleString('id-ID')
+  };
+
+  push(ref(db, 'orders'), orderBaru)
+.then(()=> {
+    alert("Pesanan terkirim ke Kasir!");
+    keranjang = [];
+    updateKeranjang();
+  })
+.catch((e)=> alert("Gagal: " + e));
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>RESTOPRO - Kasir</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{font-family: 'Poppins'; margin:0; background:#f8fafc; color:#1e293b;}
+.container{padding:20px; display:grid; grid-template-columns: 2fr 1fr; gap:20px;}
+.card{background:#fff; border-radius:12px; padding:20px; box-shadow:0 4px 12px rgba(0,0,0,0.05);}
+.header-form{display:grid; grid-template-columns: 1fr 1fr 1fr; gap:15px; margin-bottom:20px;}
+.header-form label{font-size:12px; color:#64748b; margin-bottom:6px; display:block; font-weight:600; text-transform:uppercase;}
+.header-form select{width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; font-family:'Poppins';}
+.menu-grid{display:grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap:15px;}
+.menu-card{border:1px solid #e2e8f0; border-radius:10px; text-align:center; padding:10px; cursor:pointer; transition:0.2s;}
+.menu-card:hover{border-color:#f97316; transform:translateY(-2px);}
+.menu-card img{width:100%; height:120px; object-fit:cover; border-radius:8px;}
+.menu-card h4{margin:10px 0 5px 0; font-size:14px; font-weight:600;}
+.menu-card p{margin:0; color:#2563eb; font-weight:700;}
+.meja-aktif-grid{display:grid; grid-template-columns: 1fr; gap:12px; margin-top:10px;}
+.meja-card{border:2px solid #fb923c; border-radius:10px; padding:14px; background:#fff7ed; transition:0.2s;}
+.meja-card:hover{border-color:#f97316; background:#ffedd5;}
+.meja-top{display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;}
+.meja-nama{font-weight:700; font-size:15px; color:#9a3412;}
+.meja-waktu{font-size:12px; color:#7c2d12; display:flex; align-items:center; gap:5px; margin-top:3px;}
+.meja-badge{background:#1e293b; color:#fff; font-size:11px; padding:4px 10px; border-radius:20px; font-weight:700; white-space:nowrap;}
+.meja-divider{margin:10px 0; border-top:1px dashed #fed7aa;}
+.meja-row{display:flex; justify-content:space-between; font-size:13px; padding:3px 0; color:#7c2d12;}
+.input-row{display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px;}
+.rincian div{display:flex; justify-content:space-between; margin:8px 0; font-size:14px;}
+.rincian.total{font-weight:800; font-size:18px; color:#f97316; border-top:1px solid #e2e8f0; padding-top:10px;}
+.btn{width:100%; padding:12px; border:none; border-radius:8px; font-weight:700; cursor:pointer; margin-top:10px; font-family:'Poppins';}
+.btn-orange{background:#f97316; color:#fff;}.btn-hijau{background:#10b981; color:#fff;}.btn-biru{background:#3b82f6; color:#fff;}.btn-merah{background:#ef4444; color:#fff;}
+input{padding:10px; border:1px solid #cbd5e1; border-radius:8px; width:100%; box-sizing:border-box; font-family:'Poppins';}
+option:disabled{background:#fee2e2; color:#b91c1c; font-weight:700;}
+</style>
+</head>
+<body>
+<div class="container">
+  <div>
+    <div class="card">
+      <div class="header-form">
+        <div><label>Pilih Meja</label><select id="selectMeja"><option value="">-- Pilih Meja --</option></select></div>
+        <div><label>Petugas Kasir</label><select id="selectKasir"></select></div>
+        <div><label>Pilih Waitress</label><select id="selectWaitress"><option>Junior</option><option>Senior</option></select></div>
+      </div>
+      <h3 style="margin-top:0;">Daftar Menu</h3>
+      <div class="menu-grid" id="menuGrid"></div>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0;"><i class="fa-solid fa-thumbtack" style="color:#ef4444;"></i> Daftar Meja Aktif</h3>
+      <div id="mejaAktif" class="meja-aktif-grid"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0;"><i class="fa-solid fa-cart-shopping"></i> Keranjang ( <span id="namaMejaKeranjang">Belum Pilih</span> )</h3>
+    <div id="orderList"><i>Belum ada pesanan</i></div>
+    <hr style="border:none; border-top:1px solid #e2e8f0; margin:15px 0;">
+    <div class="input-row">
+      <div><label>TIPE DISKON</label><select id="tipeDiskon"><option>Persen (%)</option><option>Rp</option></select></div>
+      <div><label>NILAI DISKON</label><input type="number" id="nilaiDiskon" value="0"></div>
+    </div>
+    <div><label>METODE PEMBAYARAN</label><select id="metodeBayar"><option value="CASH">💵 CASH</option><option value="QRIS">📱 QRIS</option></select></div>
+    <div class="input-row" style="margin-top:12px;">
+      <div><label>NOMINAL UANG</label><input type="number" id="uangBayar" value="0"></div>
+      <div><label>KEMBALIAN</label><div style="font-weight:800; color:#10b981; font-size:18px; padding-top:8px;" id="kembalian">Rp 0</div></div>
+    </div>
+    <div class="rincian">
+      <div><span>Subtotal</span> <span id="subtotal">Rp 0</span></div>
+      <div><span>Potongan</span> <span id="potongan">Rp 0</span></div>
+      <div><span>PPN (<span id="labelPPN">11</span>%)</span> <span id="ppn">Rp 0</span></div>
+      <div class="total"><span>TOTAL AKHIR</span> <span id="totalAkhir">Rp 0</span></div>
+    </div>
+    <button class="btn btn-orange" onclick="tahanMeja()"><i class="fa-solid fa-hourglass-half"></i> Tahan Meja</button>
+    <button class="btn btn-hijau" onclick="bayar()"><i class="fa-solid fa-receipt"></i> Proses Bayar</button>
+    <button class="btn btn-biru" onclick="resetKeranjang()"><i class="fa-solid fa-rotate-right"></i> RESET</button>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
+import { getDatabase, ref, push, onValue, set, remove, update } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-database.js";
+
+const firebaseConfig = {apiKey: "AIzaSyD6r1mm0Fm0gIioG2UcWQZt0XJtHQj15iI", authDomain: "restopro2026-60038.firebaseapp.com", databaseURL: "https://restopro2026-60038-default-rtdb.asia-southeast1.firebasedatabase.app", projectId: "restopro2026-60038"};
+const app = initializeApp(firebaseConfig); const db = getDatabase(app);
+
+let userLogin = JSON.parse(localStorage.getItem("userLogin"));
+if(!userLogin){ alert("Silahkan login dulu!"); window.location.href = "login.html"; }
+
+let menuData = []; let mejaData = []; let userData = []; let konfigurasi = {};
+let mejaTertahanData = {};
+
+let keranjang = []; let mejaAktifSekarang = null;
+
+onValue(ref(db, 'menu'), (s)=>{ menuData = s.val()? Object.keys(s.val()).map(k=>({id:k,...s.val()[k]})) : []; renderMenu(); });
+onValue(ref(db, 'meja'), (s)=>{ mejaData = s.val()? Object.keys(s.val()).map(k=>({id:k,...s.val()[k]})) : []; loadAwal(); });
+onValue(ref(db, 'users'), (s)=>{ userData = s.val()? Object.keys(s.val()).map(k=>({id:k,...s.val()[k]})) : []; loadAwal(); });
+onValue(ref(db, 'konfigurasi'), (s)=>{ konfigurasi = s.val() || {nama:"RestoPro", ppn:11, bill:"BILL-0001"}; labelPPN.textContent = konfigurasi.ppn; });
+onValue(ref(db, 'mejaTertahan'), (snapshot) => { mejaTertahanData = snapshot.val() || {}; loadAwal(); });
+
+function loadAwal(){
+  updateStatusMeja();
+  renderDropdownMeja();
+  selectKasir.innerHTML = userData.filter(u=>u.role=="Kasir" || u.role=="Admin/Owner").map(u=>`<option>${u.nama}</option>`).join("") || `<option>${userLogin.nama}</option>`;
+  renderMejaAktif(); hitungTotal();
+}
+
+function updateStatusMeja(){ mejaData.forEach(m=>{ m.status = mejaTertahanData[m.nomorMeja]? "Terpakai" : "Kosong"; }) }
+
+function renderDropdownMeja(){
+    selectMeja.innerHTML = '<option value="">-- Pilih Meja --</option>' + mejaData.map(m=>{
+        let dataTertahan = mejaTertahanData[m.nomorMeja];
+        if(dataTertahan){
+            return `<option value="${m.nomorMeja}" disabled>${m.nomorMeja} - TERPAKAI Rp ${dataTertahan.total.toLocaleString("id-ID")}</option>`;
+        } else {
+            return `<option value="${m.nomorMeja}">${m.nomorMeja}</option>`;
+        }
+    }).join("");
+}
+
+function renderMenu(){ menuGrid.innerHTML = menuData.map(m=>`<div class="menu-card" onclick="tambahKeranjang('${m.id}')"><img src="${m.gambar}"><h4>${m.nama}</h4><p>Rp ${m.harga.toLocaleString("id-ID")}</p></div>`).join(""); }
+
+selectMeja.addEventListener("change", ()=>{ mejaAktifSekarang = selectMeja.value; namaMejaKeranjang.textContent = mejaAktifSekarang || "Belum Pilih"; keranjang = mejaTertahanData[mejaAktifSekarang]?.items || []; renderKeranjang(); })
+
+window.tambahKeranjang = function(id){ if(!mejaAktifSekarang) return alert("Pilih meja dulu!"); let menu = menuData.find(m=>m.id==id); let item = keranjang.find(k=>k.id==id); if(item) item.qty++; else keranjang.push({...menu, qty:1}); renderKeranjang(); }
+
+function renderKeranjang(){ orderList.innerHTML = keranjang.length==0? "<i>Belum ada pesanan</i>" : keranjang.map(k=>`<div style="display:flex; justify-content:space-between; padding:8px 0;">${k.nama} x${k.qty} <b>Rp ${(k.harga*k.qty).toLocaleString("id-ID")}</b></div>`).join(""); hitungTotal(); }
+
+function hitungTotal(){ let subtotalVal = keranjang.reduce((a,b)=>a+b.harga*b.qty,0); let potonganVal = tipeDiskon.value == "Persen (%)"? subtotalVal * (+nilaiDiskon.value/100) : +nilaiDiskon.value; let ppnVal = (subtotalVal - potonganVal) * (konfigurasi.ppn/100); let totalVal = subtotalVal - potonganVal + ppnVal; let kembaliVal = (+uangBayar.value) - totalVal; subtotal.textContent = "Rp " + subtotalVal.toLocaleString("id-ID"); potongan.textContent = "Rp " + potonganVal.toLocaleString("id-ID"); ppn.textContent = "Rp " + ppnVal.toLocaleString("id-ID"); totalAkhir.textContent = "Rp " + totalVal.toLocaleString("id-ID"); kembalian.textContent = "Rp " + (kembaliVal>0?kembaliVal:0).toLocaleString("id-ID"); return totalVal; }
+[nilaiDiskon, tipeDiskon, uangBayar].forEach(el=>el.addEventListener("input", hitungTotal));
+
+window.tahanMeja = function(){ if(!mejaAktifSekarang || keranjang.length==0) return alert("Lengkapi data!"); let total = hitungTotal(); let data = { meja: mejaAktifSekarang, items: keranjang, total: total, waktuMulai: new Date().toLocaleString("id-ID"), orderId: 'MANUAL-' + Date.now() }; set(ref(db, 'mejaTertahan/' + mejaAktifSekarang), data).then(()=>{ alert(`Pesanan Meja ${mejaAktifSekarang} ditahan!`); resetKeranjang(); }) }
+
+function cetakBill(transaksi){ let listItem = transaksi.items.map(item => `<div style="display:flex; justify-content:space-between;"><span>${item.qty}x ${item.nama}</span><span>Rp ${(item.harga * item.qty).toLocaleString('id-ID')}</span></div>`).join(''); let billHTML = `<div style="width:80mm; font-family:'Courier New'; font-size:12px; padding:5px;"><h2 style="text-align:center; margin:0;">${konfigurasi.nama.toUpperCase()}</h2><hr style="border:1px dashed #000;"><p>No Bill : ${konfigurasi.bill}</p><p>Tanggal: ${transaksi.waktu}</p><p>Meja : ${transaksi.meja} | Kasir: ${transaksi.kasir}</p><hr style="border:1px dashed #000;">${listItem}<hr style="border:1px dashed #000;"><div style="display:flex; justify-content:space-between;"><b>TOTAL</b><b>Rp ${transaksi.total.toLocaleString('id-ID')}</b></div><p style="text-align:center;">TERIMA KASIH</p></div>`; let w = window.open('', '', 'height=600,width=300'); w.document.write(billHTML); w.document.close(); w.focus(); setTimeout(() => { w.print(); w.close(); }, 500); let nextNomor = parseInt(konfigurasi.bill.split('-')[1]) + 1; konfigurasi.bill = `BILL-${String(nextNomor).padStart(4,'0')}`; set(ref(db, 'konfigurasi'), konfigurasi); }
+
+window.bayar = async function(){ if(!mejaAktifSekarang || keranjang.length==0) return alert("Pilih meja dan menu dulu!"); let total = hitungTotal(); let metode = metodeBayar.value; let uang = +uangBayar.value; if(metode == "CASH"){ if(uang <= 0){ return alert("❌ Nominal Uang Wajib Diisi untuk Pembayaran CASH!"); } if(uang < total){ return alert(`❌ Uang Kurang! Total: Rp ${total.toLocaleString("id-ID")} | Uang: Rp ${uang.toLocaleString("id-ID")}`); } } let transaksi = { id: konfigurasi.bill, waktu: new Date().toLocaleString("id-ID"), meja: mejaAktifSekarang, kasir: selectKasir.value, waitress: selectWaitress.value, items: keranjang, total: total, metode: metode, uangBayar: uang, kembalian: uang - total }; await push(ref(db, 'transaksi'), transaksi); cetakBill(transaksi); await remove(ref(db, 'mejaTertahan/' + mejaAktifSekarang)); alert("✅ Transaksi Berhasil! " + transaksi.id); resetKeranjang(); }
+
+window.resetKeranjang = function(){ keranjang=[]; mejaAktifSekarang=null; selectMeja.value=""; namaMejaKeranjang.textContent="Belum Pilih"; nilaiDiskon.value=0; uangBayar.value=0; renderKeranjang(); }
+
+// INI KUNCINYA: ADA 2 TOMBOL
+function renderMejaAktif(){
+  let data = Object.values(mejaTertahanData);
+  if(data.length==0){
+    mejaAktif.innerHTML = `<p style="text-align:center; color:#64748b; font-style:italic; padding:20px;">Tidak ada meja aktif</p>`;
+  } else {
+    mejaAktif.innerHTML = data.map(p=>{
+      let totalItem = p.items.reduce((a,b)=>a+b.qty,0);
+      let listMenu = p.items.map(i=>`<div class="meja-row"><span>${i.nama}</span><span>x${i.qty}</span></div>`).join("");
+
+      return `
+      <div class="meja-card">
+        <div class="meja-top">
+          <div>
+            <div class="meja-nama">Meja ${p.meja} - ${totalItem} Item</div>
+            <div class="meja-waktu"><i class="fa-regular fa-clock"></i> ${p.waktuMulai}</div>
+          </div>
+          <div class="meja-badge">Rp ${p.total.toLocaleString("id-ID")}</div>
+        </div>
+        <div class="meja-divider"></div>
+        ${listMenu}
+        <button class="btn btn-biru" style="margin-top:8px" onclick="bukaMeja('${p.meja}')"><i class="fa-solid fa-pen-to-square"></i> LANJUTKAN PESAN</button>
+        </div>
+      `
+    }).join("");
+  }
+}
+
+window.bukaMeja = function(namaMeja){ keranjang = mejaTertahanData[namaMeja]?.items || []; mejaAktifSekarang = namaMeja; selectMeja.value = namaMeja; namaMejaKeranjang.textContent = namaMeja; renderKeranjang(); window.scrollTo({top: 0, behavior: 'smooth'}); }
+
+window.selesaikanMeja = function(namaMeja){ if(confirm("Selesaikan Meja " + namaMeja + "?")){ remove(ref(db, 'mejaTertahan/' + namaMeja)); } }
+</script>
+</body>
+</html>

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="id"><head><meta charset="UTF-8"><title>RESTOPRO - Master Menu</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+body{font-family: 'Poppins', sans-serif; margin:0; background:#e6ecf3;}
+nav{background:#1e293b; color:#fff; padding:8px 20px; display:flex; align-items:center; justify-content:space-between;}
+nav ul{display:flex; gap:5px; list-style:none; margin:0; padding:0;}
+nav ul li a{color:#cbd5e1; text-decoration:none; padding:8px 12px; font-size:13px; border-radius:6px;}
+nav ul li a.active{background:#10b981; color:#fff;}
+.container{padding:20px 30px;}.card{background:#fff; border-radius:12px; padding:20px;}
+.form-row{display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap; align-items:end;}
+input, select, button{padding:10px; border:1px solid #cbd5e1; border-radius:6px; font-family: 'Poppins';}
+.btn-hijau{background:#10b981; color:#fff; border:none; font-weight:700; cursor:pointer;}
+table{width:100%; border-collapse:collapse; margin-top:10px;}
+th,td{border:1px solid #ddd; padding:10px; text-align:left; vertical-align:middle;}
+th{background:#1e293b; color:#fff;}.img-preview{width:60px; height:60px; object-fit:cover; border-radius:6px;}
+.btn-aksi{padding:6px 10px; border:none; border-radius:4px; cursor:pointer; margin-right:4px; font-family: 'Poppins';}
+.btn-edit{background:#f59e0b; color:#fff;}.btn-delete{background:#ef4444; color:#fff;}
+</style></head><body>
+<nav><div>📦 RESTOPRO</div><ul>
+<li><a href="index.html">📊 Dashboard</a></li><li><a href="master.html" class="active">📦 Menu</a></li>
+<li><a href="meja.html">🪑 Meja</a></li><li><a href="kasir.html">💼 Kasir</a></li><li><a href="tools.html">⚙️ Tools</a></li>
+</ul></nav>
+<div class="container"><div class="card"><h1>📦 Kelola Data Menu</h1>
+<form id="formMenu" class="form-row">
+<input type="text" id="namaMenu" placeholder="Nama Menu" required>
+<input type="number" id="hargaMenu" placeholder="Harga" required>
+<select id="kategoriMenu"><option>Makanan</option><option>Minuman</option></select>
+<input type="file" id="gambarMenu" accept="image/*" required>
+<img id="preview" class="img-preview" style="display:none;">
+<button type="submit" class="btn-hijau">💾 Simpan Menu</button>
+</form>
+<table id="tableMenu"><thead><tr><th>Gambar</th><th>Nama Menu</th><th>Kategori</th><th>Harga</th><th>Aksi</th></tr></thead><tbody></tbody></table>
+</div></div>
+
+<script type="module">
+  // 1. KUNCI FIREBASE KAMU
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
+  import { getDatabase, ref, set, push, onValue, remove } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyD6r1mm0Fm0gIioG2UcWQZt0XJtHQj15iI",
+    authDomain: "restopro2026-60038.firebaseapp.com",
+    databaseURL: "https://restopro2026-60038-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "restopro2026-60038",
+    storageBucket: "restopro2026-60038.firebasestorage.app",
+    messagingSenderId: "336434967293",
+    appId: "1:336434967293:web:ba55b927cd01aa0229c494"
+  };
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const menuRef = ref(db, 'menu');
+
+  let menuData = [];
+  let editMenuId = null;
+  let gambarBase64 = "";
+
+  // 2. CEK LOGIN
+  let userLogin = JSON.parse(localStorage.getItem("userLogin"));
+  if(!userLogin ||!["Admin/Owner", "Manager"].includes(userLogin.role)){
+    alert("Hanya Admin/Manager yang bisa akses!");
+    window.location.href = "index.html";
+  }
+
+  // 3. UPLOAD GAMBAR KE BASE64
+  gambarMenu.addEventListener("change", function(e){
+    let file = e.target.files[0];
+    if(file){
+      let reader = new FileReader();
+      reader.onload = function(event){
+        gambarBase64 = event.target.result;
+        preview.src = gambarBase64;
+        preview.style.display = "block";
+      }
+      reader.readAsDataURL(file);
+    }
+  });
+
+  // 4. SIMPAN / EDIT KE FIREBASE
+  formMenu.addEventListener("submit", e=>{
+    e.preventDefault();
+    if(!gambarBase64 && editMenuId == null) return alert("Pilih gambar dulu!");
+
+    let data = {
+      nama: namaMenu.value,
+      harga: +hargaMenu.value,
+      kategori: kategoriMenu.value,
+      gambar: gambarBase64 || menuData.find(m=>m.id==editMenuId).gambar
+    };
+
+    if(editMenuId == null) {
+      push(menuRef, data); // TAMBAH BARU
+    } else {
+      set(ref(db, 'menu/' + editMenuId), data); // EDIT
+      editMenuId = null;
+    }
+
+    e.target.reset();
+    preview.style.display = "none";
+    gambarBase64 = "";
+  });
+
+  // 5. AMBIL DATA DARI FIREBASE REALTIME
+  onValue(menuRef, (snapshot) => {
+    const data = snapshot.val();
+    menuData = data? Object.keys(data).map(key => ({ id: key,...data[key] })) : [];
+    localStorage.setItem("menuData", JSON.stringify(menuData)); // backup ke local
+    renderMenu();
+    document.getElementById('totalMenu').textContent = menuData.length; // update dashboard
+  });
+
+  function renderMenu(){
+    tableMenu.querySelector("tbody").innerHTML = menuData.map((m)=>`
+      <tr>
+        <td><img src="${m.gambar}" class="img-preview"></td>
+        <td><b>${m.nama}</b></td>
+        <td>${m.kategori}</td>
+        <td>Rp ${m.harga.toLocaleString("id-ID")}</td>
+        <td>
+          <button class="btn-aksi btn-edit" onclick="editMenu('${m.id}')">Edit</button>
+          <button class="btn-aksi btn-delete" onclick="hapusMenu('${m.id}')">Hapus</button>
+        </td>
+      </tr>`).join("");
+  }
+
+  window.editMenu = function(id){
+    let m = menuData.find(x=>x.id==id);
+    namaMenu.value = m.nama;
+    hargaMenu.value = m.harga;
+    kategoriMenu.value = m.kategori;
+    gambarBase64 = m.gambar;
+    preview.src = m.gambar;
+    preview.style.display = "block";
+    gambarMenu.required = false;
+    editMenuId = id;
+  }
+
+  window.hapusMenu = function(id){
+    if(confirm("Yakin mau hapus menu ini?")){
+      remove(ref(db, 'menu/' + id));
+    }
+  }
+</script>
+</body></html>

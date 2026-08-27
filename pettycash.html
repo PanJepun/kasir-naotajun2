@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>RESTOPRO - Petty Cash</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+body{font-family: 'Poppins', sans-serif; margin:0; background:#0f172a; padding:20px; color:#e2e8f0;}
+.header{background: rgba(30, 41, 59, 0.8); backdrop-filter: blur(20px); padding:15px 20px; border-radius:16px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center; border:1px solid rgba(255,255,255,0.1);}
+.header h1{margin:0; font-size:18px; color:#f97316;}
+.header a{color:#fff; text-decoration:none; background:#10b981; padding:8px 14px; border-radius:8px; font-size:13px; font-weight:600;}
+.card{background: rgba(30, 41, 59, 0.8);backdrop-filter: blur(20px);padding:25px;border-radius:16px;border:1px solid rgba(255,255,255,0.1)}
+.grid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px;margin-bottom:20px}
+.grid2{display:grid;grid-template-columns:1fr 2fr;gap:20px}
+input,select{padding:10px;border:1px solid #475569;border-radius:6px;width:100%;box-sizing:border-box;background:#1e293b;color:#fff;font-family:'Poppins'}
+.btn{padding:12px;border:none;border-radius:6px;font-weight:700;cursor:pointer;font-family:'Poppins'}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1><i class="fa-solid fa-wallet"></i> Manajemen Kas Kecil (Petty Cash)</h1>
+  <a href="index.html"><i class="fa-solid fa-arrow-left"></i> Kembali ke Dashboard</a>
+</div>
+
+<div class="card">
+    <h2 style="font-size:18px;font-weight:700;color:#fff;margin-bottom:20px;border:none">
+        💵 <span id="txtTanggalPetty" style="color:#f97316"></span>
+    </h2>
+
+    <!-- 4 CARD SALDO -->
+    <div class="grid4">
+        <div style="background:#334155;padding:16px;border-radius:10px;border-left:4px solid #3b82f6">
+            <p style="color:#94a3b8;font-size:11px;font-weight:600">SALDO AWAL (MODAL)</p>
+            <h3 id="lblPettySaldoAwal" style="font-size:20px;color:#3b82f6;font-weight:800;margin-top:4px">Rp 0</h3>
+        </div>
+        <div style="background:#334155;padding:16px;border-radius:10px;border-left:4px solid #10b981">
+            <p style="color:#94a3b8;font-size:11px;font-weight:600">TOTAL KAS MASUK</p>
+            <h3 id="lblPettyTotalMasuk" style="font-size:20px;color:#10b981;font-weight:800;margin-top:4px">Rp 0</h3>
+        </div>
+        <div style="background:#334155;padding:16px;border-radius:10px;border-left:4px solid #ef4444">
+            <p style="color:#94a3b8;font-size:11px;font-weight:600">TOTAL KAS KELUAR</p>
+            <h3 id="lblPettyTotalKeluar" style="font-size:20px;color:#ef4444;font-weight:800;margin-top:4px">Rp 0</h3>
+        </div>
+        <div style="background:#1e293b;padding:16px;border-radius:10px;border:1px solid rgba(255,255,255,0.1)">
+            <p style="color:#94a3b8;font-size:11px;font-weight:600">SALDO AKHIR SAAT INI</p>
+            <h3 id="lblPettySaldoAkhir" style="font-size:20px;color:#10b981;font-weight:800;margin-top:4px">Rp 0</h3>
+        </div>
+    </div>
+
+    <!-- FILTER TANGGAL -->
+    <div style="display:flex;gap:10px;margin-bottom:20px;background:#334155;padding:12px;border-radius:10px;align-items:flex-end">
+        <div style="flex:1"><label>DARI TANGGAL</label><input type="date" id="filterPettyMulai"></div>
+        <div style="flex:1"><label>SAMPAI TANGGAL</label><input type="date" id="filterPettySelesai"></div>
+        <button id="btnFilterPetty" class="btn" style="background:#3b82f6;color:#fff">Tampilkan</button>
+    </div>
+
+    <div class="grid2">
+        <div>
+            <!-- SET SALDO AWAL -->
+            <div style="background:#334155;padding:16px;border-radius:10px;margin-bottom:15px">
+                <label style="display:block;font-size:12px;font-weight:700;color:#fff;margin-bottom:8px">SET SALDO AWAL HARI INI</label>
+                <div style="display:flex;gap:8px">
+                    <input type="number" id="inPettySaldoAwal" placeholder="Contoh: 500000">
+                    <button id="btnSetSaldoAwal" class="btn" style="background:#3b82f6;color:#fff;padding:0 20px">Set</button>
+                </div>
+            </div>
+
+            <!-- INPUT MUTASI -->
+            <div style="background:#334155;padding:16px;border-radius:10px">
+                <label style="display:block;font-size:12px;font-weight:700;color:#fff;margin-bottom:8px">INPUT MUTASI MANUAL</label>
+                <select id="inPettyTipe">
+                    <option value="Keluar">🔴 Uang Keluar (Pengeluaran)</option>
+                    <option value="Masuk (Manual)">🟢 Uang Masuk (Lain-lain)</option>
+                </select>
+                <input id="inPettyKet" placeholder="Keterangan (Contoh: Beli Es Batu)" style="margin:10px 0">
+                <input type="number" id="inPettyNominal" placeholder="Nominal Rp">
+                <button id="btnCatatPetty" class="btn" style="width:100%;background:#10b981;color:#fff;margin-top:12px">📝 Catat Transaksi Kas</button>
+            </div>
+        </div>
+
+        <!-- TABEL KAN -->
+        <div style="background:#334155;padding:18px;border-radius:10px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                <h3 style="border:none;margin:0;font-size:15px;font-weight:700;color:#fff">📋 Riwayat Perubahan Kas</h3>
+            </div>
+            <div style="overflow-x:auto;max-height:400px">
+                <table id="tablePettyCash" style="width:100%;border-collapse:collapse;font-size:13px">
+                    <thead><tr style="background:#1e293b;color:#fff;text-align:left;position:sticky;top:0"><th style="padding:10px">Waktu</th><th style="padding:10px">Jenis</th><th style="padding:10px">Keterangan</th><th style="padding:10px;text-align:right">Nominal</th><th style="padding:10px;text-align:center">Aksi</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
+import { getDatabase, ref, push, onValue, set, remove } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-database.js";
+
+// PAKE CONFIG SAMA KAYA KASIR.HTML
+const firebaseConfig = {apiKey: "AIzaSyD6r1mm0Fm0gIioG2UcWQZt0XJtHQj15iI", authDomain: "restopro2026-60038.firebaseapp.com", databaseURL: "https://restopro2026-60038-default-rtdb.asia-southeast1.firebasedatabase.app", projectId: "restopro2026-60038"};
+const app = initializeApp(firebaseConfig); const db = getDatabase(app);
+
+let userLogin = JSON.parse(localStorage.getItem("userLogin"));
+if(!userLogin ||!["Admin/Owner", "Manager"].includes(userLogin.role)){
+    alert("Anda tidak punya akses ke halaman Petty Cash!");
+    window.location.href = "index.html";
+}
+
+let dataPetty = [];
+let saldoAwal = 0;
+
+onValue(ref(db, 'pettycash'), (s)=>{
+  dataPetty = s.val()? Object.keys(s.val()).map(k=>({id:k,...s.val()[k]})).reverse() : [];
+  renderPettyCash();
+});
+onValue(ref(db, 'konfigurasi/pettySaldoAwal'), (s)=>{
+  saldoAwal = s.val() || 0;
+  lblPettySaldoAwal.innerText = `Rp ${saldoAwal.toLocaleString('id-ID')}`;
+  renderPettyCash();
+});
+
+function renderPettyCash() {
+    const tbody = document.querySelector('#tablePettyCash tbody'); tbody.innerHTML = '';
+    let totalMasuk = 0, totalKeluar = 0;
+
+    const tglMulai = filterPettyMulai.value;
+    const tglSelesai = filterPettySelesai.value;
+    let dataTampil = dataPetty;
+    if (tglMulai && tglSelesai) {
+        dataTampil = dataPetty.filter(d => d.tanggal >= tglMulai && d.tanggal <= tglSelesai);
+    }
+
+    dataTampil.forEach((item) => {
+        let warna = item.tipe.includes('Masuk')? '#10b981' : '#ef4444';
+        tbody.innerHTML += `
+        <tr>
+            <td style="padding:10px;border-bottom:1px solid #475569">${item.waktu}</td>
+            <td style="padding:10px;border-bottom:1px solid #475569"><span style="padding:3px 10px;border-radius:50px;font-size:11px;font-weight:700;color:#fff;background:${warna}">${item.tipe}</span></td>
+            <td style="padding:10px;border-bottom:1px solid #475569">${item.keterangan}</td>
+            <td style="padding:10px;border-bottom:1px solid #475569;text-align:right;font-weight:700">Rp ${item.nominal.toLocaleString('id-ID')}</td>
+            <td style="padding:10px;border-bottom:1px solid #475569;text-align:center"><button onclick="hapusPetty('${item.id}')" style="background:#ef4444;color:#fff;border:none;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:11px">Hapus</button></td>
+        </tr>`;
+        if (item.tipe.includes('Masuk')) totalMasuk += item.nominal; else totalKeluar += item.nominal;
+    });
+
+    lblPettyTotalMasuk.innerText = `Rp ${totalMasuk.toLocaleString('id-ID')}`;
+    lblPettyTotalKeluar.innerText = `Rp ${totalKeluar.toLocaleString('id-ID')}`;
+    lblPettySaldoAkhir.innerText = `Rp ${(saldoAwal + totalMasuk - totalKeluar).toLocaleString('id-ID')}`;
+}
+
+window.simpanSaldoAwalPetty = async function() {
+    const saldo = parseFloat(inPettySaldoAwal.value);
+    if (isNaN(saldo)) return alert('Isi nominal saldo awal');
+    await set(ref(db, 'konfigurasi/pettySaldoAwal'), saldo);
+    inPettySaldoAwal.value = '';
+    alert('✅ Saldo Awal Diset!');
+}
+
+window.tambahMutasiPettyManual = async function() {
+    const tipe = inPettyTipe.value;
+    const ket = inPettyKet.value.trim();
+    const nominal = parseFloat(inPettyNominal.value);
+    if (!ket || isNaN(nominal) || nominal <= 0) return alert('Keterangan dan Nominal wajib diisi!');
+
+    let now = new Date();
+    await push(ref(db, 'pettycash'), {
+        tanggal: now.toISOString().split('T')[0],
+        waktu: now.toLocaleString('id-ID'),
+        tipe: tipe,
+        keterangan: ket,
+        nominal: nominal,
+        user: userLogin.nama
+    });
+
+    inPettyKet.value = ''; inPettyNominal.value = '';
+    alert('✅ Transaksi Kas Berhasil Dicatat!');
+}
+
+window.hapusPetty = async function(id) {
+    if (!confirm('Yakin mau hapus biaya ini?')) return;
+    await remove(ref(db,"pettycash/" + id));
+    alert('Data berhasil dihapus');
+}
+
+function filterPettyByDate() { renderPettyCash(); }
+
+document.addEventListener('DOMContentLoaded', () => {
+    txtTanggalPetty.innerText = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    let today = new Date().toISOString().split('T')[0];
+    filterPettyMulai.value = today;
+    filterPettySelesai.value = today;
+});
+btnSetSaldoAwal.onclick=simpanSaldoAwalPetty;
+btnCatatPetty.onclick=tambahMutasiPettyManual;
+btnFilterPetty.onclick=filterPettyByDate;
+</script>
+</body>
+</html>

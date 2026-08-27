@@ -1,0 +1,212 @@
+<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>RESTOPRO - Meja</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+body{font-family: 'Poppins', sans-serif; margin:0; background:#e6ecf3;}
+nav{background:#1e293b; color:#fff; padding:8px 20px; display:flex; align-items:center; justify-content:space-between;}
+nav ul{display:flex; gap:5px; list-style:none; margin:0; padding:0;}
+nav ul li a{color:#cbd5e1; text-decoration:none; padding:8px 12px; font-size:13px; border-radius:6px;}
+nav ul li a.active{background:#10b981; color:#fff;}
+.container{padding:20px 30px;}.card{background:#fff; border-radius:12px; padding:20px;}
+.form-row{display:flex; gap:10px; margin-bottom:15px; align-items:end; flex-wrap:wrap;}
+input, button{padding:10px; border:1px solid #cbd5e1; border-radius:6px; font-family: 'Poppins';}
+.btn-hijau{background:#10b981; color:#fff; border:none; font-weight:700; cursor:pointer;}
+.btn-biru{background:#3b82f6; color:#fff; border:none; font-weight:700; cursor:pointer;}
+.btn-ungu{background:#8b5cf6; color:#fff; border:none; font-weight:700; cursor:pointer;}
+.btn-merah{background:#ef4444; color:#fff; border:none; font-weight:700; cursor:pointer;} /* TOMBOL BARU */
+table{width:100%; border-collapse:collapse; margin-top:10px;}
+th,td{border:1px solid #ddd; padding:10px; text-align:left;}
+th{background:#1e293b; color:#fff;}
+.btn-aksi{padding:6px 10px; border:none; border-radius:4px; cursor:pointer; font-family: 'Poppins'; margin-right:5px}
+.btn-delete{background:#ef4444; color:#fff;}
+.badge{padding:4px 10px; border-radius:20px; font-size:12px; font-weight:700;}
+.badge-kosong{background:#dcfce7; color:#166534;}
+.badge-pakai{background:#fee2e2; color:#b91c1c;} /* INI BUAT TERPAKAI */
+.qr-kecil{width:50px; height:50px; border:1px solid #ddd; border-radius:4px}
+
+/* POPUP QR */
+.popup{position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); display:none; justify-content:center; align-items:center; z-index:20}
+.popup-content{background:white; padding:25px; border-radius:12px; width:90%; max-width:400px; text-align:center}
+.popup-content h3{color:#1e293b; margin-top:0}
+#qrcode, #qrcodePreview{margin:20px auto; padding:10px; background:white; border-radius:8px; display:inline-block}
+.loading{font-size:12px; color:#10b981}
+.total-info{font-size:12px; color:#b91c1c; font-weight:700} /* INFO TOTAL BARU */
+</style></head><body>
+<nav><div>📦 RESTOPRO</div><ul>
+<li><a href="index.html">📊 Dashboard</a></li><li><a href="master.html">📦 Menu</a></li>
+<li><a href="meja.html" class="active">🪑 Meja</a></li><li><a href="kasir.html">💼 Kasir</a></li><li><a href="tools.html">⚙️ Tools</a></li>
+</ul></nav>
+<div class="container"><div class="card"><h1>🪑 Kelola Data Meja</h1>
+<form id="formMeja" class="form-row">
+  <div>
+    <label>Nomor Meja</label>
+    <input type="text" id="nomorMeja" placeholder="Contoh: A1" required>
+  </div>
+  <div>
+    <label>Kapasitas Orang</label>
+    <input type="number" id="jumlahOrang" placeholder="4" min="1" required>
+  </div>
+<button type="submit" class="btn-hijau">💾 Simpan Meja</button>
+</form>
+<table id="tableMeja"><thead><tr><th>Nomor Meja</th><th>Kapasitas</th><th>Status</th><th>QR</th><th>Aksi</th></tr></thead><tbody></tbody></table>
+</div></div>
+
+<!-- POPUP QR -->
+<div id="popupQR" class="popup">
+  <div class="popup-content">
+    <h3>QR Code Meja <span id="qrNomor"></span></h3>
+    <div id="qrcode"></div>
+    <p id="loadingText" class="loading">Menyimpan ke Firebase...</p>
+    <p style="font-size:12px; color:#64748b">Scan untuk Self Order</p>
+    <button class="btn-ungu" onclick="previewQR()">🔍 Preview Besar</button>
+    <button class="btn-biru" onclick="downloadQR()">📥 Download</button>
+    <button class="btn-delete" onclick="tutupQR()" style="margin-top:10px; width:100%">Tutup</button>
+  </div>
+</div>
+
+<!-- POPUP PREVIEW BESAR -->
+<div id="popupPreview" class="popup">
+  <div class="popup-content" style="max-width:500px">
+    <h3>Preview QR Meja <span id="previewNomor"></span></h3>
+    <div id="qrcodePreview"></div>
+    <button class="btn-delete" onclick="tutupPreview()" style="margin-top:10px; width:100%">Tutup</button>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
+  import { getDatabase, ref, set, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyD6r1mm0Fm0gIioG2UcWQZt0XJtHQj15iI",
+    authDomain: "restopro2026-60038.firebaseapp.com",
+    databaseURL: "https://restopro2026-60038-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "restopro2026-60038"
+  };
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const mejaRef = ref(db, 'meja');
+
+  let mejaData = [];
+  let mejaTertahanData = {}; // BARU: buat nyimpen data dari Firebase
+  let currentMeja = null;
+
+  // CEK LOGIN
+  let userLogin = JSON.parse(localStorage.getItem("userLogin"));
+  if(!userLogin ||!["Admin/Owner", "Manager", "Waitress"].includes(userLogin.role)){
+    alert("Hanya Admin/Manager/Waitress yang bisa akses!");
+    window.location.href = "index.html";
+  }
+
+  formMeja.addEventListener("submit", e=>{
+    e.preventDefault();
+    let nomor = nomorMeja.value.toUpperCase();
+    if(mejaData.find(m=>m.nomorMeja == nomor)) return alert("Meja sudah ada!");
+
+    const linkSelfOrder = `${window.location.origin}${window.location.pathname.replace('meja.html','selforder.html')}?kode=${nomor}`;
+    push(mejaRef, {
+      nomorMeja: nomor,
+      jumlahOrang: +jumlahOrang.value,
+      status: "Kosong",
+      qrcodeLink: linkSelfOrder,
+      qrcodeImg: ""
+    });
+    e.target.reset();
+  });
+
+  // 1. DENGERIN DATA MEJA
+  onValue(mejaRef, (snapshot) => {
+    const data = snapshot.val();
+    mejaData = data? Object.keys(data).map(key => ({ id: key,...data[key] })) : [];
+    renderMeja();
+  });
+
+  // 2. BARU: DENGERIN DATA MEJA TERTAHAN DARI SELFORDER
+  onValue(ref(db, 'mejaTertahan'), (snapshot) => {
+    mejaTertahanData = snapshot.val() || {};
+    renderMeja(); // render ulang tiap ada perubahan
+  });
+
+  function renderMeja(){
+    tableMeja.querySelector("tbody").innerHTML = mejaData.map((m)=>{
+      
+      // CEK APA MEJA INI ADA DI MEJA TERTAHAN
+      let dataTertahan = mejaTertahanData[m.nomorMeja];
+      let status = dataTertahan ? "Terpakai" : "Kosong";
+      let totalInfo = dataTertahan ? `<div class="total-info">Total: Rp ${dataTertahan.total.toLocaleString('id-ID')}</div>` : '';
+
+      return `
+      <tr>
+        <td><b>${m.nomorMeja}</b></td>
+        <td>${m.jumlahOrang || 4} Orang</td>
+        <td>
+          <span class="badge ${status=='Terpakai'?'badge-pakai':'badge-kosong'}">${status=='Terpakai'?'Terpakai':'Kosong'}</span>
+          ${totalInfo}
+        </td>
+        <td>
+          ${m.qrcodeImg? `<img src="${m.qrcodeImg}" class="qr-kecil">` : `<span style="color:#94a3b8">Belum</span>`}
+        </td>
+        <td>
+          <button class="btn-aksi btn-biru" onclick="generateDanSaveQR('${m.id}')">📱 Generate QR</button>
+          ${m.qrcodeImg? `<button class="btn-aksi btn-ungu" onclick="previewQRData('${m.id}')">🔍 Preview</button>` : ''}
+          ${status=='Terpakai'? `<button class="btn-aksi btn-merah" onclick="selesaikanMeja('${m.nomorMeja}')">✅ Selesai</button>` : ''}
+          <button class="btn-aksi btn-delete" onclick="hapusMeja('${m.id}')">Hapus</button>
+        </td>
+      </tr>
+    `}).join("");
+  }
+
+  // 3. BARU: FUNGSI SELESAI MEJA
+  window.selesaikanMeja = function(namaMeja){
+    if(confirm("Selesaikan dan kosongkan Meja " + namaMeja + "?")){
+      remove(ref(db, 'mejaTertahan/' + namaMeja)); // hapus dari firebase
+    }
+  }
+
+  // SISA FUNGSI KAMU TETAP SAMA
+  window.generateDanSaveQR = function(id){
+    currentMeja = mejaData.find(x=>x.id==id);
+    document.getElementById('qrNomor').innerText = currentMeja.nomorMeja;
+    document.getElementById('popupQR').style.display = 'flex';
+    document.getElementById('loadingText').style.display = 'block';
+    document.getElementById('qrcode').innerHTML = "";
+    const link = currentMeja.qrcodeLink;
+    new QRCode(document.getElementById("qrcode"), { text: link, width: 256, height: 256, correctLevel: QRCode.CorrectLevel.H });
+    setTimeout(() => {
+      const canvas = document.querySelector("#qrcode canvas");
+      const base64 = canvas.toDataURL("image/png");
+      update(ref(db, 'meja/' + id), { qrcodeImg: base64 }).then(()=>{
+        document.getElementById('loadingText').innerText = "✅ Berhasil disimpan ke Firebase";
+        setTimeout(()=> document.getElementById('loadingText').style.display = 'none', 2000);
+      });
+    }, 500);
+  }
+  window.previewQR = function(){
+    document.getElementById('popupQR').style.display = 'none';
+    document.getElementById('popupPreview').style.display = 'flex';
+    document.getElementById('previewNomor').innerText = currentMeja.nomorMeja;
+    document.getElementById('qrcodePreview').innerHTML = "";
+    new QRCode(document.getElementById("qrcodePreview"), { text: currentMeja.qrcodeLink, width: 350, height: 350 });
+  }
+  window.previewQRData = function(id){
+    let m = mejaData.find(x=>x.id==id);
+    document.getElementById('popupPreview').style.display = 'flex';
+    document.getElementById('previewNomor').innerText = m.nomorMeja;
+    document.getElementById('qrcodePreview').innerHTML = `<img src="${m.qrcodeImg}" style="width:350px; height:350px">`;
+  }
+  window.tutupQR = function(){ document.getElementById('popupQR').style.display = 'none'; }
+  window.tutupPreview = function(){ document.getElementById('popupPreview').style.display = 'none'; }
+  window.downloadQR = function(){
+    const canvas = document.querySelector("#qrcode canvas");
+    const link = document.createElement('a');
+    link.download = `QR-Meja-${currentMeja.nomorMeja}.png`;
+    link.href = canvas.toDataURL();
+    link.click();
+  }
+  window.hapusMeja = function(id){
+    if(confirm("Hapus meja ini?")){
+      remove(ref(db, 'meja/' + id));
+    }
+  }
+</script>
+</body></html>

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>RESTOPRO</title>
+<script>
+// PENJAGA HALAMAN UTAMA
+document.addEventListener("DOMContentLoaded", function(){
+    let user = localStorage.getItem('userLogin'); 
+    if(!user){
+      window.location.href = "login.html"; // belum login → ke login
+    } else {
+      window.location.href = "dashboard.html"; // udah login → ke dashboard
+    }
+});
+</script>
+</head>
+<body style="background:#0f172a; color:#fff; text-align:center; padding-top:100px;">
+  <i class="fa-solid fa-spinner fa-spin"></i> Loading...
+</body>
+</html>

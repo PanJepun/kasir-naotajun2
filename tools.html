@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>RESTOPRO - Tools</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+body{font-family: 'Poppins'; margin:0; background:#e6ecf3;}
+nav{background:#1e293b; color:#fff; padding:8px 20px; display:flex; align-items:center; justify-content:space-between;}
+nav ul{display:flex; gap:5px; list-style:none; margin:0; padding:0;}
+nav ul li a{color:#cbd5e1; text-decoration:none; padding:8px 12px; font-size:13px; border-radius:6px;}
+nav ul li a.active{background:#10b981; color:#fff;}
+.container{padding:20px 30px;}.grid-2{display:grid; grid-template-columns:1fr 1fr; gap:20px;}
+.card{background:#fff; border-radius:12px; padding:20px;}
+.card h2{font-size:16px; margin:0 0 15px 0; font-weight:700; border-bottom:1px solid #eee; padding-bottom:10px;}
+.form-group{margin-bottom:12px;}
+.form-group label{font-size:12px; color:#64748b; display:block; margin-bottom:4px; text-transform:uppercase;}
+input, select, button{padding:10px; border:1px solid #cbd5e1; border-radius:6px; width:100%; box-sizing:border-box; font-family: 'Poppins';}
+.btn-hijau{background:#10b981; color:#fff; border:none; font-weight:700; cursor:pointer;}
+table{width:100%; border-collapse:collapse; margin-top:10px;}
+th{background:#1e293b; color:#fff; padding:10px; text-align:left; font-size:13px;}
+td{border-bottom:1px solid #e2e8f0; padding:10px; font-size:13px;}
+.role-badge{background:#e2e8f0; padding:3px 8px; border-radius:4px; font-size:11px; font-weight:600;}
+.td-aksi{display:flex; gap:8px;}
+.btn-aksi-kecil{padding:6px 12px; border:none; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600; width:auto;}
+.btn-edit-kecil{background:#f59e0b; color:#fff;}.btn-delete-kecil{background:#ef4444; color:#fff;}
+</style>
+</head>
+<body>
+<nav>
+  <div>📦 RESTOPRO</div>
+  <ul>
+    <li><a href="index.html">📊 Dashboard</a></li>
+    <li><a href="master.html">📦 Menu</a></li>
+    <li><a href="meja.html">🪑 Meja</a></li>
+    <li><a href="kasir.html">💼 Kasir</a></li>
+    <li><a href="tools.html" class="active">⚙️ Tools</a></li>
+  </ul>
+</nav>
+
+<div class="container">
+  <div class="grid-2">
+    <!-- KIRI: KONFIGURASI -->
+    <div class="card">
+      <h2>⚙️ Konfigurasi Restoran</h2>
+      <form id="formKonfigurasi">
+        <div class="form-group"><label>NAMA RESTORAN</label><input type="text" id="namaRestoran" required></div>
+        <div class="form-group"><label>PAJAK PPN (%)</label><input type="number" id="pajakPPN" value="11"></div>
+        <div class="form-group"><label>NOMOR BILL TRANSAKSI BERIKUTNYA</label><input type="text" id="nomorBill" placeholder="BILL-0001"></div>
+        <button type="submit" class="btn-hijau">💾 Simpan Konfigurasi</button>
+      </form>
+    </div>
+
+    <!-- KAN: KELOLA USER -->
+    <div class="card">
+      <h2>👤 Tambah / Kelola Akun Pengguna</h2>
+      <form id="formUser">
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
+          <div class="form-group"><label>USERNAME</label><input type="text" id="username" required></div>
+          <div class="form-group"><label>NAMA LENGKAP</label><input type="text" id="namaLengkap" required></div>
+          <div class="form-group"><label>PASSWORD</label><input type="password" id="password" required></div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 200px; gap:10px; align-items:end;">
+          <div class="form-group">
+            <label>ROLE JABATAN</label>
+            <select id="roleUser">
+              <option value="Admin/Owner">👑 Admin / Owner</option>
+              <option value="Kasir">💼 Kasir</option>
+              <option value="Waitress">🙋 Waitress</option>
+            </select>
+          </div>
+          <button type="submit" class="btn-hijau">📁 Simpan Akun User</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:20px;">
+    <h2>Daftar Pengguna Aktif</h2>
+    <table id="tableUser"><thead><tr><th>Username</th><th>Nama Lengkap</th><th>Role</th><th width="180">Aksi</th></tr></thead><tbody></tbody></table>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
+import { getDatabase, ref, set, push, onValue, remove } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyD6r1mm0Fm0gIioG2UcWQZt0XJtHQj15iI",
+  authDomain: "restopro2026-60038.firebaseapp.com",
+  databaseURL: "https://restopro2026-60038-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "restopro2026-60038"
+};
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+let konfigurasiRef = ref(db, 'konfigurasi');
+let userRef = ref(db, 'users');
+let editUserId = null;
+
+// LOAD KONFIGURASI DARI FIREBASE
+onValue(konfigurasiRef, (snapshot) => {
+  let data = snapshot.val() || {nama:"RestoPro", ppn:11, bill:"BILL-0001"};
+  namaRestoran.value = data.nama;
+  pajakPPN.value = data.ppn;
+  nomorBill.value = data.bill;
+});
+
+// SIMPAN KONFIGURASI KE FIREBASE
+formKonfigurasi.addEventListener("submit", e=>{
+  e.preventDefault();
+  set(konfigurasiRef, {
+    nama: namaRestoran.value,
+    ppn: +pajakPPN.value,
+    bill: nomorBill.value
+  });
+  alert("✅ Konfigurasi Tersimpan ke Firebase!");
+});
+
+// LOAD USER DARI FIREBASE
+onValue(userRef, (snapshot) => {
+  const data = snapshot.val();
+  let userData = data? Object.keys(data).map(key => ({ id: key,...data[key] })) : [];
+  renderUser(userData);
+});
+
+function renderUser(userData){
+  tableUser.querySelector("tbody").innerHTML = userData.map((u)=>`
+    <tr>
+      <td><b>${u.username}</b></td>
+      <td>${u.nama}</td>
+      <td><span class="role-badge">${u.role}</span></td>
+      <td class="td-aksi">
+        <button class="btn-aksi-kecil btn-edit-kecil" onclick="editUser('${u.id}')">✏️ Edit</button>
+        <button class="btn-aksi-kecil btn-delete-kecil" onclick="hapusUser('${u.id}')" ${u.role=="Admin/Owner"?"disabled":""}>🗑️ Hapus</button>
+      </td>
+    </tr>
+  `).join("");
+}
+
+// SIMPAN USER KE FIREBASE
+formUser.addEventListener("submit", e=>{
+  e.preventDefault();
+  let data = {username: username.value, nama: namaLengkap.value, password: password.value, role: roleUser.value};
+  if(editUserId == null) push(userRef, data);
+  else { set(ref(db, 'users/' + editUserId), data); editUserId = null; }
+  e.target.reset();
+});
+
+window.editUser = function(id){
+  onValue(ref(db, 'users/' + id), (snapshot) => {
+    let u = snapshot.val();
+    username.value = u.username; namaLengkap.value = u.nama; password.value = u.password; roleUser.value = u.role;
+    editUserId = id;
+  }, {onlyOnce: true});
+}
+
+window.hapusUser = function(id){
+  if(confirm("Hapus user ini?")) remove(ref(db, 'users/' + id));
+}
+</script>
+</body>
+</html>
